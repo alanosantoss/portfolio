@@ -377,7 +377,7 @@
     }
 
     /* =========================================================================
-       LIGHTBOX CINEMA (MODAL 16:9 FULL-SCREEN)
+       LIGHTBOX CINEMA (MODAL 16:9 FULL-SCREEN & IMAGEM)
     ========================================================================= */
     .lightbox {
       position: fixed;
@@ -423,6 +423,21 @@
       width: 100%;
       height: 100%;
       border: 0;
+    }
+
+    .lightbox-image-wrap {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      display: block;
     }
 
     .lightbox-caption {
@@ -598,6 +613,7 @@
     <nav class="nav-links" aria-label="Navegação principal">
       <button type="button" class="nav-btn is-active" data-tab="home">home</button>
       <button type="button" class="nav-btn" data-tab="videos">vídeos</button>
+      <button type="button" class="nav-btn" data-tab="design">design</button>
       <button type="button" class="nav-btn" data-tab="sobre">sobre</button>
     </nav>
 
@@ -630,13 +646,13 @@
   </header>
 
   <!-- =========================================================================
-       CONTEÚDO PRINCIPAL (DIRETO NA GRADE MASONRY — SEM TEXTOS NO TOPO)
+       CONTEÚDO PRINCIPAL (GRADE MASONRY EDITORIAL)
   ========================================================================== -->
   <main class="main-container">
-    <!-- Grade Masonry de Vídeos (Inicia direto abaixo do cabeçalho) -->
+    <!-- Grade Masonry (Vídeos & Design combinados em 3 colunas) -->
     <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
 
-    <!-- Seção Sobre (visível apenas ao clicar na aba 'sobre') -->
+    <!-- Seção Sobre (visível apenas na aba 'sobre') -->
     <section id="about-section" class="about-section" aria-label="Sobre Alan Oliveira">
       <p class="about-text">
         <strong>Alan Oliveira</strong> — editor de vídeo, pós-produção audiovisual e direção criativa.
@@ -671,9 +687,9 @@
     </button>
 
     <div class="lightbox-stage">
-      <div id="lightbox-content" class="lightbox-video-wrap"></div>
+      <div id="lightbox-content"></div>
       <div class="lightbox-caption">
-        <span id="lightbox-title" class="lightbox-title"></span>
+        <div id="lightbox-title" class="lightbox-title"></div>
         <span id="lightbox-counter"></span>
       </div>
     </div>
@@ -688,7 +704,7 @@
   <script>
     /**
      * =========================================================================
-     * CONFIGURAÇÃO
+     * CONFIGURAÇÃO CENTRAL
      * =========================================================================
      */
     const CONFIG = {
@@ -698,27 +714,53 @@
       INSTAGRAM_URL: "https://instagram.com/seuusuario",
       LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
 
-      // Os 4 vídeos do YouTube com ritmos de aspecto editorial
+      // Os 4 vídeos do YouTube
       VIDEOS: [
         {
+          type: "video",
           id: "8lmrTdA1EsU",
           title: "Social Media — Edição Dinâmica",
           ratio: "ratio-16-9"
         },
         {
+          type: "video",
           id: "0GgqcRnrNhs",
           title: "Social Media — Cortes & Ritmo",
           ratio: "ratio-21-9"
         },
         {
+          type: "video",
           id: "Gau-fbkBrrw",
           title: "UGC Campaigns - Brazil",
           ratio: "ratio-4-3"
         },
         {
+          type: "video",
           id: "R1g2IAmim6A",
           title: "Medical Explainer Videos",
           ratio: "ratio-16-10"
+        }
+      ],
+
+      // Trabalhos de Design / Photoshop / IA para enriquecer o ritmo visual da grade
+      DESIGN_ITEMS: [
+        {
+          type: "design",
+          title: "Direção Visual & Composição — Photoshop",
+          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-4-3"
+        },
+        {
+          type: "design",
+          title: "Cenário Editorial — IA + Pós-Produção",
+          image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9"
+        },
+        {
+          type: "design",
+          title: "Arte para Grandes Formatos — 400×300cm",
+          image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-3-2"
         }
       ]
     };
@@ -726,7 +768,7 @@
     // Estado da aplicação
     const state = {
       activeTab: "home",
-      videos: [...CONFIG.VIDEOS],
+      currentItems: [],
       lightboxIndex: -1
     };
 
@@ -740,7 +782,7 @@
     const lightboxCounter = document.getElementById("lightbox-counter");
 
     /**
-     * 1. Inicializa links de contato
+     * 1. Inicializa contatos
      */
     function initContacts() {
       const cleanPhone = CONFIG.WHATSAPP_NUMBER.replace(/\D/g, "");
@@ -760,7 +802,6 @@
       if (socialLi) socialLi.href = CONFIG.LINKEDIN_URL;
       if (aboutLi) aboutLi.href = CONFIG.LINKEDIN_URL;
 
-      // Copiar e-mail
       const emailBtn = document.getElementById("about-email-btn");
       const copyToast = document.getElementById("copy-toast");
       let toastTimer = null;
@@ -794,7 +835,32 @@
     }
 
     /**
-     * 2. Renderiza a grade masonry
+     * 2. Obtém itens com base na aba ativa
+     */
+    function getItemsForCurrentTab() {
+      if (state.activeTab === "videos") return CONFIG.VIDEOS;
+      if (state.activeTab === "design") return CONFIG.DESIGN_ITEMS;
+
+      // Na aba 'home', mescla vídeos e design para preencher as 3 colunas harmoniosamente
+      const combined = [];
+      const videos = CONFIG.VIDEOS;
+      const designs = CONFIG.DESIGN_ITEMS;
+      let d = 0;
+
+      for (let i = 0; i < videos.length; i++) {
+        combined.push(videos[i]);
+        if ((i + 1) % 2 === 0 && d < designs.length) {
+          combined.push(designs[d++]);
+        }
+      }
+      while (d < designs.length) {
+        combined.push(designs[d++]);
+      }
+      return combined;
+    }
+
+    /**
+     * 3. Renderiza a grade
      */
     function renderGallery() {
       if (state.activeTab === "sobre") {
@@ -807,49 +873,62 @@
       galleryGrid.style.display = "block";
       galleryGrid.innerHTML = "";
 
-      state.videos.forEach((video, index) => {
+      const items = getItemsForCurrentTab();
+      state.currentItems = items;
+
+      items.forEach((item, index) => {
         const card = document.createElement("article");
-        card.className = `masonry-item ${video.ratio || "ratio-16-9"}`;
-        card.style.animationDelay = `${index * 60}ms`;
+        card.className = `masonry-item ${item.ratio || "ratio-16-9"}`;
+        card.style.animationDelay = `${index * 45}ms`;
         card.tabIndex = 0;
         card.setAttribute("role", "button");
-        card.setAttribute("aria-label", `Assistir vídeo: ${video.title}`);
+        card.setAttribute("aria-label", `Abrir: ${item.title}`);
 
-        const thumbUrl = `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/maxresdefault.jpg`;
-        const fallbackThumb = `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/hqdefault.jpg`;
+        const isVideo = item.type === "video";
+        const thumbUrl = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`
+          : item.image;
+        const fallbackThumb = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
+          : "";
 
         card.innerHTML = `
           <img
             class="masonry-media"
             src="${thumbUrl}"
-            alt="${video.title}"
+            alt="${item.title}"
             loading="lazy"
           />
-          <div class="play-indicator" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="7 5 19 12 7 19 7 5"></polygon>
-            </svg>
-          </div>
+          ${
+            isVideo
+              ? `<div class="play-indicator" aria-hidden="true">
+                   <svg viewBox="0 0 24 24" fill="currentColor">
+                     <polygon points="7 5 19 12 7 19 7 5"></polygon>
+                   </svg>
+                 </div>`
+              : ""
+          }
           <div class="masonry-overlay">
-            <span class="masonry-title">${video.title}</span>
+            <span class="masonry-title">${item.title}</span>
           </div>
         `;
 
-        // Fallback de miniatura
-        const img = card.querySelector(".masonry-media");
-        if (img) {
-          img.addEventListener("load", () => {
-            if (img.naturalWidth <= 120 && !img.dataset.fallback) {
-              img.dataset.fallback = "1";
-              img.src = fallbackThumb;
-            }
-          });
-          img.addEventListener("error", () => {
-            if (!img.dataset.fallback) {
-              img.dataset.fallback = "1";
-              img.src = fallbackThumb;
-            }
-          });
+        if (isVideo) {
+          const img = card.querySelector(".masonry-media");
+          if (img) {
+            img.addEventListener("load", () => {
+              if (img.naturalWidth <= 120 && !img.dataset.fallback) {
+                img.dataset.fallback = "1";
+                img.src = fallbackThumb;
+              }
+            });
+            img.addEventListener("error", () => {
+              if (!img.dataset.fallback) {
+                img.dataset.fallback = "1";
+                img.src = fallbackThumb;
+              }
+            });
+          }
         }
 
         const openHandler = () => openLightbox(index);
@@ -866,39 +945,47 @@
     }
 
     /**
-     * 3. Lightbox Cinema
+     * 4. Lightbox Cinema
      */
     function renderLightboxContent() {
-      if (state.lightboxIndex < 0 || state.lightboxIndex >= state.videos.length) return;
-      const video = state.videos[state.lightboxIndex];
+      if (state.lightboxIndex < 0 || state.lightboxIndex >= state.currentItems.length) return;
+      const item = state.currentItems[state.lightboxIndex];
 
-      // YouTube No-Cookie sem enablejsapi para reprodução sem Erro 153
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+      if (item.type === "video") {
+        lightboxContent.className = "lightbox-video-wrap";
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 
-      lightboxContent.innerHTML = `
-        <iframe
-          src="${embedUrl}"
-          title="${video.title}"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          referrerpolicy="strict-origin-when-cross-origin"
-        ></iframe>
-      `;
+        lightboxContent.innerHTML = `
+          <iframe
+            src="${embedUrl}"
+            title="${item.title}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        `;
 
-      const ytWatchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(video.id)}`;
-      lightboxTitle.innerHTML = `
-        <span>${video.title}</span>
-        <a href="${ytWatchUrl}" target="_blank" rel="noopener noreferrer" class="lightbox-yt-btn" title="Assistir no YouTube">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-            <polyline points="15 3 21 3 21 9"></polyline>
-            <line x1="10" y1="14" x2="21" y2="3"></line>
-          </svg>
-          YouTube
-        </a>
-      `;
+        const ytWatchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(item.id)}`;
+        lightboxTitle.innerHTML = `
+          <span>${item.title}</span>
+          <a href="${ytWatchUrl}" target="_blank" rel="noopener noreferrer" class="lightbox-yt-btn" title="Assistir no YouTube">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            YouTube
+          </a>
+        `;
+      } else {
+        lightboxContent.className = "lightbox-image-wrap";
+        lightboxContent.innerHTML = `
+          <img class="lightbox-image" src="${item.image}" alt="${item.title}" />
+        `;
+        lightboxTitle.innerHTML = `<span>${item.title}</span>`;
+      }
 
-      lightboxCounter.textContent = `${state.lightboxIndex + 1} / ${state.videos.length}`;
+      lightboxCounter.textContent = `${state.lightboxIndex + 1} / ${state.currentItems.length}`;
     }
 
     function openLightbox(index) {
@@ -916,7 +1003,7 @@
     }
 
     function stepLightbox(delta) {
-      const total = state.videos.length;
+      const total = state.currentItems.length;
       if (!total) return;
       state.lightboxIndex = (state.lightboxIndex + delta + total) % total;
       renderLightboxContent();
@@ -940,7 +1027,7 @@
     }
 
     /**
-     * 4. Navegação entre Abas
+     * 5. Navegação entre abas
      */
     function setActiveTab(tabName) {
       state.activeTab = tabName;
