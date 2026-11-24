@@ -770,6 +770,9 @@
     }
 
     @media (max-width: 768px) {
+      .lightbox {
+        padding: 40px 16px;
+      }
       .site-header {
         padding: 24px 20px 20px;
         gap: 14px;
@@ -803,7 +806,7 @@
       }
 
       .main-container {
-        padding: 0 16px 56px;
+        padding: 0 20px 56px;
       }
 
       .masonry-grid {
@@ -856,7 +859,7 @@
       }
 
       .masonry-item {
-        margin-bottom: 14px;
+        margin-bottom: 16px;
       }
     }
   </style>
@@ -1363,7 +1366,7 @@
     }
 
     /**
-     * 4. Reprodução Inline de Vídeo & Renderização da Grade
+     * 4. Reprodução de Vídeo & Renderização da Grade
      */
     let currentPlayingCard = null;
 
@@ -1488,11 +1491,7 @@
         }
 
         const handleCardAction = () => {
-          if (isVideo) {
-            playInlineVideo(card, item);
-          } else {
-            openLightbox(index);
-          }
+          openLightbox(index);
         };
 
         card.addEventListener("click", handleCardAction);
