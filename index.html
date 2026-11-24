@@ -389,8 +389,8 @@
     ========================================================================= */
     .about-section {
       display: none;
-      max-width: 640px;
-      margin: 64px auto 60px;
+      max-width: 1040px;
+      margin: 32px auto 80px;
       animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
@@ -398,7 +398,59 @@
       display: block;
     }
 
-    .about-text {
+    /* Ícones de Contato Centralizados no Topo */
+    .about-contact-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .about-icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    .about-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .about-icon-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .about-hero {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      margin-bottom: 32px;
+    }
+
+    .about-avatar {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+    }
+
+    .about-intro p {
       font-size: 1.08rem;
       line-height: 1.8;
       color: #d4d4d4;
@@ -406,42 +458,74 @@
       letter-spacing: -0.01em;
     }
 
-    .about-text strong {
+    .about-intro strong {
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    .about-links {
-      margin-top: 48px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 32px;
-      align-items: center;
+    .about-divider {
+      width: 100%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 38px 0;
     }
 
-    .about-link {
+    /* Grade de 3 Colunas dos Serviços */
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 36px;
+    }
+
+    .about-col-title {
+      font-size: 1.04rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.015em;
+      margin-bottom: 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .about-col-text {
       font-size: 0.88rem;
-      color: var(--muted);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-      padding-bottom: 4px;
-      transition: color var(--transition), border-color var(--transition);
+      line-height: 1.72;
+      color: #a3a3a3;
+      font-weight: 400;
     }
 
-    .about-link:hover {
+    /* Seção Inferior: Como eu trabalho */
+    .about-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .about-cta-text {
+      font-size: 0.94rem;
+      line-height: 1.7;
       color: #ffffff;
-      border-color: #ffffff;
+      font-weight: 500;
+      margin-top: 6px;
     }
 
     .copy-toast {
+      position: absolute;
+      top: -32px;
       font-size: 0.78rem;
       color: #22c55e;
-      margin-left: 8px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      padding: 4px 12px;
+      border-radius: 999px;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      transform: translateY(4px);
     }
 
     .copy-toast.is-visible {
       opacity: 1;
+      transform: translateY(0);
     }
 
     /* =========================================================================
@@ -674,7 +758,18 @@
       }
 
       .about-section {
-        margin: 32px auto 40px;
+        margin: 28px auto 40px;
+      }
+
+      .about-hero {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
       }
 
       .lightbox {
@@ -746,16 +841,82 @@
 
     <!-- Seção Sobre -->
     <section id="about-section" class="about-section" aria-label="Sobre Alan Oliveira">
-      <p class="about-text">
-        <strong>Alan Oliveira</strong> — editor de vídeo, pós-produção audiovisual e direção criativa.
-        Especialista em narrativas visuais de alto impacto, cortes de retenção para Reels e campanhas de conversão no audiovisual.
-      </p>
+      <!-- Ícones de Contato Centralizados no Topo -->
+      <div class="about-contact-bar">
+        <!-- WhatsApp -->
+        <a id="about-whatsapp" class="about-icon-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+        </a>
 
-      <div class="about-links">
-        <a id="about-whatsapp" class="about-link" href="#" target="_blank" rel="noopener noreferrer">whatsapp</a>
-        <button id="about-email-btn" class="about-link" type="button">e-mail</button>
-        <a id="about-linkedin" class="about-link" href="#" target="_blank" rel="noopener noreferrer">linkedin</a>
+        <!-- E-mail Copiável -->
+        <button id="about-email-btn" class="about-icon-btn" type="button" aria-label="Copiar e-mail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </button>
+
+        <!-- LinkedIn -->
+        <a id="about-linkedin" class="about-icon-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+        </a>
+
         <span id="copy-toast" class="copy-toast" aria-live="polite">e-mail copiado!</span>
+      </div>
+
+      <!-- Apresentação com Foto do Alan -->
+      <div class="about-hero">
+        <img src="assets/alan-oliveira.jpg" alt="Alan Oliveira" class="about-avatar" loading="lazy" />
+        <div class="about-intro">
+          <p>
+            <strong>Alan Oliveira</strong> — editor de vídeo, designer e criador de soluções digitais com mais de 5 anos de experiência em projetos remotos e sob demanda. Ajudo criadores de conteúdo, marcas e empresas a aumentarem retenção, cliques e produtividade com entregas rápidas e acabamento profissional.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-divider"></div>
+
+      <!-- Grade dos Serviços (3 Colunas) -->
+      <div class="about-grid">
+        <div class="about-col">
+          <h3 class="about-col-title">Edição de Vídeo</h3>
+          <p class="about-col-text">
+            Reels, TikTok e Shorts com cortes dinâmicos, legendas modernas e ritmo focado em retenção. Vídeos para YouTube com narrativa fluida, tratamento de áudio e cor, além de edição para eventos, institucionais e anúncios.
+          </p>
+        </div>
+
+        <div class="about-col">
+          <h3 class="about-col-title">Design & Imagens com IA</h3>
+          <p class="about-col-text">
+            Thumbnails de alto clique, criativos para tráfego pago e artes para redes sociais no Photoshop. Geração de imagens e cenários com IA finalizados manualmente, upscale e restauração de fotos em baixa definição, e vetorização/fechamento de arquivos em alta resolução para grandes formatos (acima de 3 metros).
+          </p>
+        </div>
+
+        <div class="about-col">
+          <h3 class="about-col-title">Landing Pages, Automações & IA</h3>
+          <p class="about-col-text">
+            Criação de landing pages rápidas com visual profissional, micro-sistemas e ferramentas sob medida para resolver gargalos internos de empresas (como visualizadores de arquivos pesados), automações práticas com IA e formatação/conversão de PDFs, catálogos e apresentações.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-divider"></div>
+
+      <!-- Como eu trabalho -->
+      <div class="about-bottom">
+        <h3 class="about-col-title">Como eu trabalho</h3>
+        <p class="about-col-text">
+          Alinhamento claro de estilo, referências e prazo antes de começar; entregas organizadas com rodadas de revisão combinadas; comunicação direta e arquivos finais limpos, prontos para publicação ou uso imediato.
+        </p>
+        <p class="about-cta-text">
+          Me mande uma mensagem com o que você precisa — respondo com o plano de execução, prazo e orçamento para o seu projeto.
+        </p>
       </div>
     </section>
   </main>

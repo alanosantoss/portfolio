@@ -111,6 +111,30 @@ if (html.includes('id="social-instagram"') || html.includes('id="about-instagram
 }
 console.log('PASS: Contatos (WhatsApp, LinkedIn, Email) e remoção do Instagram validados.');
 
+// 7. Verificação da foto de perfil e novos textos da seção Sobre
+const avatarPath = path.join(__dirname, '..', 'assets', 'alan-oliveira.jpg');
+if (!fs.existsSync(avatarPath)) {
+  console.error('FAIL: Foto de perfil assets/alan-oliveira.jpg não encontrada!');
+  process.exit(1);
+}
+if (!html.includes('assets/alan-oliveira.jpg')) {
+  console.error('FAIL: Referência à foto de perfil ausente no index.html!');
+  process.exit(1);
+}
+const expectedAboutSections = [
+  'Edição de Vídeo',
+  'Design & Imagens com IA',
+  'Landing Pages, Automações & IA',
+  'Como eu trabalho'
+];
+for (const sec of expectedAboutSections) {
+  if (!html.includes(sec)) {
+    console.error(`FAIL: Seção "${sec}" ausente no Sobre!`);
+    process.exit(1);
+  }
+}
+console.log('PASS: Foto de perfil e textos editoriais da seção Sobre validados.');
+
 console.log('=============================================');
-console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (6/6)');
+console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (7/7)');
 console.log('=============================================');
