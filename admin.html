@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel Admin — Alan Oliveira</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23111111'/><polygon points='38,30 72,50 38,70' fill='%23ffffff'/></svg>" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #111111;
+      --surface: #181818;
+      --surface-hover: #222222;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --text: #ffffff;
+      --muted: #999999;
+      --muted-hover: #e5e5e5;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --transition: 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html, body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Cabeçalho do Admin */
+    .admin-header {
+      width: 100%;
+      border-bottom: 1px solid var(--surface-border);
+      background-color: rgba(17, 17, 17, 0.95);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+
+    .admin-header-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      transition: all var(--transition);
+    }
+
+    .back-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-admin {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+      background: var(--surface);
+      color: #ffffff;
+      border-color: var(--surface-border);
+    }
+
+    .btn:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-primary {
+      background: #ffffff;
+      color: #000000;
+      font-weight: 600;
+      border-color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #e5e5e5;
+      color: #000000;
+    }
+
+    .btn-accent {
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    .btn-accent:hover {
+      background: rgba(34, 197, 94, 0.25);
+    }
+
+    .btn-danger {
+      color: #f87171;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Container Principal */
+    .admin-main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 28px 80px;
+    }
+
+    /* Barra de Ajuda / Instruções */
+    .info-banner {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--surface-border);
+      border-left: 3px solid #3b82f6;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 0.86rem;
+      color: #d4d4d4;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .info-text strong {
+      color: #ffffff;
+    }
+
+    /* Barra de Filtros e Busca */
+    .admin-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      font-size: 0.8rem;
+      padding: 6px 13px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all var(--transition);
+      text-transform: lowercase;
+    }
+
+    .tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-btn.is-active {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.22);
+      font-weight: 500;
+    }
+
+    .search-input {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: #ffffff;
+      font-size: 0.84rem;
+      width: 240px;
+      transition: border-color var(--transition);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .stats-counter {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Grade de Cards Arrastáveis */
+    .admin-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .admin-card {
+      background-color: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), opacity var(--transition);
+      user-select: none;
+    }
+
+    .admin-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .admin-card.is-hidden-project {
+      opacity: 0.45;
+    }
+
+    /* Drag & Drop Feedback Visual */
+    .admin-card.is-dragging {
+      opacity: 0.35;
+      transform: scale(0.97);
+      border: 2px dashed #3b82f6 !important;
+      box-shadow: none;
+    }
+
+    .admin-card.drag-over-active {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 2px #3b82f6;
+      transform: translateY(-3px);
+    }
+
+    /* Cabeçalho do Card (Drag handle + Posição + Toggle) */
+    .card-top {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .drag-handle {
+      cursor: grab;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .drag-handle svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .visibility-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .visibility-toggle input {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    /* Mídia / Thumbnail Preview */
+    .card-thumb-wrap {
+      width: 100%;
+      height: 160px;
+      position: relative;
+      overflow: hidden;
+      background: #0d0d0d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform var(--transition);
+    }
+
+    .admin-card:hover .card-thumb {
+      transform: scale(1.03);
+    }
+
+    .card-badges {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge-pill {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .badge-pill.badge-reels {
+      color: #a855f7;
+      border-color: rgba(168, 85, 247, 0.35);
+    }
+
+    .badge-pill.badge-widescreen {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    /* Informações do Card */
+    .card-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: auto;
+    }
+
+    .tag-badge {
+      font-size: 0.7rem;
+      color: #a3a3a3;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Ações Rápidas no Rodapé do Card */
+    .card-footer {
+      padding: 10px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .move-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      border: 1px solid var(--surface-border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .icon-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .icon-btn.danger:hover {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .icon-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Modal de Adicionar / Editar Vídeo */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: all var(--transition);
+    }
+
+    .modal-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 520px;
+      background: #181818;
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      transform: scale(0.95);
+      transition: transform var(--transition);
+    }
+
+    .modal-backdrop.is-open .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .modal-close {
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-close:hover {
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #cccccc;
+    }
+
+    .form-input, .form-select {
+      background: #111111;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 9px 12px;
+      color: #ffffff;
+      font-size: 0.86rem;
+      font-family: inherit;
+      transition: border-color var(--transition);
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .form-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .preview-box {
+      width: 100%;
+      height: 140px;
+      border-radius: 6px;
+      background: #0d0d0d;
+      border: 1px dashed var(--surface-border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-footer {
+      padding: 16px 22px;
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Modal de Código */
+    .code-textarea {
+      width: 100%;
+      height: 260px;
+      background: #0d0d0d;
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      color: #a3e635;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.78rem;
+      padding: 12px;
+      resize: vertical;
+    }
+
+    /* Toast Flutuante */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: #181818;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 200;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .toast.is-visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      color: var(--accent);
+    }
+
+    /* Responsivo */
+    @media (max-width: 768px) {
+      .admin-header-inner {
+        padding: 14px 16px;
+      }
+      .admin-main {
+        padding: 20px 16px 60px;
+      }
+      .admin-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="brand-wrap">
+        <a href="index.html" class="back-btn" title="Voltar ao site público">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Ver Portfólio
+        </a>
+        <h1 class="brand-title">
+          Alan Oliveira
+          <span class="badge-admin">Admin</span>
+        </h1>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-add" class="btn btn-primary" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Adicionar Vídeo
+        </button>
+
+        <button id="btn-save" class="btn btn-accent" type="button" title="Salva a ordem e visibilidade no navegador">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          Salvar no Navegador
+        </button>
+
+        <button id="btn-copy-code" class="btn" type="button" title="Gera o código para commit no GitHub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Copiar Código (GitHub)
+        </button>
+
+        <button id="btn-reset" class="btn btn-danger" type="button" title="Restaura os vídeos padrão originais">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+          Restaurar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo Principal -->
+  <main class="admin-main">
+    <!-- Banner de Orientação -->
+    <div class="info-banner">
+      <div class="info-text">
+        <strong>⠿ Arraste e Solte:</strong> Clique e arraste os cards para reorganizar a ordem de exibição exata no portfólio.
+        Use os botões de ligar/desligar para ocultar ou exibir itens sem precisar deletá-los.
+      </div>
+      <span id="save-status" style="font-size: 0.78rem; color: #4ade80;">● Sincronizado</span>
+    </div>
+
+    <!-- Barra de Filtro e Busca -->
+    <div class="admin-filter-bar">
+      <div class="filter-tabs">
+        <button type="button" class="tab-btn is-active" data-filter="all">todos</button>
+        <button type="button" class="tab-btn" data-filter="video">vídeo</button>
+        <button type="button" class="tab-btn" data-filter="design">design</button>
+        <button type="button" class="tab-btn" data-filter="ia">ia</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span id="stats-counter" class="stats-counter">Carregando itens...</span>
+        <input id="search-input" class="search-input" type="search" placeholder="Buscar por título ou tag..." />
+      </div>
+    </div>
+
+    <!-- Grade de Cards com Drag and Drop -->
+    <div id="cards-container" class="admin-cards-grid"></div>
+  </main>
+
+  <!-- Modal Adicionar / Editar Item -->
+  <div id="item-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title" class="modal-title">Adicionar Novo Vídeo</h3>
+        <button id="modal-close-btn" class="modal-close" type="button" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <form id="item-form" class="modal-body">
+        <input type="hidden" id="edit-index" value="-1" />
+
+        <div class="form-group">
+          <label class="form-label" for="input-yt-url">Link ou ID do YouTube</label>
+          <input id="input-yt-url" class="form-input" type="text" placeholder="Ex: https://youtube.com/shorts/aNsA0iwBbqc ou aNsA0iwBbqc" required />
+          <span class="form-hint">Aceita link completo de Shorts, vídeo comum ou apenas o ID de 11 caracteres.</span>
+        </div>
+
+        <!-- Preview da Thumbnail -->
+        <div id="thumb-preview-box" class="preview-box">
+          Cole o link do YouTube acima para pré-visualizar
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-title">Título do Projeto</label>
+          <input id="input-title" class="form-input" type="text" placeholder="Ex: Social Media — Edição Dinâmica" required />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label" for="input-aspect">Formato / Proporção</label>
+            <select id="input-aspect" class="form-select">
+              <option value="9:16">9:16 (Vertical Reels / Shorts)</option>
+              <option value="16:9">16:9 (Horizontal Widescreen)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-category">Categoria Principal</label>
+            <select id="input-category" class="form-select">
+              <option value="video">Vídeo</option>
+              <option value="ia">IA</option>
+              <option value="design">Design</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="input-tags">Subcategorias / Tags (separadas por vírgula)</label>
+          <input id="input-tags" class="form-input" type="text" placeholder="Ex: reels, social-media, fitness" />
+          <span class="form-hint">Opções comuns: reels, 16:9, social-media, fitness, institucional, viral, ugc</span>
+        </div>
+
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
+          <input id="input-visible" type="checkbox" checked style="accent-color: var(--accent); width: 16px; height: 16px;" />
+          <label class="form-label" for="input-visible" style="cursor: pointer; margin-bottom: 0;">Visível no portfólio</label>
+        </div>
+
+        <div class="modal-footer">
+          <button id="modal-cancel-btn" class="btn" type="button">Cancelar</button>
+          <button id="modal-submit-btn" class="btn btn-primary" type="submit">Salvar Vídeo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Exportar Código para o GitHub -->
+  <div id="code-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Código para Commit Permanente no GitHub</h3>
+        <button id="code-modal-close" class="modal-close" type="button" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: #d4d4d4; line-height: 1.5;">
+          Suas alterações já estão ativas no seu navegador! Se quiser que todos os visitantes do mundo vejam essa nova ordem no GitHub Pages, você pode copiar o array abaixo e colar no <code>PROJECTS</code> dentro de <code>index.html</code>:
+        </p>
+        <textarea id="code-output" class="code-textarea" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-copy-clipboard" class="btn btn-primary" type="button">
+          📋 Copiar para a Área de Transferência
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <span class="toast-icon">✓</span>
+    <span id="toast-msg">Alterações salvas!</span>
+  </div>
+
+  <script>
+    /**
+     * =========================================================================
+     * CATÁLOGO PADRÃO (FALLBACK)
+     * =========================================================================
+     */
+    const DEFAULT_PROJECTS = [
+      {
+        type: "video",
+        category: "video",
+        id: "aNsA0iwBbqc",
+        title: "Social Media — Edição Dinâmica",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Direção de Arte & Composição — Cinema",
+        image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-16-9",
+        tags: ["design", "editorial"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "hc9Rki1utnc",
+        title: "Social Media — Cortes",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "12uuS-EIivE",
+        title: "Aesthetic Gym",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "fitness"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Identidade Visual & Key Visual",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-3-2",
+        tags: ["design", "identidade"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "8lmrTdA1EsU",
+        title: "Social Media — Storytelling",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "ia",
+        title: "Cenário Editorial — IA Generativa",
+        image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-16-9",
+        tags: ["ia", "renders"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "cWRKCqN4UW4",
+        title: "Social Media — Criativo",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "cC3g1TvjrX0",
+        title: "Real Estate — Imobiliário",
+        aspect: "16:9",
+        ratio: "ratio-16-9",
+        tags: ["16:9", "comercial", "imobiliario"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Color Grading & Pós-Produção",
+        image: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-4-3",
+        tags: ["design", "editorial"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "TCaRDs6_cV0",
+        title: "Gym Workout — Social Media",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "fitness"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "Gau-fbkBrrw",
+        title: "UGC Campaigns - Brazil",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media", "ugc"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Direção Visual & Composição — Photoshop",
+        image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-4-3",
+        tags: ["design", "social-media"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "U45LaKKHQkU",
+        title: "Social Media — Retenção",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "8sODZhQfBAI",
+        title: "Comic Viral",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media", "viral"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Cinematografia & Framing",
+        image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-16-9",
+        tags: ["design", "editorial"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "ia",
+        id: "ZgsA0pQszPk",
+        title: "IA Video Render — Pós-Produção",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["ia", "video-ia", "reels"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "0GgqcRnrNhs",
+        title: "Social Media — Ritmo",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "social-media"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "ia",
+        title: "Síntese Visual & Motion IA",
+        image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-4-3",
+        tags: ["ia", "renders"],
+        visible: true
+      },
+      {
+        type: "video",
+        category: "video",
+        id: "R1g2IAmim6A",
+        title: "Medical Explainer Videos",
+        aspect: "9:16",
+        ratio: "ratio-9-16",
+        tags: ["reels", "institucional"],
+        visible: true
+      },
+      {
+        type: "design",
+        category: "design",
+        title: "Design Editorial para Grandes Formatos",
+        image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=85",
+        ratio: "ratio-16-9",
+        tags: ["design", "editorial"],
+        visible: true
+      }
+    ];
+
+    /**
+     * Estado da Aplicação Admin
+     */
+    const state = {
+      projects: [],
+      activeFilter: "all",
+      searchQuery: "",
+      dragSourceIndex: null
+    };
+
+    const STORAGE_KEY = "portfolio_projects";
+
+    // Carrega do LocalStorage ou Fallback
+    function loadProjects() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            state.projects = parsed.map(item => ({
+              ...item,
+              visible: item.visible !== false
+            }));
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn("Erro ao carregar projects do localStorage:", e);
+      }
+      state.projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+    }
+
+    // Salva no LocalStorage
+    function saveProjects(notify = true) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.projects));
+        const statusEl = document.getElementById("save-status");
+        if (statusEl) statusEl.textContent = "● Salvo no Navegador";
+        if (notify) showToast("Alterações salvas com sucesso!");
+      } catch (e) {
+        console.error("Erro ao salvar:", e);
+        showToast("Erro ao salvar no armazenamento local!");
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      const msg = document.getElementById("toast-msg");
+      if (!toast || !msg) return;
+      msg.textContent = message;
+      toast.classList.add("is-visible");
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => {
+        toast.classList.remove("is-visible");
+      }, 2500);
+    }
+
+    /**
+     * Renderização dos Cards com Drag and Drop
+     */
+    function renderCards() {
+      const container = document.getElementById("cards-container");
+      if (!container) return;
+      container.innerHTML = "";
+
+      let filtered = state.projects.map((item, originalIndex) => ({ item, originalIndex }));
+
+      if (state.activeFilter !== "all") {
+        filtered = filtered.filter(({ item }) => item.category === state.activeFilter);
+      }
+
+      if (state.searchQuery.trim()) {
+        const q = state.searchQuery.toLowerCase();
+        filtered = filtered.filter(({ item }) =>
+          (item.title || "").toLowerCase().includes(q) ||
+          (item.tags || []).some(t => t.toLowerCase().includes(q))
+        );
+      }
+
+      // Atualiza contador
+      const total = state.projects.length;
+      const visibleCount = state.projects.filter(p => p.visible !== false).length;
+      const counterEl = document.getElementById("stats-counter");
+      if (counterEl) {
+        counterEl.textContent = `${visibleCount} de ${total} visíveis (${filtered.length} exibidos)`;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 48px; text-align: center; color: var(--muted); background: var(--surface); border-radius: 8px;">
+            Nenhum projeto encontrado para o filtro atual.
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(({ item, originalIndex }) => {
+        const isVideo = item.type === "video";
+        const isVisible = item.visible !== false;
+        const thumbUrl = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
+          : item.image;
+
+        const card = document.createElement("div");
+        card.className = `admin-card ${!isVisible ? "is-hidden-project" : ""}`;
+        card.dataset.index = originalIndex;
+        card.setAttribute("draggable", "true");
+
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="drag-handle" title="Arraste para mover">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="9" cy="6" r="1.5"></circle>
+                <circle cx="15" cy="6" r="1.5"></circle>
+                <circle cx="9" cy="12" r="1.5"></circle>
+                <circle cx="15" cy="12" r="1.5"></circle>
+                <circle cx="9" cy="18" r="1.5"></circle>
+                <circle cx="15" cy="18" r="1.5"></circle>
+              </svg>
+              #${originalIndex + 1}
+            </span>
+
+            <label class="visibility-toggle" title="Mostrar/Ocultar no Portfólio">
+              <span>${isVisible ? "Visível" : "Oculto"}</span>
+              <input type="checkbox" class="toggle-vis-input" ${isVisible ? "checked" : ""} />
+            </label>
+          </div>
+
+          <div class="card-thumb-wrap">
+            <img class="card-thumb" src="${thumbUrl}" alt="${item.title}" loading="lazy" />
+            <div class="card-badges">
+              <span class="badge-pill ${item.aspect === "9:16" || item.ratio === "ratio-9-16" ? "badge-reels" : "badge-widescreen"}">
+                ${item.aspect === "9:16" || item.ratio === "ratio-9-16" ? "9:16 Reels" : "16:9 Wide"}
+              </span>
+              <span class="badge-pill">${item.category || item.type}</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h4 class="card-title">${item.title}</h4>
+            <div class="card-meta">
+              ${(item.tags || []).map(t => `<span class="tag-badge">#${t}</span>`).join("")}
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="move-btn-group">
+              <button class="icon-btn btn-move-up" type="button" title="Mover para cima" ${originalIndex === 0 ? "disabled style='opacity:0.3;cursor:not-allowed;'" : ""}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+              </button>
+              <button class="icon-btn btn-move-down" type="button" title="Mover para baixo" ${originalIndex === state.projects.length - 1 ? "disabled style='opacity:0.3;cursor:not-allowed;'" : ""}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 6px;">
+              <button class="icon-btn btn-edit-item" type="button" title="Editar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button class="icon-btn danger btn-delete-item" type="button" title="Excluir">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </div>
+        `;
+
+        // Toggle Visibilidade
+        const toggleInput = card.querySelector(".toggle-vis-input");
+        toggleInput.addEventListener("change", (e) => {
+          item.visible = e.target.checked;
+          saveProjects(false);
+          renderCards();
+          showToast(item.visible ? "Vídeo ativado no portfólio!" : "Vídeo ocultado do portfólio!");
+        });
+
+        // Botões de Mover ↑ / ↓
+        const btnUp = card.querySelector(".btn-move-up");
+        btnUp.addEventListener("click", () => moveItem(originalIndex, originalIndex - 1));
+
+        const btnDown = card.querySelector(".btn-move-down");
+        btnDown.addEventListener("click", () => moveItem(originalIndex, originalIndex + 1));
+
+        // Botão Editar
+        const btnEdit = card.querySelector(".btn-edit-item");
+        btnEdit.addEventListener("click", () => openEditModal(originalIndex));
+
+        // Botão Excluir
+        const btnDel = card.querySelector(".btn-delete-item");
+        btnDel.addEventListener("click", () => deleteItem(originalIndex));
+
+        // Drag & Drop Handlers
+        setupCardDragEvents(card, originalIndex);
+
+        container.appendChild(card);
+      });
+    }
+
+    /**
+     * Lógica de Drag and Drop
+     */
+    function setupCardDragEvents(card, index) {
+      card.addEventListener("dragstart", (e) => {
+        state.dragSourceIndex = index;
+        card.classList.add("is-dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index);
+      });
+
+      card.addEventListener("dragend", () => {
+        card.classList.remove("is-dragging");
+        document.querySelectorAll(".admin-card").forEach(c => c.classList.remove("drag-over-active"));
+        state.dragSourceIndex = null;
+      });
+
+      card.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+      });
+
+      card.addEventListener("dragenter", () => {
+        if (state.dragSourceIndex !== null && state.dragSourceIndex !== index) {
+          card.classList.add("drag-over-active");
+        }
+      });
+
+      card.addEventListener("dragleave", () => {
+        card.classList.remove("drag-over-active");
+      });
+
+      card.addEventListener("drop", (e) => {
+        e.preventDefault();
+        card.classList.remove("drag-over-active");
+        const sourceIndex = state.dragSourceIndex;
+        if (sourceIndex === null || sourceIndex === index) return;
+
+        // Reorganiza o array
+        const draggedItem = state.projects.splice(sourceIndex, 1)[0];
+        state.projects.splice(index, 0, draggedItem);
+
+        saveProjects(false);
+        renderCards();
+        showToast(`Item movido para a posição #${index + 1}!`);
+      });
+    }
+
+    function moveItem(fromIndex, toIndex) {
+      if (toIndex < 0 || toIndex >= state.projects.length) return;
+      const item = state.projects.splice(fromIndex, 1)[0];
+      state.projects.splice(toIndex, 0, item);
+      saveProjects(false);
+      renderCards();
+      showToast(`Item movido para a posição #${toIndex + 1}!`);
+    }
+
+    function deleteItem(index) {
+      const item = state.projects[index];
+      if (!confirm(`Deseja realmente excluir "${item.title}"?`)) return;
+      state.projects.splice(index, 1);
+      saveProjects(false);
+      renderCards();
+      showToast("Item excluído com sucesso!");
+    }
+
+    /**
+     * Extração Inteligente de ID do YouTube
+     */
+    function extractYouTubeId(urlOrId) {
+      if (!urlOrId) return "";
+      const cleaned = urlOrId.trim();
+      if (/^[a-zA-Z0-9_-]{11}$/.test(cleaned)) {
+        return cleaned;
+      }
+      const match = cleaned.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : cleaned;
+    }
+
+    /**
+     * Modal de Adicionar / Editar
+     */
+    const itemModal = document.getElementById("item-modal");
+    const itemForm = document.getElementById("item-form");
+    const editIndexInput = document.getElementById("edit-index");
+    const modalTitle = document.getElementById("modal-title");
+    const inputYt = document.getElementById("input-yt-url");
+    const inputTitle = document.getElementById("input-title");
+    const inputAspect = document.getElementById("input-aspect");
+    const inputCategory = document.getElementById("input-category");
+    const inputTags = document.getElementById("input-tags");
+    const inputVisible = document.getElementById("input-visible");
+    const thumbPreviewBox = document.getElementById("thumb-preview-box");
+
+    function updateThumbPreview() {
+      const id = extractYouTubeId(inputYt.value);
+      if (id && id.length === 11) {
+        thumbPreviewBox.innerHTML = `
+          <img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="Preview" onerror="this.src='https://i.ytimg.com/vi/${id}/sddefault.jpg'" />
+        `;
+      } else {
+        thumbPreviewBox.innerHTML = "Cole o link do YouTube acima para pré-visualizar";
+      }
+    }
+
+    inputYt.addEventListener("input", updateThumbPreview);
+
+    function openAddModal() {
+      editIndexInput.value = "-1";
+      modalTitle.textContent = "Adicionar Novo Vídeo";
+      itemForm.reset();
+      inputVisible.checked = true;
+      updateThumbPreview();
+      itemModal.classList.add("is-open");
+      inputYt.focus();
+    }
+
+    function openEditModal(index) {
+      const item = state.projects[index];
+      if (!item) return;
+      editIndexInput.value = index;
+      modalTitle.textContent = "Editar Item";
+      inputYt.value = item.id || item.image || "";
+      inputTitle.value = item.title || "";
+      inputAspect.value = item.aspect || (item.ratio === "ratio-16-9" ? "16:9" : "9:16");
+      inputCategory.value = item.category || "video";
+      inputTags.value = (item.tags || []).join(", ");
+      inputVisible.checked = item.visible !== false;
+      updateThumbPreview();
+      itemModal.classList.add("is-open");
+      inputTitle.focus();
+    }
+
+    function closeModal() {
+      itemModal.classList.remove("is-open");
+    }
+
+    itemForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rawYt = inputYt.value.trim();
+      const ytId = extractYouTubeId(rawYt);
+      const title = inputTitle.value.trim();
+      const aspect = inputAspect.value;
+      const category = inputCategory.value;
+      const visible = inputVisible.checked;
+      const tags = inputTags.value
+        .split(",")
+        .map(t => t.trim().toLowerCase().replace(/^#/, ""))
+        .filter(Boolean);
+
+      const ratio = aspect === "9:16" ? "ratio-9-16" : "ratio-16-9";
+      const index = parseInt(editIndexInput.value, 10);
+
+      const itemData = {
+        type: category === "design" ? "design" : "video",
+        category,
+        title,
+        aspect,
+        ratio,
+        tags,
+        visible
+      };
+
+      if (itemData.type === "video") {
+        itemData.id = ytId;
+      } else {
+        itemData.image = rawYt;
+      }
+
+      if (index >= 0) {
+        state.projects[index] = { ...state.projects[index], ...itemData };
+        showToast("Vídeo atualizado com sucesso!");
+      } else {
+        state.projects.unshift(itemData); // Adiciona no início da lista
+        showToast("Vídeo adicionado no topo da lista!");
+      }
+
+      saveProjects(false);
+      renderCards();
+      closeModal();
+    });
+
+    /**
+     * Modal de Código (GitHub)
+     */
+    const codeModal = document.getElementById("code-modal");
+    const codeOutput = document.getElementById("code-output");
+
+    function openCodeModal() {
+      const cleanArray = state.projects.map(p => {
+        const copy = { ...p };
+        if (copy.visible === true) delete copy.visible;
+        return copy;
+      });
+
+      codeOutput.value = "PROJECTS: " + JSON.stringify(cleanArray, null, 2);
+      codeModal.classList.add("is-open");
+    }
+
+    document.getElementById("btn-copy-clipboard").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(codeOutput.value);
+        showToast("Código copiado para a Área de Transferência!");
+      } catch (err) {
+        codeOutput.select();
+        document.execCommand("copy");
+        showToast("Código copiado!");
+      }
+    });
+
+    /**
+     * Event Listeners
+     */
+    document.getElementById("btn-add").addEventListener("click", openAddModal);
+    document.getElementById("modal-close-btn").addEventListener("click", closeModal);
+    document.getElementById("modal-cancel-btn").addEventListener("click", closeModal);
+
+    document.getElementById("btn-save").addEventListener("click", () => saveProjects(true));
+    document.getElementById("btn-copy-code").addEventListener("click", openCodeModal);
+    document.getElementById("code-modal-close").addEventListener("click", () => codeModal.classList.remove("is-open"));
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      if (!confirm("Tem certeza que deseja restaurar a lista original de projetos? Todas as alterações manuais serão perdidas.")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      state.projects = JSON.parse(JSON.stringify(DEFAULT_PROJECTS));
+      renderCards();
+      showToast("Portfólio restaurado para o padrão original!");
+    });
+
+    // Filtros de Categoria
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        state.activeFilter = btn.dataset.filter;
+        renderCards();
+      });
+    });
+
+    // Busca
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      state.searchQuery = e.target.value;
+      renderCards();
+    });
+
+    // Fechar modais ao clicar no backdrop
+    [itemModal, codeModal].forEach(m => {
+      m.addEventListener("click", (e) => {
+        if (e.target === m) m.classList.remove("is-open");
+      });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+        codeModal.classList.remove("is-open");
+      }
+    });
+
+    // Inicialização
+    document.addEventListener("DOMContentLoaded", () => {
+      loadProjects();
+      renderCards();
+    });
+  </script>
+</body>
+</html>

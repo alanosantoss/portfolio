@@ -151,6 +151,51 @@ for (const feature of inlineFeatures) {
 }
 console.log('PASS: Reprodução de vídeo inline e otimizações de nitidez validadas.');
 
+// 9. Verificação do Painel Admin e Suporte a Drag & Drop
+const adminPath = path.join(__dirname, '..', 'admin.html');
+if (!fs.existsSync(adminPath)) {
+  console.error('FAIL: admin.html não foi encontrado!');
+  process.exit(1);
+}
+const adminHtml = fs.readFileSync(adminPath, 'utf8');
+
+const adminRequired = [
+  'draggable',
+  'dataTransfer',
+  'dragstart',
+  'drop',
+  'portfolio_projects',
+  'btn-add',
+  'btn-save',
+  'btn-copy-code'
+];
+for (const req of adminRequired) {
+  if (!adminHtml.includes(req)) {
+    console.error(`FAIL: Recurso do admin ausente: "${req}"`);
+    process.exit(1);
+  }
+}
+
+// Verifica sintaxe do JS no admin.html
+const adminScriptMatch = adminHtml.match(/<script>([\s\S]*?)<\/script>/i);
+if (!adminScriptMatch || !adminScriptMatch[1]) {
+  console.error('FAIL: Script não encontrado no admin.html!');
+  process.exit(1);
+}
+try {
+  new vm.Script(adminScriptMatch[1]);
+  console.log('PASS: Painel Admin (admin.html), Drag & Drop e sintaxe JS validados.');
+} catch (err) {
+  console.error('FAIL: Erro de sintaxe no JavaScript do admin.html:', err.message);
+  process.exit(1);
+}
+
+if (!html.includes('admin.html') || !html.includes('portfolio_projects')) {
+  console.error('FAIL: Integração com admin.html ou portfolio_projects ausente no index.html!');
+  process.exit(1);
+}
+console.log('PASS: index.html integrado ao Painel Admin e localStorage.');
+
 console.log('=============================================');
-console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (8/8)');
+console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (9/9)');
 console.log('=============================================');
