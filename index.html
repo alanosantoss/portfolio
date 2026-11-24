@@ -265,14 +265,13 @@
     }
 
     .masonry-grid {
-      column-count: 4;
-      column-gap: var(--gap);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--gap);
+      align-items: start;
     }
 
     .masonry-item {
-      break-inside: avoid;
-      -webkit-column-break-inside: avoid;
-      margin-bottom: var(--gap);
       position: relative;
       display: block;
       width: 100%;
@@ -761,12 +760,9 @@
     ========================================================================= */
     @media (max-width: 1200px) {
       .masonry-grid {
-        column-count: 4;
-        column-gap: 16px;
-      }
-
-      .masonry-item {
-        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
       }
     }
 
@@ -780,12 +776,9 @@
       }
 
       .masonry-grid {
-        column-count: 3;
-        column-gap: 14px;
-      }
-
-      .masonry-item {
-        margin-bottom: 14px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
       }
 
       .lightbox {
@@ -835,12 +828,9 @@
       }
 
       .masonry-grid {
-        column-count: 2;
-        column-gap: 12px;
-      }
-
-      .masonry-item {
-        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
 
       .about-section {
@@ -884,12 +874,9 @@
 
     @media (max-width: 480px) {
       .masonry-grid {
-        column-count: 1;
-        column-gap: 0;
-      }
-
-      .masonry-item {
-        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
       }
     }
   </style>
@@ -1098,7 +1085,7 @@
 
       // Catálogo Intercalado (Vídeos e Fotos mesclados para harmonia nas 3 colunas)
       PROJECTS: [
-        // --- BLOCO COLUNA 1 ---
+        // --- BLOCO 1 ---
         {
           type: "video",
           category: "video",
@@ -1107,6 +1094,14 @@
           aspect: "9:16",
           ratio: "ratio-9-16",
           tags: ["reels", "social-media"]
+        },
+        {
+          type: "design",
+          category: "ia",
+          title: "Cenário Editorial — IA Generativa",
+          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+          tags: ["ia", "renders"]
         },
         {
           type: "design",
@@ -1151,16 +1146,6 @@
           ratio: "ratio-9-16",
           tags: ["reels", "social-media"]
         },
-        {
-          type: "design",
-          category: "ia",
-          title: "Cenário Editorial — IA Generativa",
-          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
-          ratio: "ratio-16-9",
-          tags: ["ia", "renders"]
-        },
-
-        // --- BLOCO COLUNA 2 ---
         {
           type: "video",
           category: "video",
@@ -1504,7 +1489,7 @@
       }
 
       aboutSection.classList.remove("is-visible");
-      galleryGrid.style.display = "block";
+      galleryGrid.style.display = "";
       galleryGrid.innerHTML = "";
 
       const items = getFilteredItems();
@@ -1745,6 +1730,13 @@
         renderSubNav();
         renderGallery();
       }
+
+      // Sincronização em tempo real entre abas (Admin -> Portfólio)
+      window.addEventListener("storage", (e) => {
+        if (e.key === "portfolio_projects") {
+          renderGallery();
+        }
+      });
     });
   </script>
 </body>
