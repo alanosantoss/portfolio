@@ -23,14 +23,15 @@ const requiredTags = [
   '<meta name="viewport"',
   '<title>',
   'class="site-header"',
-  'id="videos"',
-  'id="video-grid"',
+  'class="brand"',
+  'class="nav-links"',
+  'id="gallery-grid"',
+  'id="about-section"',
   'id="lightbox"',
   'id="lightbox-content"',
   'id="lightbox-close"',
   'id="lightbox-prev"',
-  'id="lightbox-next"',
-  'class="site-footer"'
+  'id="lightbox-next"'
 ];
 
 for (const tag of requiredTags) {
