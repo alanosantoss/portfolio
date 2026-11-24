@@ -292,7 +292,7 @@
 
     /* Proporções cinematográficas */
     .ratio-16-9  { aspect-ratio: 16 / 9; }
-    .ratio-9-16  { aspect-ratio: 4 / 5; } /* Retrato compacto na grade, sem barras pretas */
+    .ratio-9-16  { aspect-ratio: 9 / 16; } /* Reels vertical 9:16 sem bordas pretas */
     .ratio-4-3   { aspect-ratio: 4 / 3; }
     .ratio-21-9  { aspect-ratio: 21 / 9; }
     .ratio-3-2   { aspect-ratio: 3 / 2; }
@@ -306,8 +306,18 @@
       transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
     }
 
+    /* Leve zoom para eliminar 100% de qualquer borda preta residual de miniaturas do YouTube */
+    .ratio-9-16 .masonry-media {
+      transform: scale(1.035);
+    }
+
     .masonry-item:hover .masonry-media {
       transform: scale(1.025);
+      filter: brightness(0.85);
+    }
+
+    .ratio-9-16:hover .masonry-media {
+      transform: scale(1.065);
       filter: brightness(0.85);
     }
 
@@ -468,9 +478,10 @@
       transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Formato Vertical Reels no Lightbox — Compacto e Sem Bordas Pretas */
+    /* Formato Vertical Reels no Lightbox — Proporção Estrita 9:16 Sem Bordas */
     .lightbox-stage.is-vertical {
-      max-width: 330px;
+      width: auto;
+      max-width: 90vw;
     }
 
     .lightbox-video-wrap {
@@ -484,9 +495,10 @@
     }
 
     .lightbox-video-wrap.is-vertical {
+      height: min(74vh, calc(88vw * 16 / 9));
+      width: min(calc(74vh * 9 / 16), 88vw);
       aspect-ratio: 9 / 16;
-      max-height: 72vh;
-      border-radius: 16px;
+      border-radius: 14px;
       margin: 0 auto;
     }
 
