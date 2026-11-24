@@ -414,15 +414,32 @@
       aspect-ratio: 16 / 9;
       background-color: #000000;
       position: relative;
+      overflow: hidden;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      border-radius: 4px;
     }
 
+    /* Oculta a barra superior (avatar e título do canal do YouTube) */
     .lightbox-video-wrap iframe {
       position: absolute;
-      inset: 0;
+      top: -11%;
+      left: 0;
       width: 100%;
-      height: 100%;
+      height: 112%;
       border: 0;
+    }
+
+    /* Cobre a logo do YouTube no canto inferior direito */
+    .lightbox-video-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 86px;
+      height: 44px;
+      background: #000000;
+      pointer-events: none;
+      z-index: 2;
     }
 
     .lightbox-image-wrap {
@@ -438,41 +455,6 @@
       object-fit: contain;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
       display: block;
-    }
-
-    .lightbox-caption {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.84rem;
-      color: var(--muted);
-      padding: 0 2px;
-    }
-
-    .lightbox-title {
-      color: #ffffff;
-      font-weight: 400;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .lightbox-yt-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
-      padding: 2px 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      color: var(--muted);
-      transition: all var(--transition);
-    }
-
-    .lightbox-yt-btn:hover {
-      background: #ff0000;
-      color: #ffffff;
     }
 
     .lightbox-close {
@@ -688,10 +670,6 @@
 
     <div class="lightbox-stage">
       <div id="lightbox-content"></div>
-      <div class="lightbox-caption">
-        <div id="lightbox-title" class="lightbox-title"></div>
-        <span id="lightbox-counter"></span>
-      </div>
     </div>
 
     <button id="lightbox-next" class="lightbox-nav lightbox-next" type="button" aria-label="Próximo">
@@ -778,8 +756,6 @@
     const navButtons = document.querySelectorAll(".nav-btn");
     const lightbox = document.getElementById("lightbox");
     const lightboxContent = document.getElementById("lightbox-content");
-    const lightboxTitle = document.getElementById("lightbox-title");
-    const lightboxCounter = document.getElementById("lightbox-counter");
 
     /**
      * 1. Inicializa contatos
@@ -953,7 +929,8 @@
 
       if (item.type === "video") {
         lightboxContent.className = "lightbox-video-wrap";
-        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        // cc_load_policy=0 desativa legendas automáticas; iv_load_policy=3 desativa anotações; modestbranding=1
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
 
         lightboxContent.innerHTML = `
           <iframe
@@ -964,28 +941,12 @@
             referrerpolicy="strict-origin-when-cross-origin"
           ></iframe>
         `;
-
-        const ytWatchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(item.id)}`;
-        lightboxTitle.innerHTML = `
-          <span>${item.title}</span>
-          <a href="${ytWatchUrl}" target="_blank" rel="noopener noreferrer" class="lightbox-yt-btn" title="Assistir no YouTube">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-            YouTube
-          </a>
-        `;
       } else {
         lightboxContent.className = "lightbox-image-wrap";
         lightboxContent.innerHTML = `
           <img class="lightbox-image" src="${item.image}" alt="${item.title}" />
         `;
-        lightboxTitle.innerHTML = `<span>${item.title}</span>`;
       }
-
-      lightboxCounter.textContent = `${state.lightboxIndex + 1} / ${state.currentItems.length}`;
     }
 
     function openLightbox(index) {
