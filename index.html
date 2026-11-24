@@ -23,6 +23,75 @@
   <!-- Favicon Monograma Minimalista -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d0d0d'/><polygon points='38,30 72,50 38,70' fill='%23ffffff'/></svg>" />
 
+  <!-- Dados Estruturados Schema.org (Google SEO & Rich Results) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://alanosantoss.github.io/portfolio/#person",
+        "name": "Alan Oliveira",
+        "jobTitle": "Editor de Vídeo & Motion Designer",
+        "description": "Especialista em edição dinâmica, pós-produção e narrativas visuais para redes sociais, campanhas e comerciais.",
+        "url": "https://alanosantoss.github.io/portfolio/",
+        "sameAs": [
+          "https://github.com/alanosantoss"
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "item": {
+              "@type": "VideoObject",
+              "name": "Social Media — Edição Dinâmica",
+              "description": "Edição de vídeo para redes sociais por Alan Oliveira",
+              "thumbnailUrl": "https://i.ytimg.com/vi/8lmrTdA1EsU/maxresdefault.jpg",
+              "embedUrl": "https://www.youtube-nocookie.com/embed/8lmrTdA1EsU"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "item": {
+              "@type": "VideoObject",
+              "name": "Social Media — Cortes & Ritmo",
+              "description": "Cortes dinâmicos e ritmo audiovisual",
+              "thumbnailUrl": "https://i.ytimg.com/vi/0GgqcRnrNhs/maxresdefault.jpg",
+              "embedUrl": "https://www.youtube-nocookie.com/embed/0GgqcRnrNhs"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "item": {
+              "@type": "VideoObject",
+              "name": "UGC Campaigns - Brazil",
+              "description": "Campanhas UGC e direção criativa",
+              "thumbnailUrl": "https://i.ytimg.com/vi/Gau-fbkBrrw/maxresdefault.jpg",
+              "embedUrl": "https://www.youtube-nocookie.com/embed/Gau-fbkBrrw"
+            }
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "item": {
+              "@type": "VideoObject",
+              "name": "Medical Explainer Videos",
+              "description": "Vídeo institucional e explicativo",
+              "thumbnailUrl": "https://i.ytimg.com/vi/R1g2IAmim6A/maxresdefault.jpg",
+              "embedUrl": "https://www.youtube-nocookie.com/embed/R1g2IAmim6A"
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
   <!-- Google Fonts: Plus Jakarta Sans & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -39,6 +108,15 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
 
     :root {
