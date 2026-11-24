@@ -66,8 +66,8 @@
       --text: #ffffff;
       --muted: #999999;
       --muted-hover: #e5e5e5;
-      --gap: 28px;
-      --max-width: 1440px;
+      --gap: 22px;
+      --max-width: 1220px;
       --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
@@ -235,7 +235,7 @@
 
     /* Proporções cinematográficas alternadas */
     .ratio-16-9  { aspect-ratio: 16 / 9; }
-    .ratio-9-16  { aspect-ratio: 9 / 16; }
+    .ratio-9-16  { aspect-ratio: 4 / 5; } /* Retrato editorial compacto na grade */
     .ratio-4-3   { aspect-ratio: 4 / 3; }
     .ratio-21-9  { aspect-ratio: 21 / 9; }
     .ratio-3-2   { aspect-ratio: 3 / 2; }
@@ -403,7 +403,7 @@
 
     .lightbox-stage {
       width: 100%;
-      max-width: 1140px;
+      max-width: 940px;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -411,9 +411,9 @@
       transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Formato Vertical Reels no Lightbox */
+    /* Formato Vertical Reels no Lightbox — Compacto e Elegante */
     .lightbox-stage.is-vertical {
-      max-width: 440px;
+      max-width: 330px;
     }
 
     .lightbox-video-wrap {
@@ -428,8 +428,8 @@
 
     .lightbox-video-wrap.is-vertical {
       aspect-ratio: 9 / 16;
-      max-height: 86vh;
-      border-radius: 14px;
+      max-height: 72vh;
+      border-radius: 16px;
       margin: 0 auto;
     }
 
