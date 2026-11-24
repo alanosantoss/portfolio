@@ -106,13 +106,21 @@
     }
 
     /* =========================================================================
-       CABEÇALHO EM LINHA ÚNICA COM FILTROS EMBUTIDOS
+       CABEÇALHO EDITORIAL EM 2 NÍVEIS (DIVISÕES PRINCIPAIS + SUBCATEGORIAS)
     ========================================================================= */
     .site-header {
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto;
-      padding: 40px 40px 44px;
+      padding: 38px 40px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-top {
+      width: 100%;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
@@ -139,11 +147,11 @@
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 22px;
+      gap: 26px;
     }
 
     .nav-btn {
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       font-weight: 400;
       color: var(--muted);
       letter-spacing: -0.01em;
@@ -159,6 +167,7 @@
 
     .nav-btn.is-active {
       color: #ffffff;
+      font-weight: 500;
     }
 
     .nav-btn.is-active::after {
@@ -167,8 +176,49 @@
       left: 0;
       right: 0;
       bottom: -2px;
-      height: 1px;
+      height: 1.5px;
       background-color: #ffffff;
+    }
+
+    /* Subcategorias / Filtros dinâmicos (Linha Inferior) */
+    .sub-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 28px;
+      transition: opacity var(--transition);
+    }
+
+    .sub-nav.is-hidden {
+      display: none;
+    }
+
+    .sub-btn {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid transparent;
+      transition: all var(--transition);
+      text-transform: lowercase;
+    }
+
+    .sub-btn:hover {
+      color: var(--muted-hover);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .sub-btn.is-active {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.22);
+      font-weight: 500;
     }
 
     .social-links {
@@ -537,12 +587,16 @@
 
     @media (max-width: 768px) {
       .site-header {
-        padding: 24px 20px 28px;
+        padding: 24px 20px 20px;
+        gap: 14px;
+      }
+
+      .header-top {
         grid-template-columns: 1fr auto;
         grid-template-areas:
           "brand social"
           "nav nav";
-        row-gap: 16px;
+        row-gap: 14px;
       }
 
       .brand {
@@ -556,8 +610,12 @@
 
       .nav-links {
         grid-area: nav;
-        justify-self: start;
-        gap: 16px;
+        justify-self: center;
+        gap: 18px;
+      }
+
+      .sub-nav {
+        gap: 8px;
       }
 
       .main-container {
@@ -600,46 +658,51 @@
 <body>
 
   <!-- =========================================================================
-       CABEÇALHO COM FILTROS EMBUTIDOS (EDITORIAL MINIMALISTA)
+       CABEÇALHO EDITORIAL EM 2 NÍVEIS (DIVISÕES PRINCIPAIS + SUBCATEGORIAS)
   ========================================================================== -->
   <header class="site-header">
-    <a href="#home" class="brand" id="brand-home">Alan Oliveira</a>
+    <div class="header-top">
+      <a href="#home" class="brand" id="brand-home">Alan Oliveira</a>
 
-    <nav class="nav-links" aria-label="Navegação e filtros">
-      <button type="button" class="nav-btn is-active" data-filter="all">home</button>
-      <button type="button" class="nav-btn" data-filter="reels">reels</button>
-      <button type="button" class="nav-btn" data-filter="16:9">16:9</button>
-      <button type="button" class="nav-btn" data-filter="fitness">fitness</button>
-      <button type="button" class="nav-btn" data-filter="ia">ia</button>
-      <button type="button" class="nav-btn" data-filter="sobre">sobre</button>
-    </nav>
+      <!-- Linha Superior (Divisões Principais): Home, Vídeo, Design, IA, Sobre -->
+      <nav class="nav-links" id="category-nav" aria-label="Divisões principais">
+        <button type="button" class="nav-btn is-active" data-category="home">home</button>
+        <button type="button" class="nav-btn" data-category="video">vídeo</button>
+        <button type="button" class="nav-btn" data-category="design">design</button>
+        <button type="button" class="nav-btn" data-category="ia">ia</button>
+        <button type="button" class="nav-btn" data-category="sobre">sobre</button>
+      </nav>
 
-    <div class="social-links" aria-label="Redes sociais">
-      <!-- WhatsApp -->
-      <a id="social-whatsapp" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-        </svg>
-      </a>
+      <div class="social-links" aria-label="Redes sociais">
+        <!-- WhatsApp -->
+        <a id="social-whatsapp" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+        </a>
 
-      <!-- Instagram -->
-      <a id="social-instagram" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2.5" y="2.5" width="19" height="19" rx="5"></rect>
-          <circle cx="12" cy="12" r="4.2"></circle>
-          <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"></circle>
-        </svg>
-      </a>
+        <!-- Instagram -->
+        <a id="social-instagram" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5"></rect>
+            <circle cx="12" cy="12" r="4.2"></circle>
+            <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"></circle>
+          </svg>
+        </a>
 
-      <!-- LinkedIn -->
-      <a id="social-linkedin" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-          <rect x="2" y="9" width="4" height="12"></rect>
-          <circle cx="4" cy="4" r="2"></circle>
-        </svg>
-      </a>
+        <!-- LinkedIn -->
+        <a id="social-linkedin" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+        </a>
+      </div>
     </div>
+
+    <!-- Linha Inferior: Subcategorias / Filtros dinâmicos que aparecem ao entrar na categoria -->
+    <nav class="sub-nav" id="sub-nav" aria-label="Filtros de subcategoria"></nav>
   </header>
 
   <!-- =========================================================================
@@ -706,11 +769,12 @@
       INSTAGRAM_URL: "https://instagram.com/seuusuario",
       LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
 
-      // Galeria Completa com Tags de Nicho e Proporção
+      // Catálogo com Categorias Principais (Vídeo, Design, IA) e Subtags
       PROJECTS: [
-        // 9:16 Reels
+        // --- VÍDEOS (9:16 Reels) ---
         {
           type: "video",
+          category: "video",
           id: "aNsA0iwBbqc",
           title: "Social Media — Edição Dinâmica",
           aspect: "9:16",
@@ -719,6 +783,7 @@
         },
         {
           type: "video",
+          category: "video",
           id: "hc9Rki1utnc",
           title: "Social Media — Cortes",
           aspect: "9:16",
@@ -727,6 +792,7 @@
         },
         {
           type: "video",
+          category: "video",
           id: "cWRKCqN4UW4",
           title: "Social Media — Criativo",
           aspect: "9:16",
@@ -735,6 +801,7 @@
         },
         {
           type: "video",
+          category: "video",
           id: "U45LaKKHQkU",
           title: "Social Media — Retenção",
           aspect: "9:16",
@@ -743,6 +810,7 @@
         },
         {
           type: "video",
+          category: "video",
           id: "12uuS-EIivE",
           title: "Aesthetic Gym",
           aspect: "9:16",
@@ -751,14 +819,16 @@
         },
         {
           type: "video",
+          category: "video",
           id: "8sODZhQfBAI",
           title: "Comic Viral",
           aspect: "9:16",
           ratio: "ratio-9-16",
-          tags: ["reels", "viral"]
+          tags: ["reels", "social-media", "viral"]
         },
         {
           type: "video",
+          category: "video",
           id: "TCaRDs6_cV0",
           title: "Gym Workout — Social Media",
           aspect: "9:16",
@@ -767,24 +837,7 @@
         },
         {
           type: "video",
-          id: "ZgsA0pQszPk",
-          title: "IA Video Render",
-          aspect: "9:16",
-          ratio: "ratio-9-16",
-          tags: ["reels", "ia"]
-        },
-        // 16:9 Widescreen
-        {
-          type: "video",
-          id: "cC3g1TvjrX0",
-          title: "Real Estate — Imobiliário",
-          aspect: "16:9",
-          ratio: "ratio-16-9",
-          tags: ["16:9", "comercial", "imobiliario"]
-        },
-        // Vídeos adicionais de alto impacto
-        {
-          type: "video",
+          category: "video",
           id: "8lmrTdA1EsU",
           title: "Social Media — Storytelling",
           aspect: "9:16",
@@ -793,6 +846,7 @@
         },
         {
           type: "video",
+          category: "video",
           id: "0GgqcRnrNhs",
           title: "Social Media — Ritmo",
           aspect: "9:16",
@@ -801,26 +855,123 @@
         },
         {
           type: "video",
+          category: "video",
           id: "Gau-fbkBrrw",
           title: "UGC Campaigns - Brazil",
           aspect: "9:16",
           ratio: "ratio-9-16",
-          tags: ["reels", "ugc", "social-media"]
+          tags: ["reels", "social-media", "ugc"]
         },
         {
           type: "video",
+          category: "video",
           id: "R1g2IAmim6A",
           title: "Medical Explainer Videos",
           aspect: "9:16",
           ratio: "ratio-9-16",
           tags: ["reels", "institucional"]
+        },
+
+        // --- VÍDEOS (16:9 Widescreen) ---
+        {
+          type: "video",
+          category: "video",
+          id: "cC3g1TvjrX0",
+          title: "Real Estate — Imobiliário",
+          aspect: "16:9",
+          ratio: "ratio-16-9",
+          tags: ["16:9", "comercial", "imobiliario"]
+        },
+
+        // --- IA (Inteligência Artificial) ---
+        {
+          type: "video",
+          category: "ia",
+          id: "ZgsA0pQszPk",
+          title: "IA Video Render — Pós-Produção",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["ia", "video-ia", "reels"]
+        },
+        {
+          type: "design",
+          category: "ia",
+          title: "Cenário Editorial — IA Generativa",
+          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+          tags: ["ia", "renders"]
+        },
+        {
+          type: "design",
+          category: "ia",
+          title: "Síntese Visual & Motion IA",
+          image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-4-3",
+          tags: ["ia", "renders"]
+        },
+
+        // --- DESIGN (Identidade, Social Media, Editorial) ---
+        {
+          type: "design",
+          category: "design",
+          title: "Direção Visual & Composição — Photoshop",
+          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-4-3",
+          tags: ["design", "social-media"]
+        },
+        {
+          type: "design",
+          category: "design",
+          title: "Identidade Visual & Key Visual",
+          image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-3-2",
+          tags: ["design", "identidade"]
+        },
+        {
+          type: "design",
+          category: "design",
+          title: "Design Editorial para Grandes Formatos",
+          image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+          tags: ["design", "editorial"]
         }
+      ]
+    };
+
+    // Subcategorias dinâmicas por divisão principal (Linha Amarela)
+    const SUBCATEGORIES = {
+      home: [
+        { id: "all", label: "todos" },
+        { id: "reels", label: "reels" },
+        { id: "16:9", label: "16:9" },
+        { id: "design", label: "design" },
+        { id: "ia", label: "ia" }
+      ],
+      video: [
+        { id: "all", label: "todos" },
+        { id: "reels", label: "reels" },
+        { id: "16:9", label: "16:9" },
+        { id: "social-media", label: "social media" },
+        { id: "fitness", label: "fitness" },
+        { id: "institucional", label: "institucional" }
+      ],
+      design: [
+        { id: "all", label: "todos" },
+        { id: "social-media", label: "social media" },
+        { id: "identidade", label: "identidade visual" },
+        { id: "editorial", label: "editorial" }
+      ],
+      ia: [
+        { id: "all", label: "todos" },
+        { id: "video-ia", label: "vídeo ia" },
+        { id: "renders", label: "renders" }
       ]
     };
 
     // Estado da aplicação
     const state = {
-      activeFilter: "all",
+      activeCategory: "home",
+      activeSubFilter: "all",
       currentItems: [],
       lightboxIndex: -1
     };
@@ -828,7 +979,6 @@
     // Elementos DOM
     const galleryGrid = document.getElementById("gallery-grid");
     const aboutSection = document.getElementById("about-section");
-    const navButtons = document.querySelectorAll(".nav-btn");
     const lightbox = document.getElementById("lightbox");
     const lightboxContent = document.getElementById("lightbox-content");
 
@@ -886,22 +1036,64 @@
     }
 
     /**
-     * 2. Obtém itens filtrados
+     * 2. Subcategorias dinâmicas (Linha Inferior)
      */
-    function getFilteredItems() {
-      if (state.activeFilter === "all") {
-        return CONFIG.PROJECTS;
+    function renderSubNav() {
+      const subNav = document.getElementById("sub-nav");
+      if (!subNav) return;
+
+      if (state.activeCategory === "sobre") {
+        subNav.classList.add("is-hidden");
+        subNav.innerHTML = "";
+        return;
       }
-      return CONFIG.PROJECTS.filter((item) =>
-        item.tags && item.tags.includes(state.activeFilter)
-      );
+
+      const filters = SUBCATEGORIES[state.activeCategory] || [];
+      if (filters.length === 0) {
+        subNav.classList.add("is-hidden");
+        subNav.innerHTML = "";
+        return;
+      }
+
+      subNav.classList.remove("is-hidden");
+      subNav.innerHTML = filters
+        .map(
+          (f) =>
+            `<button type="button" class="sub-btn ${f.id === state.activeSubFilter ? "is-active" : ""}" data-subfilter="${f.id}">${f.label}</button>`
+        )
+        .join("");
+
+      subNav.querySelectorAll(".sub-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          setSubFilter(btn.dataset.subfilter);
+        });
+      });
     }
 
     /**
-     * 3. Renderiza a grade
+     * 3. Obtém itens filtrados por Categoria + Subfiltro
+     */
+    function getFilteredItems() {
+      let list = CONFIG.PROJECTS;
+
+      if (state.activeCategory !== "home") {
+        list = list.filter((item) => item.category === state.activeCategory);
+      }
+
+      if (state.activeSubFilter !== "all") {
+        list = list.filter(
+          (item) => item.tags && item.tags.includes(state.activeSubFilter)
+        );
+      }
+
+      return list;
+    }
+
+    /**
+     * 4. Renderiza a grade
      */
     function renderGallery() {
-      if (state.activeFilter === "sobre") {
+      if (state.activeCategory === "sobre") {
         galleryGrid.style.display = "none";
         aboutSection.classList.add("is-visible");
         return;
@@ -915,18 +1107,23 @@
       state.currentItems = items;
 
       items.forEach((item, index) => {
+        const isVideo = item.type === "video";
         const card = document.createElement("article");
         card.className = `masonry-item ${item.ratio || "ratio-9-16"}`;
         card.style.animationDelay = `${index * 35}ms`;
         card.tabIndex = 0;
         card.setAttribute("role", "button");
-        card.setAttribute("aria-label", `Assistir: ${item.title}`);
+        card.setAttribute("aria-label", `${isVideo ? "Assistir" : "Ver"}: ${item.title}`);
 
-        // Tags escondidas em data-attribute para filtros
         card.dataset.tags = (item.tags || []).join(" ");
+        card.dataset.category = item.category || "";
 
-        const thumbUrl = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`;
-        const fallbackThumb = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`;
+        const thumbUrl = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`
+          : item.image;
+        const fallbackThumb = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
+          : item.image;
 
         card.innerHTML = `
           <img
@@ -935,30 +1132,36 @@
             alt="${item.title}"
             loading="lazy"
           />
-          <div class="play-indicator" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="7 5 19 12 7 19 7 5"></polygon>
-            </svg>
-          </div>
+          ${
+            isVideo
+              ? `<div class="play-indicator" aria-hidden="true">
+                   <svg viewBox="0 0 24 24" fill="currentColor">
+                     <polygon points="7 5 19 12 7 19 7 5"></polygon>
+                   </svg>
+                 </div>`
+              : ""
+          }
           <div class="masonry-overlay">
             <span class="masonry-title">${item.title}</span>
           </div>
         `;
 
-        const img = card.querySelector(".masonry-media");
-        if (img) {
-          img.addEventListener("load", () => {
-            if (img.naturalWidth <= 120 && !img.dataset.fallback) {
-              img.dataset.fallback = "1";
-              img.src = fallbackThumb;
-            }
-          });
-          img.addEventListener("error", () => {
-            if (!img.dataset.fallback) {
-              img.dataset.fallback = "1";
-              img.src = fallbackThumb;
-            }
-          });
+        if (isVideo) {
+          const img = card.querySelector(".masonry-media");
+          if (img) {
+            img.addEventListener("load", () => {
+              if (img.naturalWidth <= 120 && !img.dataset.fallback) {
+                img.dataset.fallback = "1";
+                img.src = fallbackThumb;
+              }
+            });
+            img.addEventListener("error", () => {
+              if (!img.dataset.fallback) {
+                img.dataset.fallback = "1";
+                img.src = fallbackThumb;
+              }
+            });
+          }
         }
 
         const openHandler = () => openLightbox(index);
@@ -975,30 +1178,40 @@
     }
 
     /**
-     * 4. Lightbox Cinema Adaptável (Compacto 9:16 ou Widescreen 16:9)
+     * 5. Lightbox Cinema Adaptável (Compacto 9:16, Widescreen 16:9 ou Imagem)
      */
     function renderLightboxContent() {
       if (state.lightboxIndex < 0 || state.lightboxIndex >= state.currentItems.length) return;
       const item = state.currentItems[state.lightboxIndex];
+      const isVideo = item.type === "video";
       const isVertical = item.aspect === "9:16" || item.ratio === "ratio-9-16";
       const lightboxStage = document.querySelector(".lightbox-stage");
 
-      if (lightboxStage) {
-        lightboxStage.classList.toggle("is-vertical", isVertical);
+      if (isVideo) {
+        if (lightboxStage) {
+          lightboxStage.classList.toggle("is-vertical", isVertical);
+        }
+        lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
+
+        lightboxContent.innerHTML = `
+          <iframe
+            src="${embedUrl}"
+            title="${item.title}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
+        `;
+      } else {
+        if (lightboxStage) {
+          lightboxStage.classList.remove("is-vertical");
+        }
+        lightboxContent.className = "lightbox-image-wrap";
+        lightboxContent.innerHTML = `
+          <img class="lightbox-image" src="${item.image}" alt="${item.title}" />
+        `;
       }
-
-      lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
-
-      lightboxContent.innerHTML = `
-        <iframe
-          src="${embedUrl}"
-          title="${item.title}"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-          referrerpolicy="strict-origin-when-cross-origin"
-        ></iframe>
-      `;
     }
 
     function openLightbox(index) {
@@ -1044,26 +1257,43 @@
     }
 
     /**
-     * 5. Navegação & Filtros
+     * 6. Controle de Categoria Principal & Subfiltro
      */
-    function setFilter(filter) {
-      state.activeFilter = filter;
-      navButtons.forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.filter === filter);
+    function setCategory(category) {
+      state.activeCategory = category;
+      state.activeSubFilter = "all";
+
+      const catButtons = document.querySelectorAll("#category-nav .nav-btn");
+      catButtons.forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.category === category);
       });
+
+      renderSubNav();
+      renderGallery();
+    }
+
+    function setSubFilter(subfilter) {
+      state.activeSubFilter = subfilter;
+
+      const subButtons = document.querySelectorAll("#sub-nav .sub-btn");
+      subButtons.forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.subfilter === subfilter);
+      });
+
       renderGallery();
     }
 
     function initNavigation() {
-      navButtons.forEach((btn) => {
-        btn.addEventListener("click", () => setFilter(btn.dataset.filter));
+      const categoryButtons = document.querySelectorAll("#category-nav .nav-btn");
+      categoryButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setCategory(btn.dataset.category));
       });
 
       const brandHome = document.getElementById("brand-home");
       if (brandHome) {
         brandHome.addEventListener("click", (e) => {
           e.preventDefault();
-          setFilter("all");
+          setCategory("home");
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       }
@@ -1074,6 +1304,7 @@
       initContacts();
       initNavigation();
       initLightbox();
+      renderSubNav();
       renderGallery();
     });
   </script>
