@@ -445,40 +445,63 @@
     }
 
     /* =========================================================================
-       LIGHTBOX CINEMA (MODAL FULL-SCREEN)
+       LIGHTBOX CINEMA (MODAL TRANSLÚCIDO COM ANIMAÇÃO DE ENTRADA & SAÍDA)
     ========================================================================= */
     .lightbox {
       position: fixed;
       inset: 0;
       z-index: 100;
-      background-color: rgba(10, 10, 10, 0.96);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background-color: rgba(12, 12, 12, 0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 64px;
+      padding: 56px 32px;
       opacity: 0;
       visibility: hidden;
-      transition: opacity 0.25s ease, visibility 0.25s ease;
+      pointer-events: none;
+      transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s ease;
     }
 
     .lightbox.is-open {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
+    }
+
+    .lightbox.is-closing {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .lightbox-stage {
       width: 100%;
-      max-width: 940px;
+      max-width: 880px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       position: relative;
-      transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: scale(0.92) translateY(14px);
+      opacity: 0;
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.28s ease,
+                  max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Formato Vertical Reels no Lightbox — Proporção Estrita 9:16 Sem Bordas */
+    .lightbox.is-open .lightbox-stage {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .lightbox.is-closing .lightbox-stage {
+      transform: scale(0.93) translateY(12px);
+      opacity: 0;
+      transition: transform 0.24s cubic-bezier(0.4, 0, 1, 1),
+                  opacity 0.22s ease;
+    }
+
+    /* Formato Vertical Reels no Lightbox — Proporção Estrita 9:16 com Padding Superior & Inferior */
     .lightbox-stage.is-vertical {
       width: auto;
       max-width: 90vw;
@@ -490,16 +513,17 @@
       background-color: #000000;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-      border-radius: 6px;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75);
+      border-radius: 8px;
     }
 
     .lightbox-video-wrap.is-vertical {
-      height: min(74vh, calc(88vw * 16 / 9));
-      width: min(calc(74vh * 9 / 16), 88vw);
+      height: min(68vh, calc(78vw * 16 / 9));
+      width: min(calc(68vh * 9 / 16), 78vw);
       aspect-ratio: 9 / 16;
       border-radius: 14px;
       margin: 0 auto;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75);
     }
 
     /* Vídeos horizontais (16:9) */
@@ -596,11 +620,14 @@
       }
 
       .lightbox {
-        padding: 32px 48px;
+        padding: 48px 28px;
       }
     }
 
     @media (max-width: 768px) {
+      .lightbox {
+        padding: 40px 16px;
+      }
       .site-header {
         padding: 24px 20px 20px;
         gap: 14px;
@@ -1230,22 +1257,34 @@
       }
     }
 
+    let isClosingLightbox = false;
+
     function openLightbox(index) {
+      if (isClosingLightbox) return;
       state.lightboxIndex = index;
       renderLightboxContent();
+      lightbox.classList.remove("is-closing");
       lightbox.classList.add("is-open");
       document.body.style.overflow = "hidden";
     }
 
     function closeLightbox() {
-      lightbox.classList.remove("is-open");
-      lightboxContent.innerHTML = "";
-      const lightboxStage = document.querySelector(".lightbox-stage");
-      if (lightboxStage) {
-        lightboxStage.classList.remove("is-vertical");
-      }
-      document.body.style.overflow = "";
-      state.lightboxIndex = -1;
+      if (isClosingLightbox || !lightbox.classList.contains("is-open")) return;
+      isClosingLightbox = true;
+      lightbox.classList.add("is-closing");
+
+      setTimeout(() => {
+        lightbox.classList.remove("is-open");
+        lightbox.classList.remove("is-closing");
+        lightboxContent.innerHTML = "";
+        const lightboxStage = document.querySelector(".lightbox-stage");
+        if (lightboxStage) {
+          lightboxStage.classList.remove("is-vertical");
+        }
+        document.body.style.overflow = "";
+        state.lightboxIndex = -1;
+        isClosingLightbox = false;
+      }, 250);
     }
 
     function stepLightbox(delta) {
