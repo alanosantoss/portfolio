@@ -96,6 +96,21 @@ if (!html.includes('maxresdefault.jpg') || !html.includes('hqdefault.jpg')) {
 }
 console.log('PASS: Embeds e fallbacks do YouTube validados com sucesso.');
 
+// 6. Verificação de canais de contato e ausência de Instagram
+if (!html.includes('5511991584991')) {
+  console.error('FAIL: Número de WhatsApp atualizado não encontrado.');
+  process.exit(1);
+}
+if (!html.includes('alan-oliveira-765286274')) {
+  console.error('FAIL: URL do LinkedIn atualizado não encontrado.');
+  process.exit(1);
+}
+if (html.includes('id="social-instagram"') || html.includes('id="about-instagram"') || html.includes('instagram.com')) {
+  console.error('FAIL: Referências ao Instagram ainda estão presentes no index.html!');
+  process.exit(1);
+}
+console.log('PASS: Contatos (WhatsApp, LinkedIn, Email) e remoção do Instagram validados.');
+
 console.log('=============================================');
-console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (5/5)');
+console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (6/6)');
 console.log('=============================================');
