@@ -234,10 +234,11 @@
     }
 
     /* Proporções cinematográficas alternadas */
-    .ratio-16-9 { aspect-ratio: 16 / 9; }
-    .ratio-4-3  { aspect-ratio: 4 / 3; }
-    .ratio-21-9 { aspect-ratio: 21 / 9; }
-    .ratio-3-2  { aspect-ratio: 3 / 2; }
+    .ratio-16-9  { aspect-ratio: 16 / 9; }
+    .ratio-9-16  { aspect-ratio: 9 / 16; }
+    .ratio-4-3   { aspect-ratio: 4 / 3; }
+    .ratio-21-9  { aspect-ratio: 21 / 9; }
+    .ratio-3-2   { aspect-ratio: 3 / 2; }
     .ratio-16-10 { aspect-ratio: 16 / 10; }
 
     .masonry-media {
@@ -407,6 +408,12 @@
       flex-direction: column;
       gap: 14px;
       position: relative;
+      transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Formato Vertical Reels no Lightbox */
+    .lightbox-stage.is-vertical {
+      max-width: 440px;
     }
 
     .lightbox-video-wrap {
@@ -416,10 +423,17 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-      border-radius: 4px;
+      border-radius: 6px;
     }
 
-    /* Oculta a barra superior (avatar e título do canal do YouTube) */
+    .lightbox-video-wrap.is-vertical {
+      aspect-ratio: 9 / 16;
+      max-height: 86vh;
+      border-radius: 14px;
+      margin: 0 auto;
+    }
+
+    /* Vídeos horizontais (16:9) */
     .lightbox-video-wrap iframe {
       position: absolute;
       top: -11%;
@@ -427,6 +441,14 @@
       width: 100%;
       height: 112%;
       border: 0;
+    }
+
+    /* Vídeos verticais (9:16 Reels) se adaptam 100% à tela de smartphone vertical */
+    .lightbox-video-wrap.is-vertical iframe {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     .lightbox-image-wrap {
@@ -679,31 +701,35 @@
       INSTAGRAM_URL: "https://instagram.com/seuusuario",
       LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
 
-      // Os 4 vídeos do YouTube
+      // Os 4 vídeos do YouTube (Todos em formato vertical 9:16 Reels)
       VIDEOS: [
         {
           type: "video",
           id: "8lmrTdA1EsU",
           title: "Social Media — Edição Dinâmica",
-          ratio: "ratio-16-9"
+          aspect: "9:16",
+          ratio: "ratio-9-16"
         },
         {
           type: "video",
           id: "0GgqcRnrNhs",
           title: "Social Media — Cortes & Ritmo",
-          ratio: "ratio-21-9"
+          aspect: "9:16",
+          ratio: "ratio-9-16"
         },
         {
           type: "video",
           id: "Gau-fbkBrrw",
           title: "UGC Campaigns - Brazil",
-          ratio: "ratio-4-3"
+          aspect: "9:16",
+          ratio: "ratio-9-16"
         },
         {
           type: "video",
           id: "R1g2IAmim6A",
           title: "Medical Explainer Videos",
-          ratio: "ratio-16-10"
+          aspect: "9:16",
+          ratio: "ratio-9-16"
         }
       ],
 
@@ -913,9 +939,15 @@
     function renderLightboxContent() {
       if (state.lightboxIndex < 0 || state.lightboxIndex >= state.currentItems.length) return;
       const item = state.currentItems[state.lightboxIndex];
+      const isVertical = item.aspect === "9:16" || item.ratio === "ratio-9-16";
+      const lightboxStage = document.querySelector(".lightbox-stage");
+
+      if (lightboxStage) {
+        lightboxStage.classList.toggle("is-vertical", isVertical);
+      }
 
       if (item.type === "video") {
-        lightboxContent.className = "lightbox-video-wrap";
+        lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
         // cc_load_policy=0 desativa legendas automáticas; iv_load_policy=3 desativa anotações; modestbranding=1
         const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
 
@@ -946,6 +978,10 @@
     function closeLightbox() {
       lightbox.classList.remove("is-open");
       lightboxContent.innerHTML = "";
+      const lightboxStage = document.querySelector(".lightbox-stage");
+      if (lightboxStage) {
+        lightboxStage.classList.remove("is-vertical");
+      }
       document.body.style.overflow = "";
       state.lightboxIndex = -1;
     }
