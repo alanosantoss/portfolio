@@ -708,14 +708,19 @@
           Adicionar Vídeo
         </button>
 
-        <button id="btn-save" class="btn btn-accent" type="button" title="Salva a ordem e visibilidade no navegador">
+        <button id="btn-save" class="btn btn-accent" type="button" title="Salva e envia diretamente para o GitHub (git push)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-          Salvar no Navegador
+          <span id="btn-save-text">Salvar no Git</span>
         </button>
 
-        <button id="btn-copy-code" class="btn" type="button" title="Gera o código para commit no GitHub">
+        <button id="btn-github-settings" class="btn" type="button" title="Configurar Token do GitHub para envio direto">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+          <span id="github-status-pill">Conectar Git</span>
+        </button>
+
+        <button id="btn-copy-code" class="btn" type="button" title="Gera o código para commit manual no GitHub">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-          Copiar Código (GitHub)
+          Copiar Código
         </button>
 
         <button id="btn-reset" class="btn btn-danger" type="button" title="Restaura os vídeos padrão originais">
@@ -843,6 +848,45 @@
         <button id="btn-copy-clipboard" class="btn btn-primary" type="button">
           📋 Copiar para a Área de Transferência
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Conectar GitHub -->
+  <div id="github-modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Conectar ao GitHub (Salvar com 1 Clique)</h3>
+        <button id="github-modal-close" class="modal-close" type="button" aria-label="Fechar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.84rem; color: #cccccc; line-height: 1.5;">
+          Para que o botão <strong>Salvar no Git</strong> envie seus vídeos e posições direto para o seu repositório sem você precisar usar terminal, informe seu <strong>GitHub Token</strong> (feito uma única vez neste navegador):
+        </p>
+
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--surface-border); border-radius: 6px; padding: 12px; font-size: 0.8rem; line-height: 1.5; color: #a3a3a3;">
+          <strong style="color: #ffffff;">Passo a passo rápido (30 segundos):</strong><br>
+          1. Abra a página de tokens do GitHub pelo botão abaixo.<br>
+          2. Dê um nome (ex: <code>Portfolio Admin</code>) e marque a permissão <strong>repo</strong>.<br>
+          3. Clique em <em>Generate token</em>, copie o código gerado (começa com <code>ghp_</code>) e cole abaixo:
+          <div style="margin-top: 10px;">
+            <a href="https://github.com/settings/tokens/new?description=Portfolio%20Admin&scopes=repo" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 0.76rem; padding: 6px 12px; text-decoration: none; display: inline-flex;">
+              🔗 Abrir Gerador de Token no GitHub
+            </a>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 6px;">
+          <label class="form-label" for="input-github-token">Cole seu Token do GitHub:</label>
+          <input id="input-github-token" class="form-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+          <span class="form-hint">O token fica salvo apenas localmente no seu navegador (localStorage).</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="github-modal-cancel" class="btn" type="button">Cancelar</button>
+        <button id="btn-save-github-token" class="btn btn-accent" type="button">Salvar Token e Conectar</button>
       </div>
     </div>
   </div>
@@ -1472,15 +1516,218 @@
     });
 
     /**
+     * Integração com GitHub (Salvar com 1 Clique)
+     */
+    const githubModal = document.getElementById("github-modal");
+    const inputGithubToken = document.getElementById("input-github-token");
+
+    function utf8ToBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) {
+        bin += String.fromCharCode(bytes[i]);
+      }
+      return btoa(bin);
+    }
+
+    function base64ToUtf8(b64) {
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    function updateGitHubStatusUI() {
+      const pill = document.getElementById("github-status-pill");
+      const token = localStorage.getItem("portfolio_gh_token");
+      if (pill) {
+        if (token) {
+          pill.textContent = "● Git Conectado";
+          pill.style.color = "#4ade80";
+        } else {
+          pill.textContent = "Conectar Git";
+          pill.style.color = "";
+        }
+      }
+    }
+
+    function openGitHubModal() {
+      const token = localStorage.getItem("portfolio_gh_token") || "";
+      inputGithubToken.value = token;
+      githubModal.classList.add("is-open");
+      inputGithubToken.focus();
+    }
+
+    function closeGitHubModal() {
+      githubModal.classList.remove("is-open");
+    }
+
+    async function pushToGitHubAPI(token) {
+      const repo = "alanosantoss/portfolio";
+      const headers = {
+        "Authorization": `Bearer ${token.trim()}`,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      };
+
+      // 1. Obter arquivo index.html atual no GitHub
+      const resIndex = await fetch(`https://api.github.com/repos/${repo}/contents/index.html`, { headers });
+      if (!resIndex.ok) {
+        const err = await resIndex.json().catch(() => ({}));
+        throw new Error(err.message || `Erro ao acessar o repositório (${resIndex.status})`);
+      }
+      const dataIndex = await resIndex.json();
+      const rawIndexContent = base64ToUtf8(dataIndex.content.replace(/\s/g, ""));
+
+      // 2. Preparar array de projetos limpo
+      const cleanArray = state.projects.map(p => {
+        const copy = { ...p };
+        if (copy.visible === true) delete copy.visible;
+        return copy;
+      });
+
+      const updatedIndexContent = rawIndexContent.replace(
+        /PROJECTS:\s*\[[\s\S]*?\](?=\s*\n\s*\}\s*;)/,
+        "PROJECTS: " + JSON.stringify(cleanArray, null, 2)
+      );
+
+      // 3. Enviar commit de index.html
+      const putIndex = await fetch(`https://api.github.com/repos/${repo}/contents/index.html`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({
+          message: "feat: atualiza catalogo de videos via Painel Admin",
+          content: utf8ToBase64(updatedIndexContent),
+          sha: dataIndex.sha
+        })
+      });
+      if (!putIndex.ok) {
+        const err = await putIndex.json().catch(() => ({}));
+        throw new Error(err.message || `Erro ao salvar index.html (${putIndex.status})`);
+      }
+
+      // 4. Também atualiza admin.html no repositório de forma transparente
+      try {
+        const resAdmin = await fetch(`https://api.github.com/repos/${repo}/contents/admin.html`, { headers });
+        if (resAdmin.ok) {
+          const dataAdmin = await resAdmin.json();
+          const rawAdminContent = base64ToUtf8(dataAdmin.content.replace(/\s/g, ""));
+          const updatedAdminContent = rawAdminContent.replace(
+            /const\s+DEFAULT_PROJECTS\s*=\s*\[[\s\S]*?\];/,
+            "const DEFAULT_PROJECTS = " + JSON.stringify(state.projects, null, 2) + ";"
+          );
+          await fetch(`https://api.github.com/repos/${repo}/contents/admin.html`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({
+              message: "chore: sincroniza catalogo padrao no admin",
+              content: utf8ToBase64(updatedAdminContent),
+              sha: dataAdmin.sha
+            })
+          });
+        }
+      } catch (e) {
+        console.warn("Aviso ao sincronizar admin.html:", e);
+      }
+    }
+
+    async function saveToGit() {
+      const saveBtn = document.getElementById("btn-save");
+      const saveText = document.getElementById("btn-save-text");
+      const originalText = "Salvar no Git";
+
+      // 1. Salva localmente primeiro
+      saveProjects(false);
+
+      saveBtn.disabled = true;
+      saveText.textContent = "Salvando no Git...";
+
+      // 2. Se estiver rodando localmente com o script Node (iniciar-admin.bat), salva direto no Git local
+      try {
+        const localCtrl = new AbortController();
+        const localTimer = setTimeout(() => localCtrl.abort(), 1800);
+        const localRes = await fetch("/api/save-git", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projects: state.projects }),
+          signal: localCtrl.signal
+        }).catch(() => null);
+        clearTimeout(localTimer);
+
+        if (localRes && localRes.ok) {
+          const data = await localRes.json();
+          saveText.textContent = "✓ Salvo no Git!";
+          showToast(data.message || "Alterações enviadas para o Git com sucesso!");
+          setTimeout(() => {
+            saveBtn.disabled = false;
+            saveText.textContent = originalText;
+          }, 2500);
+          return;
+        }
+      } catch (err) {
+        // Prossegue para GitHub API
+      }
+
+      // 3. Se estiver no GitHub Pages ou sem servidor local, usa a API oficial do GitHub
+      const token = localStorage.getItem("portfolio_gh_token");
+      if (!token) {
+        saveBtn.disabled = false;
+        saveText.textContent = originalText;
+        openGitHubModal();
+        return;
+      }
+
+      try {
+        saveText.textContent = "Enviando ao GitHub...";
+        await pushToGitHubAPI(token);
+        saveText.textContent = "✓ Salvo no Git!";
+        showToast("Sucesso! Alterações enviadas ao GitHub. O site atualizará em ~1 minuto.");
+        updateGitHubStatusUI();
+        setTimeout(() => {
+          saveBtn.disabled = false;
+          saveText.textContent = originalText;
+        }, 3000);
+      } catch (err) {
+        console.error("Erro no envio para GitHub:", err);
+        saveBtn.disabled = false;
+        saveText.textContent = originalText;
+        if (err.message && (err.message.includes("Bad credentials") || err.message.includes("401"))) {
+          showToast("Token do GitHub inválido ou expirado. Digite o token novamente.");
+          openGitHubModal();
+        } else {
+          showToast("Erro ao enviar: " + (err.message || "verifique sua conexão"));
+        }
+      }
+    }
+
+    /**
      * Event Listeners
      */
     document.getElementById("btn-add").addEventListener("click", openAddModal);
     document.getElementById("modal-close-btn").addEventListener("click", closeModal);
     document.getElementById("modal-cancel-btn").addEventListener("click", closeModal);
 
-    document.getElementById("btn-save").addEventListener("click", () => saveProjects(true));
+    document.getElementById("btn-save").addEventListener("click", saveToGit);
     document.getElementById("btn-copy-code").addEventListener("click", openCodeModal);
     document.getElementById("code-modal-close").addEventListener("click", () => codeModal.classList.remove("is-open"));
+
+    document.getElementById("btn-github-settings").addEventListener("click", openGitHubModal);
+    document.getElementById("github-modal-close").addEventListener("click", closeGitHubModal);
+    document.getElementById("github-modal-cancel").addEventListener("click", closeGitHubModal);
+    document.getElementById("btn-save-github-token").addEventListener("click", () => {
+      const token = inputGithubToken.value.trim();
+      if (!token) {
+        alert("Por favor, cole um token válido do GitHub.");
+        return;
+      }
+      localStorage.setItem("portfolio_gh_token", token);
+      closeGitHubModal();
+      updateGitHubStatusUI();
+      showToast("Token configurado com sucesso! Enviando para o GitHub...");
+      saveToGit();
+    });
 
     document.getElementById("btn-reset").addEventListener("click", () => {
       if (!confirm("Tem certeza que deseja restaurar a lista original de projetos? Todas as alterações manuais serão perdidas.")) return;
@@ -1507,16 +1754,19 @@
     });
 
     // Fechar modais ao clicar no backdrop
-    [itemModal, codeModal].forEach(m => {
-      m.addEventListener("click", (e) => {
-        if (e.target === m) m.classList.remove("is-open");
-      });
+    [itemModal, codeModal, githubModal].forEach(m => {
+      if (m) {
+        m.addEventListener("click", (e) => {
+          if (e.target === m) m.classList.remove("is-open");
+        });
+      }
     });
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeModal();
         codeModal.classList.remove("is-open");
+        closeGitHubModal();
       }
     });
 
@@ -1524,6 +1774,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       loadProjects();
       renderCards();
+      updateGitHubStatusUI();
     });
   </script>
 </body>
