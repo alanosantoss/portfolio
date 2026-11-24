@@ -69,7 +69,7 @@
       --text: #ffffff;
       --muted: #999999;
       --muted-hover: #e5e5e5;
-      --gap: 22px;
+      --gap: 16px;
       --max-width: 1220px;
       --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -253,7 +253,7 @@
     }
 
     /* =========================================================================
-       CONTAINER PRINCIPAL & GRADE MASONRY EDITORIAL (3 COLUNAS)
+       CONTAINER PRINCIPAL & GRADE MASONRY EDITORIAL
     ========================================================================= */
     .main-container {
       width: 100%;
@@ -263,7 +263,7 @@
     }
 
     .masonry-grid {
-      column-count: 3;
+      column-count: 4;
       column-gap: var(--gap);
     }
 
@@ -280,7 +280,57 @@
       opacity: 0;
       transform: translateY(12px);
       animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-      border-radius: 2px;
+      border-radius: 4px;
+    }
+
+    .masonry-item.is-playing {
+      cursor: default;
+    }
+
+    .masonry-item.is-playing .masonry-media,
+    .masonry-item.is-playing .play-indicator,
+    .masonry-item.is-playing .masonry-overlay {
+      display: none !important;
+    }
+
+    .inline-video-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      border-radius: inherit;
+      background-color: #000000;
+      z-index: 5;
+    }
+
+    .inline-close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease;
+      opacity: 0.9;
+    }
+
+    .inline-close-btn:hover {
+      background: rgba(0, 0, 0, 0.95);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.08);
+      opacity: 1;
     }
 
     @keyframes fadeUp {
@@ -303,12 +353,12 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.3s ease;
+      image-rendering: -webkit-optimize-contrast;
     }
 
-    /* Leve zoom para eliminar 100% de qualquer borda preta residual de miniaturas do YouTube */
     .ratio-9-16 .masonry-media {
-      transform: scale(1.035);
+      transform: none;
     }
 
     .masonry-item:hover .masonry-media {
@@ -317,7 +367,7 @@
     }
 
     .ratio-9-16:hover .masonry-media {
-      transform: scale(1.065);
+      transform: scale(1.035);
       filter: brightness(0.85);
     }
 
@@ -685,9 +735,20 @@
     /* =========================================================================
        RESPONSIVIDADE
     ========================================================================= */
-    @media (max-width: 1024px) {
+    @media (max-width: 1200px) {
+      .masonry-grid {
+        column-count: 4;
+        column-gap: 16px;
+      }
+
+      .masonry-item {
+        margin-bottom: 16px;
+      }
+    }
+
+    @media (max-width: 900px) {
       .site-header {
-        padding: 32px 28px 36px;
+        padding: 32px 28px 30px;
       }
 
       .main-container {
@@ -695,12 +756,12 @@
       }
 
       .masonry-grid {
-        column-count: 2;
-        column-gap: 20px;
+        column-count: 3;
+        column-gap: 14px;
       }
 
       .masonry-item {
-        margin-bottom: 20px;
+        margin-bottom: 14px;
       }
 
       .lightbox {
@@ -709,9 +770,6 @@
     }
 
     @media (max-width: 768px) {
-      .lightbox {
-        padding: 40px 16px;
-      }
       .site-header {
         padding: 24px 20px 20px;
         gap: 14px;
@@ -745,16 +803,16 @@
       }
 
       .main-container {
-        padding: 0 20px 56px;
+        padding: 0 16px 56px;
       }
 
       .masonry-grid {
-        column-count: 1;
-        column-gap: 0;
+        column-count: 2;
+        column-gap: 12px;
       }
 
       .masonry-item {
-        margin-bottom: 18px;
+        margin-bottom: 12px;
       }
 
       .about-section {
@@ -789,6 +847,17 @@
 
       .lightbox-prev { left: 16px; }
       .lightbox-next { right: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .masonry-grid {
+        column-count: 1;
+        column-gap: 0;
+      }
+
+      .masonry-item {
+        margin-bottom: 14px;
+      }
     }
   </style>
 </head>
@@ -1294,9 +1363,59 @@
     }
 
     /**
-     * 4. Renderiza a grade
+     * 4. Reprodução Inline de Vídeo & Renderização da Grade
      */
+    let currentPlayingCard = null;
+
+    function stopCurrentInlineVideo() {
+      if (!currentPlayingCard) return;
+      const iframe = currentPlayingCard.querySelector(".inline-video-iframe");
+      const closeBtn = currentPlayingCard.querySelector(".inline-close-btn");
+      if (iframe) iframe.remove();
+      if (closeBtn) closeBtn.remove();
+      currentPlayingCard.classList.remove("is-playing");
+      currentPlayingCard = null;
+    }
+
+    function playInlineVideo(card, item) {
+      if (currentPlayingCard === card) return;
+      stopCurrentInlineVideo();
+
+      currentPlayingCard = card;
+      card.classList.add("is-playing");
+
+      const iframe = document.createElement("iframe");
+      iframe.className = "inline-video-iframe";
+      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3`;
+      iframe.title = item.title;
+      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      iframe.allowFullscreen = true;
+      iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "inline-close-btn";
+      closeBtn.setAttribute("aria-label", "Fechar vídeo");
+      closeBtn.setAttribute("title", "Fechar reprodução");
+      closeBtn.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      `;
+
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        stopCurrentInlineVideo();
+      });
+
+      card.appendChild(iframe);
+      card.appendChild(closeBtn);
+    }
+
     function renderGallery() {
+      stopCurrentInlineVideo();
+
       if (state.activeCategory === "sobre") {
         galleryGrid.style.display = "none";
         aboutSection.classList.add("is-visible");
@@ -1356,7 +1475,7 @@
             img.addEventListener("load", () => {
               if (img.naturalWidth <= 120 && !img.dataset.fallback) {
                 img.dataset.fallback = "1";
-                img.src = fallbackThumb;
+                img.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/sddefault.jpg`;
               }
             });
             img.addEventListener("error", () => {
@@ -1368,12 +1487,19 @@
           }
         }
 
-        const openHandler = () => openLightbox(index);
-        card.addEventListener("click", openHandler);
+        const handleCardAction = () => {
+          if (isVideo) {
+            playInlineVideo(card, item);
+          } else {
+            openLightbox(index);
+          }
+        };
+
+        card.addEventListener("click", handleCardAction);
         card.addEventListener("keydown", (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            openHandler();
+            handleCardAction();
           }
         });
 
@@ -1465,8 +1591,16 @@
       });
 
       document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (currentPlayingCard) {
+            stopCurrentInlineVideo();
+            return;
+          }
+          if (lightbox.classList.contains("is-open")) {
+            closeLightbox();
+          }
+        }
         if (!lightbox.classList.contains("is-open")) return;
-        if (e.key === "Escape") closeLightbox();
         if (e.key === "ArrowLeft") stepLightbox(-1);
         if (e.key === "ArrowRight") stepLightbox(1);
       });
@@ -1476,6 +1610,7 @@
      * 6. Controle de Categoria Principal & Subfiltro
      */
     function setCategory(category) {
+      stopCurrentInlineVideo();
       state.activeCategory = category;
       state.activeSubFilter = "all";
 
@@ -1489,6 +1624,7 @@
     }
 
     function setSubFilter(subfilter) {
+      stopCurrentInlineVideo();
       state.activeSubFilter = subfilter;
 
       const subButtons = document.querySelectorAll("#sub-nav .sub-btn");
@@ -1520,8 +1656,14 @@
       initContacts();
       initNavigation();
       initLightbox();
-      renderSubNav();
-      renderGallery();
+
+      const initialHash = (window.location.hash || "").replace("#", "");
+      if (["video", "design", "ia", "sobre"].includes(initialHash)) {
+        setCategory(initialHash);
+      } else {
+        renderSubNav();
+        renderGallery();
+      }
     });
   </script>
 </body>
