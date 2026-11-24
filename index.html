@@ -112,7 +112,7 @@
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto;
-      padding: 38px 40px 22px;
+      padding: 38px 40px 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -938,15 +938,8 @@
       ]
     };
 
-    // Subcategorias dinâmicas por divisão principal (Linha Amarela)
+    // Subcategorias dinâmicas por divisão principal (ocultas na home e sobre)
     const SUBCATEGORIES = {
-      home: [
-        { id: "all", label: "todos" },
-        { id: "reels", label: "reels" },
-        { id: "16:9", label: "16:9" },
-        { id: "design", label: "design" },
-        { id: "ia", label: "ia" }
-      ],
       video: [
         { id: "all", label: "todos" },
         { id: "reels", label: "reels" },
@@ -1042,7 +1035,8 @@
       const subNav = document.getElementById("sub-nav");
       if (!subNav) return;
 
-      if (state.activeCategory === "sobre") {
+      // Na home e no sobre, a barra de subcategorias fica oculta
+      if (state.activeCategory === "home" || state.activeCategory === "sobre") {
         subNav.classList.add("is-hidden");
         subNav.innerHTML = "";
         return;
