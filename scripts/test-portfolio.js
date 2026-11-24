@@ -135,6 +135,22 @@ for (const sec of expectedAboutSections) {
 }
 console.log('PASS: Foto de perfil e textos editoriais da seção Sobre validados.');
 
+// 8. Verificação de reprodução inline e otimizações de nitidez
+const inlineFeatures = [
+  'playInlineVideo',
+  'stopCurrentInlineVideo',
+  'inline-video-iframe',
+  'inline-close-btn',
+  'image-rendering: -webkit-optimize-contrast'
+];
+for (const feature of inlineFeatures) {
+  if (!html.includes(feature)) {
+    console.error(`FAIL: Recurso inline ausente: "${feature}"`);
+    process.exit(1);
+  }
+}
+console.log('PASS: Reprodução de vídeo inline e otimizações de nitidez validadas.');
+
 console.log('=============================================');
-console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (7/7)');
+console.log('TODOS OS TESTES PASSARAM COM SUCESSO! (8/8)');
 console.log('=============================================');
