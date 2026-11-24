@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alan Oliveira</title>
+  <title>Alan Oliveira — Edição de Vídeo & Direção Criativa</title>
   <meta
     name="description"
-    content="Alan Oliveira — Edição de vídeo, pós-produção e direção criativa."
+    content="Alan Oliveira — Edição de vídeo de alto impacto, Reels, vídeos verticais e produções comerciais."
   />
 
   <!-- Open Graph & Redes Sociais -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://alanosantoss.github.io/portfolio/" />
-  <meta property="og:title" content="Alan Oliveira" />
-  <meta property="og:description" content="Alan Oliveira — Edição de vídeo, pós-produção e direção criativa." />
-  <meta property="og:image" content="https://i.ytimg.com/vi/8lmrTdA1EsU/maxresdefault.jpg" />
+  <meta property="og:title" content="Alan Oliveira — Portfólio" />
+  <meta property="og:description" content="Edição de vídeo dinâmica, Reels e produções audiovisuais." />
+  <meta property="og:image" content="https://i.ytimg.com/vi/aNsA0iwBbqc/maxresdefault.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <!-- Favicon -->
@@ -106,17 +106,17 @@
     }
 
     /* =========================================================================
-       CABEÇALHO EM LINHA ÚNICA (BRAND À ESQ, NAV NO CENTRO, SOCIAIS À DIR)
+       CABEÇALHO EM LINHA ÚNICA COM FILTROS EMBUTIDOS
     ========================================================================= */
     .site-header {
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto;
-      padding: 44px 48px 48px;
+      padding: 40px 40px 44px;
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 20px;
+      gap: 28px;
     }
 
     .brand {
@@ -127,6 +127,7 @@
       letter-spacing: -0.025em;
       color: #ffffff;
       transition: opacity var(--transition);
+      white-space: nowrap;
     }
 
     .brand:hover {
@@ -137,17 +138,19 @@
       justify-self: center;
       display: flex;
       align-items: center;
-      gap: 24px;
+      flex-wrap: wrap;
+      gap: 22px;
     }
 
     .nav-btn {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 400;
       color: var(--muted);
       letter-spacing: -0.01em;
       padding: 4px 2px;
       position: relative;
       transition: color var(--transition);
+      text-transform: lowercase;
     }
 
     .nav-btn:hover {
@@ -203,7 +206,7 @@
       width: 100%;
       max-width: var(--max-width);
       margin: 0 auto;
-      padding: 0 48px 96px;
+      padding: 0 40px 96px;
     }
 
     .masonry-grid {
@@ -223,7 +226,8 @@
       cursor: pointer;
       opacity: 0;
       transform: translateY(12px);
-      animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      border-radius: 2px;
     }
 
     @keyframes fadeUp {
@@ -233,9 +237,9 @@
       }
     }
 
-    /* Proporções cinematográficas alternadas */
+    /* Proporções cinematográficas */
     .ratio-16-9  { aspect-ratio: 16 / 9; }
-    .ratio-9-16  { aspect-ratio: 4 / 5; } /* Retrato editorial compacto na grade */
+    .ratio-9-16  { aspect-ratio: 4 / 5; } /* Retrato compacto na grade, sem barras pretas */
     .ratio-4-3   { aspect-ratio: 4 / 3; }
     .ratio-21-9  { aspect-ratio: 21 / 9; }
     .ratio-3-2   { aspect-ratio: 3 / 2; }
@@ -261,7 +265,7 @@
       background: linear-gradient(
         to top,
         rgba(0, 0, 0, 0.65) 0%,
-        rgba(0, 0, 0, 0.1) 50%,
+        rgba(0, 0, 0, 0.05) 50%,
         rgba(0, 0, 0, 0) 100%
       );
       opacity: 0;
@@ -378,7 +382,7 @@
     }
 
     /* =========================================================================
-       LIGHTBOX CINEMA (MODAL 16:9 FULL-SCREEN & IMAGEM)
+       LIGHTBOX CINEMA (MODAL FULL-SCREEN)
     ========================================================================= */
     .lightbox {
       position: fixed;
@@ -411,7 +415,7 @@
       transition: max-width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Formato Vertical Reels no Lightbox — Compacto e Elegante */
+    /* Formato Vertical Reels no Lightbox — Compacto e Sem Bordas Pretas */
     .lightbox-stage.is-vertical {
       max-width: 330px;
     }
@@ -443,7 +447,7 @@
       border: 0;
     }
 
-    /* Vídeos verticais (9:16 Reels) se adaptam 100% à tela de smartphone vertical */
+    /* Vídeos verticais (9:16) */
     .lightbox-video-wrap.is-vertical iframe {
       top: 0;
       left: 0;
@@ -531,14 +535,14 @@
       }
     }
 
-    @media (max-width: 680px) {
+    @media (max-width: 768px) {
       .site-header {
         padding: 24px 20px 28px;
         grid-template-columns: 1fr auto;
         grid-template-areas:
           "brand social"
           "nav nav";
-        row-gap: 18px;
+        row-gap: 16px;
       }
 
       .brand {
@@ -553,7 +557,7 @@
       .nav-links {
         grid-area: nav;
         justify-self: start;
-        gap: 18px;
+        gap: 16px;
       }
 
       .main-container {
@@ -596,16 +600,18 @@
 <body>
 
   <!-- =========================================================================
-       CABEÇALHO MINIMALISTA EM LINHA ÚNICA
+       CABEÇALHO COM FILTROS EMBUTIDOS (EDITORIAL MINIMALISTA)
   ========================================================================== -->
   <header class="site-header">
     <a href="#home" class="brand" id="brand-home">Alan Oliveira</a>
 
-    <nav class="nav-links" aria-label="Navegação principal">
-      <button type="button" class="nav-btn is-active" data-tab="home">home</button>
-      <button type="button" class="nav-btn" data-tab="videos">vídeos</button>
-      <button type="button" class="nav-btn" data-tab="design">design</button>
-      <button type="button" class="nav-btn" data-tab="sobre">sobre</button>
+    <nav class="nav-links" aria-label="Navegação e filtros">
+      <button type="button" class="nav-btn is-active" data-filter="all">home</button>
+      <button type="button" class="nav-btn" data-filter="reels">reels</button>
+      <button type="button" class="nav-btn" data-filter="16:9">16:9</button>
+      <button type="button" class="nav-btn" data-filter="fitness">fitness</button>
+      <button type="button" class="nav-btn" data-filter="ia">ia</button>
+      <button type="button" class="nav-btn" data-filter="sobre">sobre</button>
     </nav>
 
     <div class="social-links" aria-label="Redes sociais">
@@ -637,17 +643,16 @@
   </header>
 
   <!-- =========================================================================
-       CONTEÚDO PRINCIPAL (GRADE MASONRY EDITORIAL)
+       CONTEÚDO PRINCIPAL (GRADE MASONRY FILTRÁVEL)
   ========================================================================== -->
   <main class="main-container">
-    <!-- Grade Masonry (Vídeos & Design combinados em 3 colunas) -->
     <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
 
-    <!-- Seção Sobre (visível apenas na aba 'sobre') -->
+    <!-- Seção Sobre -->
     <section id="about-section" class="about-section" aria-label="Sobre Alan Oliveira">
       <p class="about-text">
         <strong>Alan Oliveira</strong> — editor de vídeo, pós-produção audiovisual e direção criativa.
-        Criação de narrativas visuais dinâmicas, cortes de alto engajamento para redes sociais, campanhas publicitárias e projetos comerciais.
+        Especialista em narrativas visuais de alto impacto, cortes de retenção para Reels e campanhas de conversão no audiovisual.
       </p>
 
       <div class="about-links">
@@ -691,7 +696,7 @@
   <script>
     /**
      * =========================================================================
-     * CONFIGURAÇÃO CENTRAL
+     * CONFIGURAÇÃO CENTRAL — VÍDEOS COM TAGS DE NICHO EMBUTIDAS
      * =========================================================================
      */
     const CONFIG = {
@@ -701,64 +706,121 @@
       INSTAGRAM_URL: "https://instagram.com/seuusuario",
       LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
 
-      // Os 4 vídeos do YouTube (Todos em formato vertical 9:16 Reels)
-      VIDEOS: [
+      // Galeria Completa com Tags de Nicho e Proporção
+      PROJECTS: [
+        // 9:16 Reels
+        {
+          type: "video",
+          id: "aNsA0iwBbqc",
+          title: "Social Media — Edição Dinâmica",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
+        },
+        {
+          type: "video",
+          id: "hc9Rki1utnc",
+          title: "Social Media — Cortes",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
+        },
+        {
+          type: "video",
+          id: "cWRKCqN4UW4",
+          title: "Social Media — Criativo",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
+        },
+        {
+          type: "video",
+          id: "U45LaKKHQkU",
+          title: "Social Media — Retenção",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
+        },
+        {
+          type: "video",
+          id: "12uuS-EIivE",
+          title: "Aesthetic Gym",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "fitness"]
+        },
+        {
+          type: "video",
+          id: "8sODZhQfBAI",
+          title: "Comic Viral",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "viral"]
+        },
+        {
+          type: "video",
+          id: "TCaRDs6_cV0",
+          title: "Gym Workout — Social Media",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "fitness"]
+        },
+        {
+          type: "video",
+          id: "ZgsA0pQszPk",
+          title: "IA Video Render",
+          aspect: "9:16",
+          ratio: "ratio-9-16",
+          tags: ["reels", "ia"]
+        },
+        // 16:9 Widescreen
+        {
+          type: "video",
+          id: "cC3g1TvjrX0",
+          title: "Real Estate — Imobiliário",
+          aspect: "16:9",
+          ratio: "ratio-16-9",
+          tags: ["16:9", "comercial", "imobiliario"]
+        },
+        // Vídeos adicionais de alto impacto
         {
           type: "video",
           id: "8lmrTdA1EsU",
-          title: "Social Media — Edição Dinâmica",
+          title: "Social Media — Storytelling",
           aspect: "9:16",
-          ratio: "ratio-9-16"
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
         },
         {
           type: "video",
           id: "0GgqcRnrNhs",
-          title: "Social Media — Cortes & Ritmo",
+          title: "Social Media — Ritmo",
           aspect: "9:16",
-          ratio: "ratio-9-16"
+          ratio: "ratio-9-16",
+          tags: ["reels", "social-media"]
         },
         {
           type: "video",
           id: "Gau-fbkBrrw",
           title: "UGC Campaigns - Brazil",
           aspect: "9:16",
-          ratio: "ratio-9-16"
+          ratio: "ratio-9-16",
+          tags: ["reels", "ugc", "social-media"]
         },
         {
           type: "video",
           id: "R1g2IAmim6A",
           title: "Medical Explainer Videos",
           aspect: "9:16",
-          ratio: "ratio-9-16"
-        }
-      ],
-
-      // Trabalhos de Design / Photoshop / IA para enriquecer o ritmo visual da grade
-      DESIGN_ITEMS: [
-        {
-          type: "design",
-          title: "Direção Visual & Composição — Photoshop",
-          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
-          ratio: "ratio-4-3"
-        },
-        {
-          type: "design",
-          title: "Cenário Editorial — IA + Pós-Produção",
-          image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
-          ratio: "ratio-16-9"
-        },
-        {
-          type: "design",
-          title: "Arte para Grandes Formatos — 400×300cm",
-          image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=85",
-          ratio: "ratio-3-2"
+          ratio: "ratio-9-16",
+          tags: ["reels", "institucional"]
         }
       ]
     };
 
     // Estado da aplicação
     const state = {
-      activeTab: "home",
+      activeFilter: "all",
       currentItems: [],
       lightboxIndex: -1
     };
@@ -824,35 +886,22 @@
     }
 
     /**
-     * 2. Obtém itens com base na aba ativa
+     * 2. Obtém itens filtrados
      */
-    function getItemsForCurrentTab() {
-      if (state.activeTab === "videos") return CONFIG.VIDEOS;
-      if (state.activeTab === "design") return CONFIG.DESIGN_ITEMS;
-
-      // Na aba 'home', mescla vídeos e design para preencher as 3 colunas harmoniosamente
-      const combined = [];
-      const videos = CONFIG.VIDEOS;
-      const designs = CONFIG.DESIGN_ITEMS;
-      let d = 0;
-
-      for (let i = 0; i < videos.length; i++) {
-        combined.push(videos[i]);
-        if ((i + 1) % 2 === 0 && d < designs.length) {
-          combined.push(designs[d++]);
-        }
+    function getFilteredItems() {
+      if (state.activeFilter === "all") {
+        return CONFIG.PROJECTS;
       }
-      while (d < designs.length) {
-        combined.push(designs[d++]);
-      }
-      return combined;
+      return CONFIG.PROJECTS.filter((item) =>
+        item.tags && item.tags.includes(state.activeFilter)
+      );
     }
 
     /**
      * 3. Renderiza a grade
      */
     function renderGallery() {
-      if (state.activeTab === "sobre") {
+      if (state.activeFilter === "sobre") {
         galleryGrid.style.display = "none";
         aboutSection.classList.add("is-visible");
         return;
@@ -862,24 +911,22 @@
       galleryGrid.style.display = "block";
       galleryGrid.innerHTML = "";
 
-      const items = getItemsForCurrentTab();
+      const items = getFilteredItems();
       state.currentItems = items;
 
       items.forEach((item, index) => {
         const card = document.createElement("article");
-        card.className = `masonry-item ${item.ratio || "ratio-16-9"}`;
-        card.style.animationDelay = `${index * 45}ms`;
+        card.className = `masonry-item ${item.ratio || "ratio-9-16"}`;
+        card.style.animationDelay = `${index * 35}ms`;
         card.tabIndex = 0;
         card.setAttribute("role", "button");
-        card.setAttribute("aria-label", `Abrir: ${item.title}`);
+        card.setAttribute("aria-label", `Assistir: ${item.title}`);
 
-        const isVideo = item.type === "video";
-        const thumbUrl = isVideo
-          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`
-          : item.image;
-        const fallbackThumb = isVideo
-          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
-          : "";
+        // Tags escondidas em data-attribute para filtros
+        card.dataset.tags = (item.tags || []).join(" ");
+
+        const thumbUrl = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`;
+        const fallbackThumb = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`;
 
         card.innerHTML = `
           <img
@@ -888,36 +935,30 @@
             alt="${item.title}"
             loading="lazy"
           />
-          ${
-            isVideo
-              ? `<div class="play-indicator" aria-hidden="true">
-                   <svg viewBox="0 0 24 24" fill="currentColor">
-                     <polygon points="7 5 19 12 7 19 7 5"></polygon>
-                   </svg>
-                 </div>`
-              : ""
-          }
+          <div class="play-indicator" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="7 5 19 12 7 19 7 5"></polygon>
+            </svg>
+          </div>
           <div class="masonry-overlay">
             <span class="masonry-title">${item.title}</span>
           </div>
         `;
 
-        if (isVideo) {
-          const img = card.querySelector(".masonry-media");
-          if (img) {
-            img.addEventListener("load", () => {
-              if (img.naturalWidth <= 120 && !img.dataset.fallback) {
-                img.dataset.fallback = "1";
-                img.src = fallbackThumb;
-              }
-            });
-            img.addEventListener("error", () => {
-              if (!img.dataset.fallback) {
-                img.dataset.fallback = "1";
-                img.src = fallbackThumb;
-              }
-            });
-          }
+        const img = card.querySelector(".masonry-media");
+        if (img) {
+          img.addEventListener("load", () => {
+            if (img.naturalWidth <= 120 && !img.dataset.fallback) {
+              img.dataset.fallback = "1";
+              img.src = fallbackThumb;
+            }
+          });
+          img.addEventListener("error", () => {
+            if (!img.dataset.fallback) {
+              img.dataset.fallback = "1";
+              img.src = fallbackThumb;
+            }
+          });
         }
 
         const openHandler = () => openLightbox(index);
@@ -934,7 +975,7 @@
     }
 
     /**
-     * 4. Lightbox Cinema
+     * 4. Lightbox Cinema Adaptável (Compacto 9:16 ou Widescreen 16:9)
      */
     function renderLightboxContent() {
       if (state.lightboxIndex < 0 || state.lightboxIndex >= state.currentItems.length) return;
@@ -946,26 +987,18 @@
         lightboxStage.classList.toggle("is-vertical", isVertical);
       }
 
-      if (item.type === "video") {
-        lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-        // cc_load_policy=0 desativa legendas automáticas; iv_load_policy=3 desativa anotações; modestbranding=1
-        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
+      lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
+      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1`;
 
-        lightboxContent.innerHTML = `
-          <iframe
-            src="${embedUrl}"
-            title="${item.title}"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"
-          ></iframe>
-        `;
-      } else {
-        lightboxContent.className = "lightbox-image-wrap";
-        lightboxContent.innerHTML = `
-          <img class="lightbox-image" src="${item.image}" alt="${item.title}" />
-        `;
-      }
+      lightboxContent.innerHTML = `
+        <iframe
+          src="${embedUrl}"
+          title="${item.title}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+        ></iframe>
+      `;
     }
 
     function openLightbox(index) {
@@ -1011,26 +1044,26 @@
     }
 
     /**
-     * 5. Navegação entre abas
+     * 5. Navegação & Filtros
      */
-    function setActiveTab(tabName) {
-      state.activeTab = tabName;
+    function setFilter(filter) {
+      state.activeFilter = filter;
       navButtons.forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.tab === tabName);
+        btn.classList.toggle("is-active", btn.dataset.filter === filter);
       });
       renderGallery();
     }
 
     function initNavigation() {
       navButtons.forEach((btn) => {
-        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+        btn.addEventListener("click", () => setFilter(btn.dataset.filter));
       });
 
       const brandHome = document.getElementById("brand-home");
       if (brandHome) {
         brandHome.addEventListener("click", (e) => {
           e.preventDefault();
-          setActiveTab("home");
+          setFilter("all");
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       }

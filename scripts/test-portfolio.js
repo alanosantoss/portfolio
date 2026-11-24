@@ -42,8 +42,17 @@ for (const tag of requiredTags) {
 }
 console.log('PASS: Estrutura HTML5 e IDs principais presentes.');
 
-// 3. Os 4 IDs de vídeo do YouTube especificados
+// 3. IDs de vídeo do YouTube configurados (9:16 e 16:9)
 const expectedVideoIds = [
+  'aNsA0iwBbqc',
+  'hc9Rki1utnc',
+  'cWRKCqN4UW4',
+  'U45LaKKHQkU',
+  '12uuS-EIivE',
+  '8sODZhQfBAI',
+  'TCaRDs6_cV0',
+  'ZgsA0pQszPk',
+  'cC3g1TvjrX0',
   '8lmrTdA1EsU',
   '0GgqcRnrNhs',
   'Gau-fbkBrrw',
@@ -56,7 +65,7 @@ for (const id of expectedVideoIds) {
     process.exit(1);
   }
 }
-console.log('PASS: Todos os 4 IDs de vídeo do YouTube estão configurados.');
+console.log(`PASS: Todos os ${expectedVideoIds.length} IDs de vídeo do YouTube estão configurados.`);
 
 // 4. Teste de sintaxe do JavaScript incorporado
 const scriptRegex = /<script>([\s\S]*?)<\/script>/i;
