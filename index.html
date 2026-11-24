@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alan Oliveira — Edição de Vídeo & Direção Criativa</title>
+  <meta
+    name="description"
+    content="Portfólio de Alan Oliveira — Edição de vídeo de alto impacto, pós-produção, motion e criação com IA."
+  />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* =========================================================================
+       VARIÁVEIS & RESET — ESTÉTICA EDITORIAL DARK
+    ========================================================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --surface-elevated: #1c1c1c;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.22);
+      --text: #f5f5f5;
+      --text-muted: #8e8e8e;
+      --text-dim: #606060;
+      --accent: #ffffff;
+      --max-width: 1320px;
+      --radius: 8px;
+      --transition: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    ::selection {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* =========================================================================
+       CABEÇALHO FIXO MINIMALISTA
+    ========================================================================= */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      width: 100%;
+      background: rgba(13, 13, 13, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-dot {
+      width: 7px;
+      height: 7px;
+      background-color: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+      display: inline-block;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-link {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      transition: color var(--transition);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-link:hover {
+      color: #ffffff;
+    }
+
+    .header-social {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      transition: all var(--transition);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .social-btn:hover {
+      color: #ffffff;
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .social-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* =========================================================================
+       HERO EDITORIAL
+    ========================================================================= */
+    .hero {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 84px 32px 56px;
+      width: 100%;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .hero-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      color: #ffffff;
+      max-width: 980px;
+      margin-bottom: 22px;
+    }
+
+    .hero-title span {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* =========================================================================
+       GRADE DE VÍDEOS (SHOWCASE)
+    ========================================================================= */
+    .showcase {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 16px 32px 96px;
+      width: 100%;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+    }
+
+    .section-meta {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+
+    .video-card {
+      position: relative;
+      background-color: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+
+    .video-card:hover,
+    .video-card:focus-visible {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      outline: none;
+    }
+
+    .card-thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000000;
+      overflow: hidden;
+    }
+
+    .card-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+    }
+
+    .video-card:hover .card-thumb {
+      transform: scale(1.04);
+      filter: brightness(0.85);
+    }
+
+    .card-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(18, 18, 18, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      opacity: 0.88;
+      transition: all var(--transition);
+      pointer-events: none;
+    }
+
+    .card-play-btn svg {
+      width: 22px;
+      height: 22px;
+      margin-left: 3px;
+    }
+
+    .video-card:hover .card-play-btn,
+    .video-card:focus-visible .card-play-btn {
+      transform: translate(-50%, -50%) scale(1.08);
+      background: rgba(255, 255, 255, 0.95);
+      color: #000000;
+      opacity: 1;
+      border-color: #ffffff;
+      box-shadow: 0 0 28px rgba(255, 255, 255, 0.35);
+    }
+
+    .card-info {
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card-tag {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .card-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.35;
+      letter-spacing: -0.015em;
+    }
+
+    /* =========================================================================
+       SEÇÃO SOBRE & CONTATO
+    ========================================================================= */
+    .about-section {
+      border-top: 1px solid var(--border);
+      background: rgba(20, 20, 20, 0.4);
+      padding: 96px 32px 108px;
+      width: 100%;
+    }
+
+    .about-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: start;
+    }
+
+    .about-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.15;
+      color: #ffffff;
+      margin-bottom: 24px;
+    }
+
+    .about-bio {
+      font-size: 1.04rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+      margin-bottom: 28px;
+    }
+
+    .about-bio strong {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .skill-pill {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text-muted);
+      letter-spacing: -0.01em;
+    }
+
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .contact-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+
+    .contact-desc {
+      font-size: 0.94rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .contact-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 22px;
+      background: #ffffff;
+      color: #0d0d0d;
+      font-weight: 600;
+      font-size: 0.92rem;
+      border-radius: var(--radius);
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: #e5e5e5;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 22px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.92rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all var(--transition);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .copy-toast {
+      position: absolute;
+      top: -34px;
+      background: #22c55e;
+      color: #000000;
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+
+    .copy-toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =========================================================================
+       LIGHTBOX CINEMA (FULL-SCREEN MODAL)
+    ========================================================================= */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background-color: rgba(6, 6, 6, 0.94);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 60px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .lightbox.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-stage {
+      width: 100%;
+      max-width: 1140px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      animation: lightboxPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes lightboxPop {
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .lightbox-video-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000000;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .lightbox-video-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .lightbox-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      padding: 0 4px;
+    }
+
+    .lightbox-title {
+      font-weight: 500;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      max-width: 80%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lightbox-counter {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: all var(--transition);
+      z-index: 110;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      transform: scale(1.05);
+    }
+
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.65);
+      transition: all var(--transition);
+      z-index: 110;
+    }
+
+    .lightbox-nav:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      transform: translateY(-50%) scale(1.06);
+    }
+
+    .lightbox-prev { left: 24px; }
+    .lightbox-next { right: 24px; }
+
+    /* =========================================================================
+       RODAPÉ
+    ========================================================================= */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 32px;
+      margin-top: auto;
+    }
+
+    .footer-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 0.82rem;
+    }
+
+    /* =========================================================================
+       RESPONSIVIDADE
+    ========================================================================= */
+    @media (max-width: 900px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .about-inner {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .lightbox {
+        padding: 60px 16px 24px;
+      }
+
+      .lightbox-nav {
+        top: auto;
+        bottom: 16px;
+        transform: none;
+        width: 44px;
+        height: 44px;
+      }
+
+      .lightbox-nav:hover {
+        transform: scale(1.06);
+      }
+
+      .lightbox-prev { left: 20px; }
+      .lightbox-next { right: 20px; }
+    }
+
+    @media (max-width: 640px) {
+      .header-inner {
+        padding: 18px 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 48px 20px 40px;
+      }
+
+      .showcase {
+        padding: 0 20px 64px;
+      }
+
+      .about-section {
+        padding: 64px 20px 80px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       CABEÇALHO
+  ========================================================================== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#top" class="brand">
+        <span class="brand-dot"></span>
+        Alan Oliveira
+      </a>
+
+      <nav class="nav-links" aria-label="Navegação do site">
+        <a href="#videos" class="nav-link">Vídeos</a>
+        <a href="#sobre" class="nav-link">Sobre</a>
+        <a href="#contato" class="nav-link">Contato</a>
+      </nav>
+
+      <div class="header-social" aria-label="Redes e Contato">
+        <!-- WhatsApp -->
+        <a id="header-whatsapp" class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+          </svg>
+        </a>
+        <!-- Instagram -->
+        <a id="header-instagram" class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+            <circle cx="12" cy="12" r="4"></circle>
+            <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor"></circle>
+          </svg>
+        </a>
+        <!-- LinkedIn -->
+        <a id="header-linkedin" class="social-btn" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- =========================================================================
+         HERO
+    ========================================================================== -->
+    <section class="hero">
+      <span class="hero-tag">Edição de Vídeo • Pós-Produção • Motion</span>
+      <h1 class="hero-title">
+        Narrativas visuais que prendem a atenção e <span>geram resultados</span>.
+      </h1>
+      <p class="hero-desc">
+        Especialista em edição dinâmica para YouTube, Reels e grandes formatos. Ritmo cinematográfico, sound design imersivo e direção visual refinada.
+      </p>
+    </section>
+
+    <!-- =========================================================================
+         SHOWCASE DE VÍDEOS
+    ========================================================================== -->
+    <section id="videos" class="showcase">
+      <div class="section-header">
+        <h2 class="section-title">Trabalhos em Destaque</h2>
+        <span class="section-meta" id="video-count">4 Projetos</span>
+      </div>
+
+      <div class="video-grid" id="video-grid">
+        <!-- Renderizado dinamicamente pelo JavaScript -->
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SEÇÃO SOBRE & CONTATO
+    ========================================================================== -->
+    <section id="sobre" class="about-section">
+      <div class="about-inner">
+        <div>
+          <h2 class="about-heading">Criatividade com precisão técnica.</h2>
+          <p class="about-bio">
+            Olá, sou <strong>Alan Oliveira</strong>. Trabalho com edição de vídeo, motion e design visual, transformando ideias brutas em conteúdos de alto engajamento.
+          </p>
+          <p class="about-bio">
+            Com domínio das principais ferramentas da indústria e soluções com inteligência artificial, meu foco é entregar produções ágeis, com acabamento premium e alinhadas à identidade de cada criador ou marca.
+          </p>
+
+          <div class="skills-list">
+            <span class="skill-pill">Adobe Premiere Pro</span>
+            <span class="skill-pill">After Effects</span>
+            <span class="skill-pill">Photoshop</span>
+            <span class="skill-pill">Sound Design</span>
+            <span class="skill-pill">Color Grading</span>
+            <span class="skill-pill">Soluções com IA</span>
+            <span class="skill-pill">Motion Graphics</span>
+          </div>
+        </div>
+
+        <div id="contato" class="contact-card">
+          <h3 class="contact-title">Vamos criar algo juntos?</h3>
+          <p class="contact-desc">
+            Disponível para projetos pontuais, produções contínuas para canais e redes sociais, e consultoria de pós-produção.
+          </p>
+
+          <div class="contact-actions">
+            <a id="btn-whatsapp" class="btn-primary" href="#" target="_blank" rel="noopener noreferrer">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+              Conversar no WhatsApp
+            </a>
+
+            <button id="btn-copy-email" class="btn-secondary" type="button">
+              <span id="copy-toast" class="copy-toast">E-mail copiado!</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              Copiar E-mail
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       RODAPÉ
+  ========================================================================== -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>&copy; <span id="year"></span> Alan Oliveira. Todos os direitos reservados.</span>
+      <span>Hospedado no GitHub Pages</span>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       LIGHTBOX CINEMA MODAL
+  ========================================================================== -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Visualização em tela cheia">
+    <button id="lightbox-close" class="lightbox-close" type="button" aria-label="Fechar player">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <button id="lightbox-prev" class="lightbox-nav lightbox-prev" type="button" aria-label="Vídeo anterior">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div class="lightbox-stage">
+      <div id="lightbox-content" class="lightbox-video-wrap"></div>
+      <div class="lightbox-caption">
+        <span id="lightbox-title" class="lightbox-title">Carregando...</span>
+        <span id="lightbox-counter" class="lightbox-counter">1 / 4</span>
+      </div>
+    </div>
+
+    <button id="lightbox-next" class="lightbox-nav lightbox-next" type="button" aria-label="Próximo vídeo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    /**
+     * =========================================================================
+     * CONFIGURAÇÃO CENTRAL — EDITE SEUS DADOS E LINKS AQUI
+     * =========================================================================
+     */
+    const CONFIG = {
+      // Contatos e Redes Sociais
+      WHATSAPP_NUMBER: "5500000000000", // 55 + DDD + Número (apenas dígitos)
+      WHATSAPP_MESSAGE: "Olá Alan, vi seu portfólio e gostaria de falar sobre um projeto de edição.",
+      EMAIL: "alanoliveira@exemplo.com",
+      INSTAGRAM_URL: "https://instagram.com/seuusuario",
+      LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
+
+      // Os 4 vídeos principais do YouTube
+      VIDEOS: [
+        {
+          id: "8lmrTdA1EsU",
+          tag: "Destaque • Edição",
+          fallbackTitle: "Showreel & Edição de Alto Impacto"
+        },
+        {
+          id: "0GgqcRnrNhs",
+          tag: "Cortes & Ritmo",
+          fallbackTitle: "Cortes Dinâmicos & Pós-Produção"
+        },
+        {
+          id: "Gau-fbkBrrw",
+          tag: "Narrativa • Comercial",
+          fallbackTitle: "Produção Audiovisual & Storytelling"
+        },
+        {
+          id: "R1g2IAmim6A",
+          tag: "Color & Motion",
+          fallbackTitle: "Motion Graphics & Color Grading"
+        }
+      ]
+    };
+
+    // Estado da aplicação
+    const state = {
+      videos: [...CONFIG.VIDEOS],
+      currentIndex: -1
+    };
+
+    // Elementos DOM
+    const videoGrid = document.getElementById("video-grid");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxContent = document.getElementById("lightbox-content");
+    const lightboxTitle = document.getElementById("lightbox-title");
+    const lightboxCounter = document.getElementById("lightbox-counter");
+    const lightboxClose = document.getElementById("lightbox-close");
+    const lightboxPrev = document.getElementById("lightbox-prev");
+    const lightboxNext = document.getElementById("lightbox-next");
+
+    /**
+     * Inicializa os links de contato e redes sociais
+     */
+    function initContacts() {
+      const cleanPhone = CONFIG.WHATSAPP_NUMBER.replace(/\D/g, "");
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
+
+      const headerWa = document.getElementById("header-whatsapp");
+      const headerIg = document.getElementById("header-instagram");
+      const headerLi = document.getElementById("header-linkedin");
+      const btnWa = document.getElementById("btn-whatsapp");
+
+      if (headerWa) headerWa.href = waUrl;
+      if (btnWa) btnWa.href = waUrl;
+      if (headerIg) headerIg.href = CONFIG.INSTAGRAM_URL;
+      if (headerLi) headerLi.href = CONFIG.LINKEDIN_URL;
+
+      // Botão de copiar e-mail
+      const copyBtn = document.getElementById("btn-copy-email");
+      const copyToast = document.getElementById("copy-toast");
+      let toastTimer = null;
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(CONFIG.EMAIL);
+            } else {
+              const ta = document.createElement("textarea");
+              ta.value = CONFIG.EMAIL;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+            }
+
+            if (copyToast) {
+              copyToast.classList.add("is-visible");
+              clearTimeout(toastTimer);
+              toastTimer = setTimeout(() => {
+                copyToast.classList.remove("is-visible");
+              }, 2200);
+            }
+          } catch (e) {
+            console.warn("Não foi possível copiar automaticamente:", e);
+          }
+        });
+      }
+
+      // Ano atual no rodapé
+      const yearEl = document.getElementById("year");
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+    }
+
+    /**
+     * Renderiza os cards de vídeo na grade
+     */
+    function renderVideoGrid() {
+      if (!videoGrid) return;
+      videoGrid.innerHTML = "";
+
+      state.videos.forEach((video, index) => {
+        const card = document.createElement("article");
+        card.className = "video-card";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", `Assistir vídeo: ${video.fallbackTitle}`);
+
+        const thumbUrl = `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/maxresdefault.jpg`;
+        const fallbackThumb = `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/hqdefault.jpg`;
+
+        card.innerHTML = `
+          <div class="card-thumb-wrap">
+            <img
+              class="card-thumb"
+              src="${thumbUrl}"
+              alt="${video.fallbackTitle}"
+              loading="lazy"
+            />
+            <div class="card-play-btn" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="6 4 20 12 6 20 6 4"></polygon>
+              </svg>
+            </div>
+          </div>
+          <div class="card-info">
+            <span class="card-tag">${video.tag || "Vídeo"}</span>
+            <h3 class="card-title" data-title-id="${video.id}">${video.title || video.fallbackTitle}</h3>
+          </div>
+        `;
+
+        // Tratamento de fallback para miniatura caso maxresdefault não esteja disponível
+        const img = card.querySelector(".card-thumb");
+        if (img) {
+          img.addEventListener("load", () => {
+            if (img.naturalWidth <= 120 && !img.dataset.fallbackApplied) {
+              img.dataset.fallbackApplied = "1";
+              img.src = fallbackThumb;
+            }
+          });
+          img.addEventListener("error", () => {
+            if (!img.dataset.fallbackApplied) {
+              img.dataset.fallbackApplied = "1";
+              img.src = fallbackThumb;
+            }
+          });
+        }
+
+        // Eventos de clique e acessibilidade por teclado
+        const open = () => openLightbox(index);
+        card.addEventListener("click", open);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            open();
+          }
+        });
+
+        videoGrid.appendChild(card);
+      });
+
+      // Busca títulos oficiais do YouTube via oEmbed em segundo plano
+      fetchTitlesFromYouTube();
+    }
+
+    /**
+     * Tenta buscar o título oficial no YouTube via oEmbed
+     */
+    function fetchTitlesFromYouTube() {
+      state.videos.forEach((video) => {
+        const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(
+          `https://www.youtube.com/watch?v=${video.id}`
+        )}&format=json`;
+
+        fetch(oembedUrl)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data && data.title) {
+              video.title = data.title;
+              const titleEl = document.querySelector(`[data-title-id="${video.id}"]`);
+              if (titleEl) {
+                titleEl.textContent = data.title;
+              }
+              // Se o lightbox aberto for deste vídeo, atualiza o título do lightbox
+              if (state.currentIndex >= 0 && state.videos[state.currentIndex].id === video.id) {
+                lightboxTitle.textContent = data.title;
+              }
+            }
+          })
+          .catch(() => {
+            // Silencioso se oEmbed for restrito pelo navegador
+          });
+      });
+    }
+
+    /**
+     * Gerenciador do Lightbox Cinema
+     */
+    function renderLightboxContent() {
+      if (state.currentIndex < 0 || state.currentIndex >= state.videos.length) return;
+      const video = state.videos[state.currentIndex];
+
+      lightboxContent.innerHTML = `
+        <iframe
+          src="https://www.youtube.com/embed/${encodeURIComponent(video.id)}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1"
+          title="${video.title || video.fallbackTitle}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      `;
+
+      lightboxTitle.textContent = video.title || video.fallbackTitle;
+      lightboxCounter.textContent = `${state.currentIndex + 1} / ${state.videos.length}`;
+    }
+
+    function openLightbox(index) {
+      state.currentIndex = index;
+      renderLightboxContent();
+      lightbox.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      lightboxContent.innerHTML = ""; // Remove o iframe para cessar imediatamente o áudio/reprodução
+      document.body.style.overflow = "";
+      state.currentIndex = -1;
+    }
+
+    function stepLightbox(delta) {
+      const total = state.videos.length;
+      if (!total) return;
+      state.currentIndex = (state.currentIndex + delta + total) % total;
+      renderLightboxContent();
+    }
+
+    function initLightbox() {
+      if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+      if (lightboxPrev) lightboxPrev.addEventListener("click", () => stepLightbox(-1));
+      if (lightboxNext) lightboxNext.addEventListener("click", () => stepLightbox(1));
+
+      // Clique fora do player fecha
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      // Teclado
+      document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("is-open")) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") stepLightbox(-1);
+        if (e.key === "ArrowRight") stepLightbox(1);
+      });
+    }
+
+    // Inicialização ao carregar a página
+    document.addEventListener("DOMContentLoaded", () => {
+      initContacts();
+      renderVideoGrid();
+      initLightbox();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alan Oliveira</title>
+  <meta
+    name="description"
+    content="Alan Oliveira — Edição de vídeo, design no Photoshop e soluções com IA."
+  />
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* =========================================================================
+       RESET & VARIÁVEIS — ESTÉTICA MINIMALISTA EDITORIAL
+    ========================================================================= */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #111111;
+      --surface: #181818;
+      --text: #f5f5f5;
+      --muted: #999999;
+      --muted-hover: #d4d4d4;
+      --gap: 28px;
+      --max-width: 1380px;
+      --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::selection {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* =========================================================================
+       CABEÇALHO MINIMALISTA EM LINHA ÚNICA
+    ========================================================================= */
+    .site-header {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 40px 44px 48px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand {
+      justify-self: start;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-size: 1.08rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      transition: opacity var(--transition);
+    }
+
+    .brand:hover {
+      opacity: 0.8;
+    }
+
+    .nav-links {
+      justify-self: center;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .nav-btn {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: -0.01em;
+      padding: 6px 2px;
+      position: relative;
+      transition: color var(--transition);
+    }
+
+    .nav-btn:hover {
+      color: var(--muted-hover);
+    }
+
+    .nav-btn.is-active {
+      color: #ffffff;
+    }
+
+    .nav-btn.is-active::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background-color: #ffffff;
+    }
+
+    .social-links {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      opacity: 0.85;
+      padding: 4px;
+      transition: opacity var(--transition), transform var(--transition);
+    }
+
+    .social-link:hover {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+
+    .social-link svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
+    /* =========================================================================
+       CONTAINER PRINCIPAL E GRADE MASONRY (3 COLUNAS)
+    ========================================================================= */
+    .main-container {
+      width: 100%;
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 44px 88px;
+    }
+
+    .masonry-grid {
+      column-count: 3;
+      column-gap: var(--gap);
+    }
+
+    .masonry-item {
+      break-inside: avoid;
+      -webkit-column-break-inside: avoid;
+      margin-bottom: var(--gap);
+      position: relative;
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      background-color: var(--surface);
+      border-radius: 0px;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(10px);
+      animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Proporções alternadas para o ritmo editorial da referência */
+    .ratio-4-3 { aspect-ratio: 4 / 3; }
+    .ratio-16-9 { aspect-ratio: 16 / 9; }
+    .ratio-21-9 { aspect-ratio: 21 / 9; }
+    .ratio-3-2 { aspect-ratio: 3 / 2; }
+    .ratio-16-10 { aspect-ratio: 16 / 10; }
+
+    .masonry-media {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
+    }
+
+    .masonry-item:hover .masonry-media {
+      transform: scale(1.02);
+      filter: brightness(0.86);
+    }
+
+    /* Overlay ultradiscreto apenas no hover */
+    .masonry-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.08) 45%,
+        rgba(0, 0, 0, 0) 100%
+      );
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 16px 18px;
+      pointer-events: none;
+    }
+
+    .masonry-item:hover .masonry-overlay,
+    .masonry-item:focus-visible .masonry-overlay {
+      opacity: 1;
+    }
+
+    .masonry-title {
+      font-size: 0.78rem;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.92);
+      letter-spacing: 0.01em;
+      max-width: 82%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .play-indicator {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.92);
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .masonry-item:hover .play-indicator,
+    .masonry-item:focus-visible .play-indicator {
+      opacity: 0.92;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .play-indicator svg {
+      width: 26px;
+      height: 26px;
+      filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+    }
+
+    /* Estado de carregamento silencioso (esqueletos discretos) */
+    .skeleton-item {
+      background: linear-gradient(90deg, #161616 25%, #1d1d1d 50%, #161616 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.6s infinite linear;
+      cursor: default;
+      opacity: 1;
+      transform: none;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* =========================================================================
+       SEÇÃO SOBRE (MINIMALISTA EDITORIAL)
+    ========================================================================= */
+    .about-section {
+      display: none;
+      max-width: 620px;
+      margin: 56px auto 40px;
+      animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .about-section.is-visible {
+      display: block;
+    }
+
+    .about-text {
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: #d4d4d4;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .about-text strong {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .about-links {
+      margin-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .about-link {
+      font-size: 0.875rem;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      padding-bottom: 4px;
+      transition: color var(--transition), border-color var(--transition);
+    }
+
+    .about-link:hover {
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+
+    .copy-feedback {
+      font-size: 0.78rem;
+      color: #a3a3a3;
+      margin-left: 8px;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .copy-feedback.is-visible {
+      opacity: 1;
+    }
+
+    /* =========================================================================
+       LIGHTBOX CINEMA (VÍDEO & IMAGEM FULL-SCREEN)
+    ========================================================================= */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background-color: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 64px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .lightbox.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-stage {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .lightbox-video-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background-color: #000000;
+      position: relative;
+    }
+
+    .lightbox-video-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 82vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-caption {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--muted);
+      min-height: 20px;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 24px;
+      right: 28px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999999;
+      transition: color var(--transition);
+      z-index: 105;
+    }
+
+    .lightbox-close:hover {
+      color: #ffffff;
+    }
+
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.55);
+      transition: color var(--transition), transform var(--transition);
+      z-index: 105;
+    }
+
+    .lightbox-nav:hover {
+      color: #ffffff;
+    }
+
+    .lightbox-prev {
+      left: 14px;
+    }
+
+    .lightbox-next {
+      right: 14px;
+    }
+
+    /* Player oculto usado pela YouTube IFrame API para ler os vídeos da playlist */
+    #yt-playlist-loader {
+      position: fixed;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      left: -9999px;
+      top: -9999px;
+    }
+
+    /* =========================================================================
+       RESPONSIVIDADE (TABLET & MOBILE)
+    ========================================================================= */
+    @media (max-width: 1024px) {
+      .site-header {
+        padding: 32px 28px 36px;
+      }
+
+      .main-container {
+        padding: 0 28px 64px;
+      }
+
+      .masonry-grid {
+        column-count: 2;
+        column-gap: 22px;
+      }
+
+      .masonry-item {
+        margin-bottom: 22px;
+      }
+
+      .lightbox {
+        padding: 32px 48px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .site-header {
+        padding: 24px 18px 28px;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+          "brand social"
+          "nav nav";
+        row-gap: 18px;
+      }
+
+      .brand {
+        grid-area: brand;
+        font-size: 1rem;
+      }
+
+      .social-links {
+        grid-area: social;
+        gap: 14px;
+      }
+
+      .nav-links {
+        grid-area: nav;
+        justify-self: start;
+        gap: 18px;
+      }
+
+      .main-container {
+        padding: 0 18px 56px;
+      }
+
+      .masonry-grid {
+        column-count: 1;
+        column-gap: 0;
+      }
+
+      .masonry-item {
+        margin-bottom: 18px;
+      }
+
+      .about-section {
+        margin: 28px auto 32px;
+      }
+
+      .lightbox {
+        padding: 56px 16px 24px;
+      }
+
+      .lightbox-close {
+        top: 10px;
+        right: 10px;
+      }
+
+      .lightbox-nav {
+        top: auto;
+        bottom: 16px;
+        transform: none;
+      }
+
+      .lightbox-prev {
+        left: 16px;
+      }
+
+      .lightbox-next {
+        right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       CABEÇALHO MINIMALISTA
+  ========================================================================== -->
+  <header class="site-header">
+    <a href="#home" class="brand" id="brand-home">Alan Oliveira</a>
+
+    <nav class="nav-links" aria-label="Navegação principal">
+      <button type="button" class="nav-btn is-active" data-tab="home">home</button>
+      <button type="button" class="nav-btn" data-tab="videos">vídeos</button>
+      <button type="button" class="nav-btn" data-tab="design">design</button>
+      <button type="button" class="nav-btn" data-tab="sobre">sobre</button>
+    </nav>
+
+    <div class="social-links" aria-label="Redes sociais">
+      <!-- Instagram -->
+      <a id="social-instagram" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="2.5" width="19" height="19" rx="5"></rect>
+          <circle cx="12" cy="12" r="4.2"></circle>
+          <circle cx="17.5" cy="6.5" r="0.9" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </a>
+
+      <!-- LinkedIn -->
+      <a id="social-linkedin" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+          <rect x="2" y="9" width="4" height="12"></rect>
+          <circle cx="4" cy="4" r="2"></circle>
+        </svg>
+      </a>
+
+      <!-- WhatsApp -->
+      <a id="social-whatsapp" class="social-link" href="#" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+        </svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       CONTEÚDO PRINCIPAL (GRADE MASONRY & SEÇÃO SOBRE)
+  ========================================================================== -->
+  <main class="main-container">
+    <!-- Galeria Masonry -->
+    <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
+
+    <!-- Seção Sobre (minimalista, oculta por padrão) -->
+    <section id="about-section" class="about-section" aria-label="Sobre Alan Oliveira">
+      <p class="about-text">
+        <strong>Alan Oliveira</strong> — editor de vídeo, designer no Photoshop e criador de soluções digitais com IA.
+        Mais de 5 anos trabalhando remotamente com edição de Reels, YouTube e eventos, direção visual para criativos e
+        grandes formatos, além de ferramentas e automações sob medida para empresas.
+      </p>
+
+      <div class="about-links">
+        <a id="about-whatsapp" class="about-link" href="#" target="_blank" rel="noopener noreferrer">whatsapp</a>
+        <button id="about-email-btn" class="about-link" type="button">e-mail</button>
+        <a id="about-instagram" class="about-link" href="#" target="_blank" rel="noopener noreferrer">instagram</a>
+        <a id="about-linkedin" class="about-link" href="#" target="_blank" rel="noopener noreferrer">linkedin</a>
+        <span id="copy-feedback" class="copy-feedback" aria-live="polite">e-mail copiado</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       LIGHTBOX FULL-SCREEN (VÍDEO & IMAGEM)
+  ========================================================================== -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Visualização em tela cheia">
+    <button id="lightbox-close" class="lightbox-close" type="button" aria-label="Fechar">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <button id="lightbox-prev" class="lightbox-nav lightbox-prev" type="button" aria-label="Anterior">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+
+    <div class="lightbox-stage">
+      <div id="lightbox-content" style="width: 100%; display: flex; justify-content: center;"></div>
+      <div class="lightbox-caption">
+        <span id="lightbox-title"></span>
+        <span id="lightbox-counter"></span>
+      </div>
+    </div>
+
+    <button id="lightbox-next" class="lightbox-nav lightbox-next" type="button" aria-label="Próximo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Elemento oculto para a YouTube IFrame API extrair a playlist -->
+  <div id="yt-playlist-loader" aria-hidden="true"></div>
+
+  <script>
+    /**
+     * =========================================================================
+     * CONFIGURAÇÃO — EDITE SEUS LINKS, PLAYLIST E TRABALHOS AQUI
+     * =========================================================================
+     */
+    const CONFIG = {
+      // ID da playlist do YouTube (trecho após "list=")
+      PLAYLIST_ID: "PLj38GvqmZ3lIBonyNg2DB-4qJulHTamXr",
+
+      // Contatos e redes sociais
+      WHATSAPP_NUMBER: "5500000000000", // 55 + DDD + número (apenas dígitos)
+      WHATSAPP_MESSAGE: "Olá Alan, vi seu portfólio e gostaria de conversar sobre um projeto.",
+      EMAIL: "seuemail@exemplo.com",
+      INSTAGRAM_URL: "https://instagram.com/seuusuario",
+      LINKEDIN_URL: "https://linkedin.com/in/seuusuario",
+
+      // Vídeos extras opcionais fora da playlist (basta adicionar o ID do YouTube)
+      // Exemplo: { id: "dQw4w9WgXcQ", title: "Projeto Especial" }
+      EXTRA_VIDEOS: [],
+
+      // Trabalhos de Design / Photoshop / IA exibidos em "home" e "design"
+      // Substitua as URLs pelas imagens reais dos seus projetos (pode usar pasta /img/ no Netlify)
+      DESIGN_ITEMS: [
+        {
+          type: "design",
+          title: "Direção Visual & Composição — Photoshop",
+          image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-4-3",
+        },
+        {
+          type: "design",
+          title: "Cenário Editorial — IA + Pós-Produção",
+          image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+        },
+        {
+          type: "design",
+          title: "Arte para Grandes Formatos — 400×300cm",
+          image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-3-2",
+        },
+      ],
+
+      // Fallback cinematográfico automático caso a YouTube API seja bloqueada no preview/offline
+      // Clicar em qualquer um abre a playlist completa do YouTube direto no lightbox
+      FALLBACK_PLAYLIST_CARDS: [
+        {
+          type: "playlist-fallback",
+          title: "Showreel & Edição — Playlist YouTube",
+          image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-4-3",
+          playlistIndex: 0,
+        },
+        {
+          type: "playlist-fallback",
+          title: "Reels & Cortes Dinâmicos",
+          image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-21-9",
+          playlistIndex: 1,
+        },
+        {
+          type: "playlist-fallback",
+          title: "Narrativa & Pós-Produção",
+          image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+          playlistIndex: 2,
+        },
+        {
+          type: "playlist-fallback",
+          title: "Color Grading & Ritmo",
+          image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-3-2",
+          playlistIndex: 3,
+        },
+        {
+          type: "playlist-fallback",
+          title: "Eventos & Filmagem",
+          image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-10",
+          playlistIndex: 4,
+        },
+        {
+          type: "playlist-fallback",
+          title: "Vídeos para Redes Sociais",
+          image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1400&q=85",
+          ratio: "ratio-16-9",
+          playlistIndex: 5,
+        },
+      ],
+    };
+
+    // Ritmo assimétrico de proporções para espelhar exatamente a referência editorial
+    const RATIO_PATTERN = [
+      "ratio-4-3",
+      "ratio-16-9",
+      "ratio-21-9",
+      "ratio-16-10",
+      "ratio-3-2",
+      "ratio-16-9",
+    ];
+
+    // Estado da aplicação
+    const state = {
+      activeTab: "home",
+      videoItems: [],
+      playlistLoaded: false,
+      visibleItems: [],
+      lightboxIndex: -1,
+    };
+
+    // Referências de DOM
+    const galleryGrid = document.getElementById("gallery-grid");
+    const aboutSection = document.getElementById("about-section");
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxContent = document.getElementById("lightbox-content");
+    const lightboxTitle = document.getElementById("lightbox-title");
+    const lightboxCounter = document.getElementById("lightbox-counter");
+
+    // =========================================================================
+    // 1. CONFIGURAÇÃO DE LINKS SOCIAIS E CONTATO
+    // =========================================================================
+    function initLinks() {
+      const cleanPhone = CONFIG.WHATSAPP_NUMBER.replace(/\D/g, "");
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
+
+      const socialIg = document.getElementById("social-instagram");
+      const socialLi = document.getElementById("social-linkedin");
+      const socialWa = document.getElementById("social-whatsapp");
+      const aboutWa = document.getElementById("about-whatsapp");
+      const aboutIg = document.getElementById("about-instagram");
+      const aboutLi = document.getElementById("about-linkedin");
+
+      if (socialIg) socialIg.href = CONFIG.INSTAGRAM_URL;
+      if (socialLi) socialLi.href = CONFIG.LINKEDIN_URL;
+      if (socialWa) socialWa.href = waUrl;
+      if (aboutWa) aboutWa.href = waUrl;
+      if (aboutIg) aboutIg.href = CONFIG.INSTAGRAM_URL;
+      if (aboutLi) aboutLi.href = CONFIG.LINKEDIN_URL;
+
+      // Copiar e-mail na aba "sobre"
+      const emailBtn = document.getElementById("about-email-btn");
+      const feedback = document.getElementById("copy-feedback");
+      let feedbackTimer = null;
+
+      if (emailBtn) {
+        emailBtn.addEventListener("click", () => {
+          try {
+            const temp = document.createElement("textarea");
+            temp.value = CONFIG.EMAIL;
+            temp.setAttribute("readonly", "");
+            temp.style.position = "fixed";
+            temp.style.opacity = "0";
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+
+            if (feedback) {
+              feedback.classList.add("is-visible");
+              clearTimeout(feedbackTimer);
+              feedbackTimer = setTimeout(() => {
+                feedback.classList.remove("is-visible");
+              }, 2200);
+            }
+          } catch (err) {
+            console.warn("Erro ao copiar e-mail:", err);
+          }
+        });
+      }
+    }
+
+    // =========================================================================
+    // 2. RENDERIZAÇÃO DA GRADE MASONRY
+    // =========================================================================
+    function renderSkeletons() {
+      galleryGrid.innerHTML = "";
+      RATIO_PATTERN.forEach((ratioClass) => {
+        const div = document.createElement("div");
+        div.className = `masonry-item skeleton-item ${ratioClass}`;
+        galleryGrid.appendChild(div);
+      });
+    }
+
+    function getItemsForCurrentTab() {
+      const videos = state.videoItems;
+      const designs = CONFIG.DESIGN_ITEMS || [];
+
+      if (state.activeTab === "videos") return videos;
+      if (state.activeTab === "design") return designs;
+
+      // Na aba "home", intercala vídeos e design para manter o ritmo editorial
+      const combined = [];
+      const maxLen = Math.max(videos.length, designs.length);
+      let dIdx = 0;
+
+      for (let i = 0; i < videos.length; i++) {
+        combined.push(videos[i]);
+        // Insere 1 item de design a cada 2 vídeos
+        if ((i + 1) % 2 === 0 && dIdx < designs.length) {
+          combined.push(designs[dIdx++]);
+        }
+      }
+      while (dIdx < designs.length) {
+        combined.push(designs[dIdx++]);
+      }
+
+      return combined;
+    }
+
+    function renderGallery() {
+      if (state.activeTab === "sobre") {
+        galleryGrid.style.display = "none";
+        aboutSection.classList.add("is-visible");
+        return;
+      }
+
+      aboutSection.classList.remove("is-visible");
+      galleryGrid.style.display = "block";
+      galleryGrid.innerHTML = "";
+
+      const items = getItemsForCurrentTab();
+      state.visibleItems = items;
+
+      items.forEach((item, index) => {
+        const card = document.createElement("article");
+        const ratioClass = item.ratio || RATIO_PATTERN[index % RATIO_PATTERN.length];
+        card.className = `masonry-item ${ratioClass}`;
+        card.style.animationDelay = `${Math.min(index * 45, 360)}ms`;
+        card.setAttribute("tabindex", "0");
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", item.title || "Abrir projeto");
+
+        const isVideo = item.type === "video" || item.type === "playlist-fallback";
+
+        // Imagem principal
+        const img = document.createElement("img");
+        img.className = "masonry-media";
+        img.alt = item.title || "Projeto do portfólio";
+        img.loading = "lazy";
+
+        if (item.type === "video") {
+          img.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`;
+          // Fallback automático para hqdefault caso o vídeo não tenha maxresdefault
+          img.addEventListener("load", () => {
+            if (img.naturalWidth <= 120 && !img.dataset.fallback) {
+              img.dataset.fallback = "1";
+              img.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`;
+            }
+          });
+          img.addEventListener("error", () => {
+            if (!img.dataset.fallback) {
+              img.dataset.fallback = "1";
+              img.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`;
+            }
+          });
+        } else {
+          img.src = item.image;
+          img.addEventListener("error", () => {
+            img.src = `https://placehold.co/1200x800/181818/666666?text=${encodeURIComponent(item.title || "Projeto")}`;
+          });
+        }
+
+        card.appendChild(img);
+
+        // Ícone minimalista de play apenas para vídeos (visível só no hover)
+        if (isVideo) {
+          const playIcon = document.createElement("div");
+          playIcon.className = "play-indicator";
+          playIcon.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="7 5 19 12 7 19 7 5"></polygon>
+            </svg>
+          `;
+          card.appendChild(playIcon);
+        }
+
+        // Overlay discreto com título pequeno no canto inferior esquerdo (apenas hover)
+        const overlay = document.createElement("div");
+        overlay.className = "masonry-overlay";
+
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "masonry-title";
+        titleSpan.textContent = item.title || "";
+        if (item.type === "video") {
+          titleSpan.dataset.videoTitleId = item.id;
+        }
+
+        overlay.appendChild(titleSpan);
+        card.appendChild(overlay);
+
+        // Ação de clique / Enter para abrir o Lightbox
+        const openHandler = () => openLightbox(index);
+        card.addEventListener("click", openHandler);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openHandler();
+          }
+        });
+
+        galleryGrid.appendChild(card);
+      });
+    }
+
+    // =========================================================================
+    // 3. INTEGRAÇÃO AUTOMÁTICA COM A PLAYLIST DO YOUTUBE (IFRAME PLAYER API)
+    // =========================================================================
+    function fetchVideoTitle(videoItem) {
+      const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(
+        `https://www.youtube.com/watch?v=${videoItem.id}`
+      )}&format=json`;
+
+      fetch(oembedUrl)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.title) {
+            videoItem.title = data.title;
+            // Atualiza o texto do overlay se o card já estiver na tela
+            const el = document.querySelector(`[data-video-title-id="${videoItem.id}"]`);
+            if (el) el.textContent = data.title;
+          }
+        })
+        .catch(() => {
+          // Silencioso se oEmbed estiver bloqueado
+        });
+    }
+
+    function applyVideos(videoIds) {
+      if (state.playlistLoaded) return;
+      state.playlistLoaded = true;
+
+      // Combina IDs da playlist + vídeos extras sem duplicar
+      const uniqueIds = [];
+      const seen = new Set();
+
+      videoIds.forEach((id) => {
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          uniqueIds.push({ id, title: "" });
+        }
+      });
+
+      (CONFIG.EXTRA_VIDEOS || []).forEach((extra) => {
+        if (extra.id && !seen.has(extra.id)) {
+          seen.add(extra.id);
+          uniqueIds.push({ id: extra.id, title: extra.title || "" });
+        }
+      });
+
+      state.videoItems = uniqueIds.map((v, idx) => ({
+        type: "video",
+        id: v.id,
+        title: v.title || `Vídeo ${idx + 1}`,
+        ratio: RATIO_PATTERN[idx % RATIO_PATTERN.length],
+      }));
+
+      renderGallery();
+
+      // Busca os títulos reais no YouTube em segundo plano
+      state.videoItems.forEach((item) => {
+        if (!item.title || item.title.startsWith("Vídeo ")) {
+          fetchVideoTitle(item);
+        }
+      });
+    }
+
+    function applyFallbackVideos() {
+      if (state.playlistLoaded) return;
+      state.playlistLoaded = true;
+
+      // Se houver EXTRA_VIDEOS cadastrados manualmente, usa-os; senão usa o fallback cinematográfico
+      if (CONFIG.EXTRA_VIDEOS && CONFIG.EXTRA_VIDEOS.length > 0) {
+        state.videoItems = CONFIG.EXTRA_VIDEOS.map((v, idx) => ({
+          type: "video",
+          id: v.id,
+          title: v.title || `Vídeo ${idx + 1}`,
+          ratio: RATIO_PATTERN[idx % RATIO_PATTERN.length],
+        }));
+      } else {
+        state.videoItems = CONFIG.FALLBACK_PLAYLIST_CARDS;
+      }
+
+      renderGallery();
+    }
+
+    // Callback global exigido pela YouTube IFrame Player API
+    window.onYouTubeIframeAPIReady = function () {
+      try {
+        const loader = new YT.Player("yt-playlist-loader", {
+          height: "1",
+          width: "1",
+          playerVars: {
+            listType: "playlist",
+            list: CONFIG.PLAYLIST_ID,
+            autoplay: 0,
+            controls: 0,
+          },
+          events: {
+            onReady: function (event) {
+              try {
+                // Tenta extrair a lista imediatamente ou após breve sincronização
+                const tryReadPlaylist = (attemptsLeft) => {
+                  const ids = event.target.getPlaylist ? event.target.getPlaylist() : null;
+                  if (Array.isArray(ids) && ids.length > 0) {
+                    applyVideos(ids);
+                    try { event.target.destroy(); } catch (_) {}
+                  } else if (attemptsLeft > 0) {
+                    setTimeout(() => tryReadPlaylist(attemptsLeft - 1), 350);
+                  } else {
+                    applyFallbackVideos();
+                  }
+                };
+                tryReadPlaylist(6);
+              } catch (err) {
+                applyFallbackVideos();
+              }
+            },
+            onError: function () {
+              applyFallbackVideos();
+            },
+          },
+        });
+      } catch (err) {
+        applyFallbackVideos();
+      }
+    };
+
+    function loadYouTubeAPI() {
+      // Timeout de segurança: se o preview/offline bloquear a API do YouTube, entra o fallback elegante
+      setTimeout(() => {
+        if (!state.playlistLoaded) {
+          applyFallbackVideos();
+        }
+      }, 3800);
+
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      tag.async = true;
+      tag.onerror = () => applyFallbackVideos();
+      document.head.appendChild(tag);
+    }
+
+    // =========================================================================
+    // 4. LIGHTBOX CINEMA (NAVEGAÇÃO POR SETAS, ESC E CLIQUE FORA)
+    // =========================================================================
+    function renderLightboxItem() {
+      const items = state.visibleItems;
+      if (!items.length || state.lightboxIndex < 0) return;
+
+      const item = items[state.lightboxIndex];
+      lightboxContent.innerHTML = "";
+
+      if (item.type === "video") {
+        const wrap = document.createElement("div");
+        wrap.className = "lightbox-video-wrap";
+        wrap.innerHTML = `
+          <iframe
+            src="https://www.youtube.com/embed/${encodeURIComponent(item.id)}?autoplay=1&rel=0&modestbranding=1"
+            title="${item.title || "Vídeo"}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        `;
+        lightboxContent.appendChild(wrap);
+      } else if (item.type === "playlist-fallback") {
+        const wrap = document.createElement("div");
+        wrap.className = "lightbox-video-wrap";
+        const idxParam = typeof item.playlistIndex === "number" ? `&index=${item.playlistIndex}` : "";
+        wrap.innerHTML = `
+          <iframe
+            src="https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(CONFIG.PLAYLIST_ID)}${idxParam}&autoplay=1&rel=0"
+            title="${item.title || "Playlist YouTube"}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        `;
+        lightboxContent.appendChild(wrap);
+      } else {
+        const img = document.createElement("img");
+        img.className = "lightbox-image";
+        img.src = item.image;
+        img.alt = item.title || "Design";
+        lightboxContent.appendChild(img);
+      }
+
+      lightboxTitle.textContent = item.title || "";
+      lightboxCounter.textContent = `${state.lightboxIndex + 1} / ${items.length}`;
+    }
+
+    function openLightbox(index) {
+      state.lightboxIndex = index;
+      renderLightboxItem();
+      lightbox.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("is-open");
+      lightboxContent.innerHTML = "";
+      document.body.style.overflow = "";
+      state.lightboxIndex = -1;
+    }
+
+    function stepLightbox(delta) {
+      const total = state.visibleItems.length;
+      if (!total) return;
+      state.lightboxIndex = (state.lightboxIndex + delta + total) % total;
+      renderLightboxItem();
+    }
+
+    function initLightboxControls() {
+      document.getElementById("lightbox-close").addEventListener("click", closeLightbox);
+      document.getElementById("lightbox-prev").addEventListener("click", () => stepLightbox(-1));
+      document.getElementById("lightbox-next").addEventListener("click", () => stepLightbox(1));
+
+      lightbox.addEventListener("click", (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (!lightbox.classList.contains("is-open")) return;
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") stepLightbox(-1);
+        if (e.key === "ArrowRight") stepLightbox(1);
+      });
+    }
+
+    // =========================================================================
+    // 5. NAVEGAÇÃO ENTRE ABAS (SEM RECARREGAR)
+    // =========================================================================
+    function setActiveTab(tabName) {
+      state.activeTab = tabName;
+      navButtons.forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.tab === tabName);
+      });
+      renderGallery();
+    }
+
+    function initNavigation() {
+      navButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+      });
+
+      const brandHome = document.getElementById("brand-home");
+      if (brandHome) {
+        brandHome.addEventListener("click", (e) => {
+          e.preventDefault();
+          setActiveTab("home");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }
+    }
+
+    // =========================================================================
+    // INICIALIZAÇÃO
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      initLinks();
+      initNavigation();
+      initLightboxControls();
+      renderSkeletons();
+      loadYouTubeAPI();
+    });
+  </script>
+</body>
+</html>

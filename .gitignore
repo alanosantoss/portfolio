@@ -1,0 +1,9 @@
+# Arquivos de sistema e ambiente
+.DS_Store
+Thumbs.db
+
+# Diretórios temporários e logs
+*.log
+.superpowers/
+.gemini/
+node_modules/
