@@ -602,6 +602,30 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lightbox-yt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      padding: 3px 9px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      transition: all var(--transition);
+      font-weight: 500;
+    }
+
+    .lightbox-yt-btn:hover {
+      background: #ff0000;
+      color: #ffffff;
+      border-color: #ff0000;
+      transform: translateY(-1px);
     }
 
     .lightbox-counter {
@@ -1125,16 +1149,31 @@
       if (state.currentIndex < 0 || state.currentIndex >= state.videos.length) return;
       const video = state.videos[state.currentIndex];
 
+      // Utiliza youtube-nocookie sem enablejsapi para evitar o Erro 153 de configuração
+      const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+
       lightboxContent.innerHTML = `
         <iframe
-          src="https://www.youtube.com/embed/${encodeURIComponent(video.id)}?autoplay=1&rel=0&modestbranding=1&enablejsapi=1"
+          src="${embedUrl}"
           title="${video.title || video.fallbackTitle}"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
         ></iframe>
       `;
 
-      lightboxTitle.textContent = video.title || video.fallbackTitle;
+      const ytWatchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(video.id)}`;
+      lightboxTitle.innerHTML = `
+        <span>${video.title || video.fallbackTitle}</span>
+        <a href="${ytWatchUrl}" target="_blank" rel="noopener noreferrer" class="lightbox-yt-btn" title="Assistir diretamente no YouTube">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
+          </svg>
+          YouTube
+        </a>
+      `;
       lightboxCounter.textContent = `${state.currentIndex + 1} / ${state.videos.length}`;
     }
 

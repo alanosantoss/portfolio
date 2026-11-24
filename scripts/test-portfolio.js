@@ -74,7 +74,7 @@ try {
 }
 
 // 5. Verificação da formatação de links e embeds
-if (!html.includes('https://www.youtube.com/embed/')) {
+if (!html.includes('https://www.youtube.com/embed/') && !html.includes('https://www.youtube-nocookie.com/embed/')) {
   console.error('FAIL: URL base de embed do YouTube não encontrada.');
   process.exit(1);
 }
