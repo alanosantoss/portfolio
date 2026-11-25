@@ -127,7 +127,7 @@
     .header-top {
       width: 100%;
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
       gap: 28px;
     }
@@ -151,6 +151,7 @@
       justify-self: center;
       display: flex;
       align-items: center;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 26px;
     }
@@ -790,6 +791,10 @@
         padding: 32px 28px 30px;
       }
 
+      .header-top {
+        gap: 20px;
+      }
+
       .main-container {
         padding: 0 28px 64px;
       }
@@ -1321,17 +1326,17 @@
     // Subcategorias dinâmicas por divisão principal (ocultas na home e sobre)
     const SUBCATEGORIES = {
       video: [
-        { id: "reels", label: "reels" },
-        { id: "16:9", label: "16:9" },
-        { id: "social-media", label: "social media" },
-        { id: "fitness", label: "fitness" },
-        { id: "institucional", label: "institucional" },
         { id: "comercial", label: "comercial" },
+        { id: "fitness", label: "fitness" },
+        { id: "saude", label: "saúde" },
+        { id: "institucional", label: "institucional" },
+        { id: "imobiliario", label: "imobiliário" },
         { id: "ugc", label: "ugc" },
-        { id: "viral", label: "viral" }
+        { id: "viral", label: "viral" },
+        { id: "16:9", label: "16:9" }
       ],
       design: [
-        { id: "social-media", label: "social media" },
+        { id: "comercial", label: "comercial" },
         { id: "identidade", label: "identidade visual" },
         { id: "editorial", label: "editorial" }
       ],

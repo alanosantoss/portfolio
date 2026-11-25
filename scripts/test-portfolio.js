@@ -314,18 +314,29 @@ test('index.html exibe CTA compacto de orçamento no topo, sem texto hero, sem l
   assert(!decodeURIComponent(headerWa.href).includes('projeto de edição'), 'Link do topo deve usar mensagem genérica');
 });
 
-test('renderSubNav filtra tags por mínimo de 2 itens e oculta barras rasas', () => {
+test('renderSubNav exibe categorias de nicho/objetivo (>= 2 itens), remove reels/social-media e centraliza menu', () => {
   const defaults = loadDefaultProjects();
   const indexHtml = readText(indexPath);
   const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
   const subNav = vmRun.dom.elements.get('sub-nav');
 
+  assert(/\.header-top\s*\{[^}]*grid-template-columns:\s*1fr\s+auto\s+1fr/i.test(indexHtml), '.header-top deve usar grid simétrico 1fr auto 1fr para centralizar navegação sobre os filtros');
+  assert(/\.nav-links\s*\{[^}]*justify-content:\s*center/i.test(indexHtml), '.nav-links deve centralizar seus itens com justify-content: center');
+
+  defaults.forEach((item, idx) => {
+    assert(!item.tags.includes('reels'), `Projeto #${idx} (${item.title}) não deve usar tag reels`);
+    assert(!item.tags.includes('social-media'), `Projeto #${idx} (${item.title}) não deve usar tag social-media`);
+  });
+
   vmRun.sandbox.setCategory('video');
   assert(!subNav.classList.contains('is-hidden'), 'Aba video deve exibir sub-nav');
-  assert(subNav.innerHTML.includes('data-subfilter="reels"'), 'Video deve incluir filtro reels');
-  assert(subNav.innerHTML.includes('data-subfilter="social-media"'), 'Video deve incluir filtro social-media');
+  assert(!subNav.innerHTML.includes('data-subfilter="reels"'), 'Video não deve incluir filtro reels');
+  assert(!subNav.innerHTML.includes('data-subfilter="social-media"'), 'Video não deve incluir filtro social-media');
+  assert(subNav.innerHTML.includes('data-subfilter="comercial"'), 'Video deve incluir filtro comercial');
   assert(subNav.innerHTML.includes('data-subfilter="fitness"'), 'Video deve incluir filtro fitness');
-  assert(!subNav.innerHTML.includes('data-subfilter="institucional"'), 'Tag com apenas 1 item não deve virar filtro');
+  assert(subNav.innerHTML.includes('data-subfilter="saude"'), 'Video deve incluir filtro saude');
+  assert(subNav.innerHTML.includes('data-subfilter="institucional"'), 'Video deve incluir filtro institucional');
+  assert(!subNav.innerHTML.includes('data-subfilter="imobiliario"'), 'Tag com apenas 1 item não deve virar filtro');
 
   vmRun.sandbox.setCategory('design');
   assert(subNav.classList.contains('is-hidden'), 'Aba design deve ocultar sub-nav quando há menos de 2 tags elegíveis');

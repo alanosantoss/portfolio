@@ -6,7 +6,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Edição Dinâmica",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["institucional"]
   },
   {
     type: "design",
@@ -31,7 +31,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Cortes",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["comercial"]
   },
   {
     type: "video",
@@ -40,7 +40,7 @@ window.DEFAULT_PROJECTS = [
     title: "Aesthetic Gym",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "fitness"]
+    tags: ["fitness"]
   },
   {
     type: "design",
@@ -57,7 +57,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Storytelling",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["saude"]
   },
   {
     type: "video",
@@ -66,7 +66,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Criativo",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["comercial", "saude"]
   },
   {
     type: "video",
@@ -92,7 +92,7 @@ window.DEFAULT_PROJECTS = [
     title: "Gym Workout — Social Media",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "fitness"]
+    tags: ["fitness"]
   },
   {
     type: "video",
@@ -101,7 +101,7 @@ window.DEFAULT_PROJECTS = [
     title: "UGC Campaigns - Brazil",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media", "ugc"]
+    tags: ["institucional", "comercial", "ugc"]
   },
   {
     type: "design",
@@ -109,7 +109,7 @@ window.DEFAULT_PROJECTS = [
     title: "Direção Visual & Composição — Photoshop",
     image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=85",
     ratio: "ratio-4-3",
-    tags: ["design", "social-media"]
+    tags: ["design", "comercial"]
   },
   {
     type: "video",
@@ -118,7 +118,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Retenção",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["comercial"]
   },
   {
     type: "video",
@@ -127,7 +127,7 @@ window.DEFAULT_PROJECTS = [
     title: "Comic Viral",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media", "viral"]
+    tags: ["fitness", "viral"]
   },
   {
     type: "design",
@@ -144,7 +144,7 @@ window.DEFAULT_PROJECTS = [
     title: "IA Video Render — Pós-Produção",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["ia", "video-ia", "reels"]
+    tags: ["ia", "video-ia"]
   },
   {
     type: "video",
@@ -153,7 +153,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Ritmo",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "social-media"]
+    tags: ["saude"]
   },
   {
     type: "design",
@@ -170,7 +170,7 @@ window.DEFAULT_PROJECTS = [
     title: "Medical Explainer Videos",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["reels", "institucional"]
+    tags: ["saude", "institucional"]
   },
   {
     type: "design",
