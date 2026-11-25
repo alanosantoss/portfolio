@@ -315,10 +315,25 @@
     }
 
     .masonry-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: flex;
+      align-items: flex-start;
       gap: var(--gap);
-      align-items: start;
+    }
+
+    .masonry-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+
+    .masonry-empty {
+      width: 100%;
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
     }
 
     .masonry-item {
@@ -332,6 +347,16 @@
       transform: translateY(12px);
       animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       border-radius: 4px;
+    }
+
+    .masonry-item.has-media-error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .masonry-item.has-media-error .masonry-media {
+      opacity: 0;
     }
 
     @keyframes fadeUp {
@@ -365,7 +390,6 @@
       object-fit: cover;
       display: block;
       transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), filter 0.3s ease;
-      image-rendering: -webkit-optimize-contrast;
     }
 
     .ratio-9-16 .masonry-media {
@@ -435,6 +459,17 @@
     .masonry-item:focus-visible .play-indicator {
       opacity: 0.95;
       transform: translate(-50%, -50%) scale(1);
+    }
+
+    @media (hover: none), (max-width: 768px) {
+      .masonry-overlay {
+        opacity: 1;
+      }
+
+      .play-indicator {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.95);
+      }
     }
 
     .play-indicator svg {
@@ -751,9 +786,8 @@
        RESPONSIVIDADE
     ========================================================================= */
     @media (max-width: 1200px) {
-      .masonry-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
+      .masonry-grid,
+      .masonry-col {
         gap: 16px;
       }
     }
@@ -767,9 +801,8 @@
         padding: 0 28px 64px;
       }
 
-      .masonry-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+      .masonry-grid,
+      .masonry-col {
         gap: 14px;
       }
 
@@ -826,9 +859,8 @@
         margin-bottom: 18px;
       }
 
-      .masonry-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+      .masonry-grid,
+      .masonry-col {
         gap: 12px;
       }
 
@@ -872,9 +904,8 @@
     }
 
     @media (max-width: 480px) {
-      .masonry-grid {
-        display: grid;
-        grid-template-columns: 1fr;
+      .masonry-grid,
+      .masonry-col {
         gap: 16px;
       }
     }
@@ -1267,8 +1298,80 @@
     }
 
     /**
-     * 4. Renderização da Grade
+     * 4. Utilitários de Segurança, Masonry em Colunas & Fallback
      */
+    function escapeHtml(str) {
+      return String(str == null ? "" : str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function isSafeImageUrl(url) {
+      if (typeof url !== "string") return false;
+      const trimmed = url.trim();
+      if (!trimmed || trimmed.startsWith("//")) return false;
+      if (/^https?:\/\//i.test(trimmed)) return true;
+      if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return false;
+      return !trimmed.includes("..");
+    }
+
+    function getColumnCount(width = window.innerWidth) {
+      if (width <= 480) return 1;
+      if (width <= 768) return 2;
+      if (width <= 900) return 3;
+      return 4;
+    }
+
+    function getRatioWeight(item) {
+      const weights = {
+        "ratio-9-16": 16 / 9,
+        "ratio-16-9": 9 / 16,
+        "ratio-4-3": 3 / 4,
+        "ratio-3-2": 2 / 3
+      };
+      if (item && weights[item.ratio]) return weights[item.ratio];
+      return item && item.aspect === "16:9" ? 9 / 16 : 16 / 9;
+    }
+
+    function attachThumbFallback(img, card, item) {
+      if (!img) return;
+      if (item.type !== "video") {
+        img.addEventListener("error", () => {
+          if (card) card.classList.add("has-media-error");
+        });
+        return;
+      }
+
+      const encodedId = encodeURIComponent(item.id || "");
+      const candidates = [
+        `https://i.ytimg.com/vi/${encodedId}/maxresdefault.jpg`,
+        `https://i.ytimg.com/vi/${encodedId}/sddefault.jpg`,
+        `https://i.ytimg.com/vi/${encodedId}/hqdefault.jpg`
+      ];
+      let step = 0;
+
+      const advance = () => {
+        if (step < candidates.length - 1) {
+          step += 1;
+          img.src = candidates[step];
+        } else if (card) {
+          card.classList.add("has-media-error");
+        }
+      };
+
+      img.addEventListener("load", () => {
+        if (img.naturalWidth > 0 && img.naturalWidth <= 120) {
+          advance();
+        }
+      });
+      img.addEventListener("error", advance);
+    }
+
+    let lastColumnCount = getColumnCount();
+
     function renderGallery() {
       if (heroStrip) {
         heroStrip.classList.toggle("is-hidden", state.activeCategory === "sobre");
@@ -1287,62 +1390,75 @@
       const items = getFilteredItems();
       state.currentItems = items;
 
+      if (items.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "masonry-empty";
+        empty.textContent = "Nenhum projeto encontrado nesta categoria.";
+        galleryGrid.appendChild(empty);
+        return;
+      }
+
+      const colCount = getColumnCount();
+      lastColumnCount = colCount;
+      const cols = [];
+      const colHeights = new Array(colCount).fill(0);
+
+      for (let i = 0; i < colCount; i++) {
+        const col = document.createElement("div");
+        col.className = "masonry-col";
+        cols.push(col);
+        galleryGrid.appendChild(col);
+      }
+
       items.forEach((item, index) => {
         const isVideo = item.type === "video";
+        const safeTitle = String(item.title || "");
         const card = document.createElement("article");
         card.className = `masonry-item ${item.ratio || "ratio-9-16"}`;
         card.style.animationDelay = `${index * 35}ms`;
         card.tabIndex = 0;
         card.setAttribute("role", "button");
-        card.setAttribute("aria-label", `${isVideo ? "Assistir" : "Ver"}: ${item.title}`);
+        card.setAttribute("aria-label", `${isVideo ? "Assistir" : "Ver"}: ${safeTitle}`);
 
         card.dataset.tags = (item.tags || []).join(" ");
         card.dataset.category = item.category || "";
 
+        const img = document.createElement("img");
+        img.className = "masonry-media";
+        img.alt = safeTitle;
+        img.setAttribute("loading", "lazy");
+
         const thumbUrl = isVideo
-          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/maxresdefault.jpg`
-          : item.image;
-        const fallbackThumb = isVideo
-          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id || "")}/maxresdefault.jpg`
           : item.image;
 
-        card.innerHTML = `
-          <img
-            class="masonry-media"
-            src="${thumbUrl}"
-            alt="${item.title}"
-            loading="lazy"
-          />
-          ${isVideo
-            ? `<div class="play-indicator" aria-hidden="true">
-                   <svg viewBox="0 0 24 24" fill="currentColor">
-                     <polygon points="7 5 19 12 7 19 7 5"></polygon>
-                   </svg>
-                 </div>`
-            : ""
-          }
-          <div class="masonry-overlay">
-            <span class="masonry-title">${item.title}</span>
-          </div>
-        `;
+        if (isVideo || isSafeImageUrl(thumbUrl)) {
+          img.src = thumbUrl;
+        } else {
+          card.classList.add("has-media-error");
+        }
+        attachThumbFallback(img, card, item);
+        card.appendChild(img);
 
         if (isVideo) {
-          const img = card.querySelector(".masonry-media");
-          if (img) {
-            img.addEventListener("load", () => {
-              if (img.naturalWidth <= 120 && !img.dataset.fallback) {
-                img.dataset.fallback = "1";
-                img.src = `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/sddefault.jpg`;
-              }
-            });
-            img.addEventListener("error", () => {
-              if (!img.dataset.fallback) {
-                img.dataset.fallback = "1";
-                img.src = fallbackThumb;
-              }
-            });
-          }
+          const playEl = document.createElement("div");
+          playEl.className = "play-indicator";
+          playEl.setAttribute("aria-hidden", "true");
+          playEl.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="7 5 19 12 7 19 7 5"></polygon>
+            </svg>
+          `;
+          card.appendChild(playEl);
         }
+
+        const overlay = document.createElement("div");
+        overlay.className = "masonry-overlay";
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "masonry-title";
+        titleSpan.textContent = safeTitle;
+        overlay.appendChild(titleSpan);
+        card.appendChild(overlay);
 
         const handleCardAction = () => {
           openLightbox(index);
@@ -1356,7 +1472,14 @@
           }
         });
 
-        galleryGrid.appendChild(card);
+        let shortestCol = 0;
+        for (let c = 1; c < colCount; c++) {
+          if (colHeights[c] < colHeights[shortestCol]) {
+            shortestCol = c;
+          }
+        }
+        cols[shortestCol].appendChild(card);
+        colHeights[shortestCol] += getRatioWeight(item) + 0.08;
       });
     }
 
@@ -1541,6 +1664,17 @@
           renderSubNav();
           renderGallery();
         }
+      });
+
+      // Reorganiza colunas apenas quando o breakpoint mudar
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (state.activeCategory !== "sobre" && getColumnCount() !== lastColumnCount) {
+            renderGallery();
+          }
+        }, 120);
       });
     });
   </script>

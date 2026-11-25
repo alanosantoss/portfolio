@@ -32,6 +32,7 @@ function createDomStub() {
     const attrs = new Map();
     const children = [];
     const elListeners = new Map();
+    let _innerHtml = '';
     const el = {
       tagName: tag.toUpperCase(),
       id,
@@ -44,12 +45,20 @@ function createDomStub() {
       alt: '',
       tabIndex: 0,
       textContent: '',
-      innerHTML: '',
+      get innerHTML() { return _innerHtml; },
+      set innerHTML(val) {
+        _innerHtml = String(val || '');
+        if (_innerHtml === '') children.length = 0;
+      },
       naturalWidth: 1280,
       dataset: {},
       style: {},
       children,
-      className: '',
+      get className() { return Array.from(classes).join(' '); },
+      set className(val) {
+        classes.clear();
+        String(val || '').split(/\s+/).filter(Boolean).forEach(c => classes.add(c));
+      },
       classList: {
         add: (...names) => names.forEach(n => classes.add(n)),
         remove: (...names) => names.forEach(n => classes.delete(n)),
@@ -327,6 +336,84 @@ test('setCategory e hashchange sincronizam #hash sem loops', () => {
   vmRun.windowObj.location.hash = '#inexistente';
   vmRun.windowObj.dispatchEvent({ type: 'hashchange' });
   assert.strictEqual(vmRun.evalExpr('state.activeCategory'), 'home');
+});
+
+// --- Task 3 Tests ---
+test('escapeHtml, isSafeImageUrl e getRatioWeight protegem e calculam pesos corretamente', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+
+  assert.strictEqual(
+    vmRun.sandbox.escapeHtml('Teste "Aspas" <img onerror=alert(1)>'),
+    'Teste &quot;Aspas&quot; &lt;img onerror=alert(1)&gt;'
+  );
+  assert.strictEqual(vmRun.sandbox.isSafeImageUrl('https://example.com/a.jpg'), true);
+  assert.strictEqual(vmRun.sandbox.isSafeImageUrl('assets/foto.jpg'), true);
+  assert.strictEqual(vmRun.sandbox.isSafeImageUrl('javascript:alert(1)'), false);
+  assert.strictEqual(vmRun.sandbox.isSafeImageUrl('data:text/html,<script>'), false);
+
+  assert(Math.abs(vmRun.sandbox.getRatioWeight({ ratio: 'ratio-9-16' }) - (16 / 9)) < 1e-6);
+  assert(Math.abs(vmRun.sandbox.getRatioWeight({ ratio: 'ratio-16-9' }) - (9 / 16)) < 1e-6);
+  assert(Math.abs(vmRun.sandbox.getRatioWeight({ ratio: 'ratio-4-3' }) - (3 / 4)) < 1e-6);
+  assert(Math.abs(vmRun.sandbox.getRatioWeight({ ratio: 'ratio-3-2' }) - (2 / 3)) < 1e-6);
+});
+
+test('renderGallery distribui cards em colunas pela menor altura e exibe estado vazio', () => {
+  const sample = [
+    { type: 'video', category: 'video', id: 'v1', title: 'Top 1', ratio: 'ratio-9-16', tags: [] },
+    { type: 'design', category: 'design', title: 'Top 2', image: 'https://example.com/2.jpg', ratio: 'ratio-16-9', tags: [] },
+    { type: 'design', category: 'design', title: 'Top 3', image: 'https://example.com/3.jpg', ratio: 'ratio-16-9', tags: [] },
+    { type: 'video', category: 'video', id: 'v4', title: 'Top 4', ratio: 'ratio-9-16', tags: [] },
+    { type: 'video', category: 'video', id: 'v5', title: 'Quinto', ratio: 'ratio-9-16', tags: [] }
+  ];
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, {
+    defaultProjects: sample,
+    innerWidth: 1280
+  });
+  const grid = vmRun.dom.elements.get('gallery-grid');
+  assert.strictEqual(grid.children.length, 4, 'Desktop 1280px deve renderizar 4 colunas');
+  assert.strictEqual(grid.children[0].children[0].getAttribute('aria-label'), 'Assistir: Top 1');
+  assert.strictEqual(grid.children[1].children[0].getAttribute('aria-label'), 'Ver: Top 2');
+  assert.strictEqual(grid.children[2].children[0].getAttribute('aria-label'), 'Ver: Top 3');
+  assert.strictEqual(grid.children[3].children[0].getAttribute('aria-label'), 'Assistir: Top 4');
+  assert.strictEqual(grid.children[1].children.length, 2, '5º card deve ir para a coluna mais baixa (16:9 na col 1)');
+
+  vmRun.sandbox.setCategory('ia');
+  assert.strictEqual(grid.children.length, 1, 'Categoria sem itens deve exibir estado vazio');
+  assert(grid.children[0].classList.contains('masonry-empty'), 'Estado vazio deve usar .masonry-empty');
+});
+
+test('attachThumbFallback percorre maxresdefault -> sddefault -> hqdefault e trata erro em design', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+
+  const img = vmRun.dom.makeElement('img');
+  const card = vmRun.dom.makeElement('article');
+  const videoItem = { type: 'video', id: 'abc12345678', title: 'Video' };
+  img.src = 'https://i.ytimg.com/vi/abc12345678/maxresdefault.jpg';
+  vmRun.sandbox.attachThumbFallback(img, card, videoItem);
+
+  img.naturalWidth = 120;
+  img.dispatchEvent({ type: 'load' });
+  assert.strictEqual(img.src, 'https://i.ytimg.com/vi/abc12345678/sddefault.jpg');
+
+  img.dispatchEvent({ type: 'error' });
+  assert.strictEqual(img.src, 'https://i.ytimg.com/vi/abc12345678/hqdefault.jpg');
+
+  const designImg = vmRun.dom.makeElement('img');
+  const designCard = vmRun.dom.makeElement('article');
+  vmRun.sandbox.attachThumbFallback(designImg, designCard, { type: 'design', image: 'https://x.com/bad.jpg', title: 'Design' });
+  designImg.dispatchEvent({ type: 'error' });
+  assert(designCard.classList.contains('has-media-error'), 'Erro em imagem design deve marcar .has-media-error');
+
+  assert(
+    /@media\s*\(hover:\s*none\),\s*\(max-width:\s*768px\)[\s\S]*?\.masonry-overlay[\s\S]*?opacity:\s*1/i.test(indexHtml),
+    'CSS deve exibir título no overlay em telas touch/mobile'
+  );
+  assert(!indexHtml.includes('-webkit-optimize-contrast'), 'CSS não deve conter -webkit-optimize-contrast');
 });
 
 let passed = 0;
