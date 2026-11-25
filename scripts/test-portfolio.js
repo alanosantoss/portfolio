@@ -486,18 +486,102 @@ test('Lightbox usa controls=1, exibe legenda escapada e gerencia foco no modal',
   assert.strictEqual(vmRun.dom.document.activeElement, triggerBtn, 'Foco deve retornar ao elemento anterior ao fechar');
 });
 
-let passed = 0;
-console.log('--- Executando testes automatizados do portfólio ---');
-for (const t of tests) {
-  try {
-    t.fn();
-    console.log(`PASS: ${t.name}`);
-    passed++;
-  } catch (err) {
-    console.error(`FAIL: ${t.name}\n  ${err.message}`);
-    process.exit(1);
+// --- Task 5 Tests ---
+test('admin.html preserva type design na categoria ia, suporta 4:3/3:2 e escapa XSS', () => {
+  const defaults = loadDefaultProjects();
+  const adminHtml = readText(adminPath);
+
+  assert(adminHtml.includes('id="input-type"'), 'Modal do admin deve ter seletor #input-type');
+  assert(adminHtml.includes('value="4:3"') && adminHtml.includes('value="3:2"'), 'Modal do admin deve suportar 4:3 e 3:2');
+
+  const vmRun = loadPageVm(adminHtml, { defaultProjects: defaults });
+  assert.strictEqual(
+    vmRun.sandbox.escapeHtml('Teste "Aspas" <img onerror=1>'),
+    'Teste &quot;Aspas&quot; &lt;img onerror=1&gt;'
+  );
+  assert.strictEqual(vmRun.sandbox.isSafeImageUrl('javascript:alert(1)'), false);
+
+  const iaImage = vmRun.sandbox.buildProjectPayload({
+    type: 'design',
+    category: 'ia',
+    rawSource: 'https://images.unsplash.com/photo-1',
+    title: 'IA Render',
+    aspect: '4:3',
+    tags: ['ia', 'renders'],
+    visible: true
+  }, { type: 'video', id: 'oldId123456' });
+  assert.strictEqual(iaImage.type, 'design');
+  assert.strictEqual(iaImage.category, 'ia');
+  assert.strictEqual(iaImage.ratio, 'ratio-4-3');
+  assert.strictEqual(iaImage.image, 'https://images.unsplash.com/photo-1');
+  assert.strictEqual('id' in iaImage, false, 'Item design não deve herdar id antigo');
+
+  const iaVideo = vmRun.sandbox.buildProjectPayload({
+    type: 'video',
+    category: 'ia',
+    rawSource: 'https://youtube.com/shorts/ZgsA0pQszPk',
+    title: 'IA Video',
+    aspect: '9:16',
+    tags: ['ia'],
+    visible: true
+  }, { type: 'design', image: 'https://old.com/a.jpg' });
+  assert.strictEqual(iaVideo.type, 'video');
+  assert.strictEqual(iaVideo.id, 'ZgsA0pQszPk');
+  assert.strictEqual(iaVideo.ratio, 'ratio-9-16');
+  assert.strictEqual('image' in iaVideo, false, 'Item video não deve herdar image antiga');
+});
+
+test('admin.html dragleave ignora filhos internos e pushToGitHubAPI envia apenas projects.js', async () => {
+  const defaults = loadDefaultProjects();
+  const adminHtml = readText(adminPath);
+  const vmRun = loadPageVm(adminHtml, { defaultProjects: defaults });
+
+  const card = vmRun.dom.makeElement('div');
+  const child = vmRun.dom.makeElement('span');
+  const outside = vmRun.dom.makeElement('div');
+  card.contains = (target) => target === child;
+  vmRun.sandbox.setupCardDragEvents(card, 0);
+
+  card.classList.add('drag-over-active');
+  card.dispatchEvent({ type: 'dragleave', relatedTarget: child });
+  assert(card.classList.contains('drag-over-active'), 'dragleave sobre filho interno não deve remover destaque');
+
+  card.dispatchEvent({ type: 'dragleave', relatedTarget: outside });
+  assert(!card.classList.contains('drag-over-active'), 'dragleave saindo do card deve remover destaque');
+
+  const calls = [];
+  vmRun.sandbox.fetch = async (url, opts = {}) => {
+    calls.push({ url, opts });
+    if (!opts.method || opts.method === 'GET') {
+      return { ok: false, status: 404, json: async () => ({ message: 'Not Found' }) };
+    }
+    return { ok: true, status: 201, json: async () => ({}) };
+  };
+
+  await vmRun.sandbox.pushToGitHubAPI('ghp_test_token');
+  assert.strictEqual(calls.length, 2, 'Deve fazer exatamente 1 GET e 1 PUT em projects.js');
+  assert(calls[0].url.endsWith('/contents/projects.js'), 'GET deve consultar contents/projects.js');
+  assert(calls[1].url.endsWith('/contents/projects.js'), 'PUT deve atualizar contents/projects.js');
+  const putBody = JSON.parse(calls[1].opts.body);
+  assert.strictEqual(putBody.sha, undefined, 'Quando GET retorna 404, PUT não deve enviar sha');
+  const decoded = Buffer.from(putBody.content, 'base64').toString('utf8');
+  assert(decoded.startsWith('window.DEFAULT_PROJECTS = '), 'Conteúdo enviado deve iniciar com window.DEFAULT_PROJECTS = ');
+});
+
+(async function runTests() {
+  let passed = 0;
+  console.log('--- Executando testes automatizados do portfólio ---');
+  for (const t of tests) {
+    try {
+      await t.fn();
+      console.log(`PASS: ${t.name}`);
+      passed++;
+    } catch (err) {
+      console.error(`FAIL: ${t.name}\n  ${err.message}`);
+      process.exit(1);
+    }
   }
-}
-console.log(`=============================================`);
-console.log(`TODOS OS TESTES PASSARAM COM SUCESSO! (${passed}/${tests.length})`);
-console.log(`=============================================`);
+  console.log(`=============================================`);
+  console.log(`TODOS OS TESTES PASSARAM COM SUCESSO! (${passed}/${tests.length})`);
+  console.log(`=============================================`);
+})();

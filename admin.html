@@ -776,9 +776,17 @@
         <input type="hidden" id="edit-index" value="-1" />
 
         <div class="form-group">
-          <label class="form-label" for="input-yt-url">Link ou ID do YouTube</label>
+          <label class="form-label" for="input-type">Tipo de Mídia</label>
+          <select id="input-type" class="form-select">
+            <option value="video">Vídeo (YouTube)</option>
+            <option value="design">Imagem (URL ou arquivo)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label id="label-media-source" class="form-label" for="input-yt-url">Link ou ID do YouTube</label>
           <input id="input-yt-url" class="form-input" type="text" placeholder="Ex: https://youtube.com/shorts/aNsA0iwBbqc ou aNsA0iwBbqc" required />
-          <span class="form-hint">Aceita link completo de Shorts, vídeo comum ou apenas o ID de 11 caracteres.</span>
+          <span id="hint-media-source" class="form-hint">Aceita link completo de Shorts, vídeo comum ou apenas o ID de 11 caracteres.</span>
         </div>
 
         <!-- Preview da Thumbnail -->
@@ -797,6 +805,8 @@
             <select id="input-aspect" class="form-select">
               <option value="9:16">9:16 (Vertical Reels / Shorts)</option>
               <option value="16:9">16:9 (Horizontal Widescreen)</option>
+              <option value="4:3">4:3 (Editorial / Foto)</option>
+              <option value="3:2">3:2 (Fotografia)</option>
             </select>
           </div>
 
@@ -823,7 +833,7 @@
 
         <div class="modal-footer">
           <button id="modal-cancel-btn" class="btn" type="button">Cancelar</button>
-          <button id="modal-submit-btn" class="btn btn-primary" type="submit">Salvar Vídeo</button>
+          <button id="modal-submit-btn" class="btn btn-primary" type="submit">Salvar Item</button>
         </div>
       </form>
     </div>
@@ -840,7 +850,7 @@
       </div>
       <div class="modal-body">
         <p style="font-size: 0.84rem; color: #d4d4d4; line-height: 1.5;">
-          Suas alterações já estão ativas no seu navegador! Se quiser que todos os visitantes do mundo vejam essa nova ordem no GitHub Pages, você pode copiar o array abaixo e colar no <code>PROJECTS</code> dentro de <code>index.html</code>:
+          Suas alterações já estão ativas no seu navegador! Para publicar no GitHub Pages manualmente, substitua o conteúdo do arquivo <code>projects.js</code> pelo código abaixo:
         </p>
         <textarea id="code-output" class="code-textarea" readonly></textarea>
       </div>
@@ -863,17 +873,19 @@
       </div>
       <div class="modal-body">
         <p style="font-size: 0.84rem; color: #cccccc; line-height: 1.5;">
-          Para que o botão <strong>Salvar no Git</strong> envie seus vídeos e posições direto para o seu repositório sem você precisar usar terminal, informe seu <strong>GitHub Token</strong> (feito uma única vez neste navegador):
+          Para que o botão <strong>Salvar no Git</strong> envie suas alterações em <code>projects.js</code> direto para o repositório, informe um <strong>GitHub Token</strong> (salvo apenas neste navegador):
         </p>
 
         <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--surface-border); border-radius: 6px; padding: 12px; font-size: 0.8rem; line-height: 1.5; color: #a3a3a3;">
-          <strong style="color: #ffffff;">Passo a passo rápido (30 segundos):</strong><br>
-          1. Abra a página de tokens do GitHub pelo botão abaixo.<br>
-          2. Dê um nome (ex: <code>Portfolio Admin</code>) e marque a permissão <strong>repo</strong>.<br>
-          3. Clique em <em>Generate token</em>, copie o código gerado (começa com <code>ghp_</code>) e cole abaixo:
-          <div style="margin-top: 10px;">
-            <a href="https://github.com/settings/tokens/new?description=Portfolio%20Admin&scopes=repo" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 0.76rem; padding: 6px 12px; text-decoration: none; display: inline-flex;">
-              🔗 Abrir Gerador de Token no GitHub
+          <strong style="color: #ffffff;">Recomendado (mais seguro — Fine-grained Token):</strong><br>
+          Crie um <em>Fine-grained personal access token</em> restrito apenas ao repositório <code>portfolio</code> com permissão <strong>Contents: Read and write</strong>.<br>
+          <span style="display: inline-block; margin-top: 6px;">Alternativa rápida (token clássico com escopo <code>repo</code>):</span>
+          <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="font-size: 0.76rem; padding: 6px 12px; text-decoration: none; display: inline-flex;">
+              🔒 Fine-grained Token (Recomendado)
+            </a>
+            <a href="https://github.com/settings/tokens/new?description=Portfolio%20Admin&scopes=repo" target="_blank" rel="noopener noreferrer" class="btn" style="font-size: 0.76rem; padding: 6px 12px; text-decoration: none; display: inline-flex;">
+              🔗 Token Clássico
             </a>
           </div>
         </div>
@@ -910,6 +922,44 @@
         ...item,
         visible: item.visible !== false
       }));
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? "" : str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function isSafeImageUrl(url) {
+      if (typeof url !== "string") return false;
+      const trimmed = url.trim();
+      if (!trimmed || trimmed.startsWith("//")) return false;
+      if (/^https?:\/\//i.test(trimmed)) return true;
+      if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return false;
+      return !trimmed.includes("..");
+    }
+
+    const ASPECT_TO_RATIO = {
+      "9:16": "ratio-9-16",
+      "16:9": "ratio-16-9",
+      "4:3": "ratio-4-3",
+      "3:2": "ratio-3-2"
+    };
+
+    const RATIO_TO_ASPECT = {
+      "ratio-9-16": "9:16",
+      "ratio-16-9": "16:9",
+      "ratio-4-3": "4:3",
+      "ratio-3-2": "3:2"
+    };
+
+    function getItemAspect(item) {
+      if (item && ASPECT_TO_RATIO[item.aspect]) return item.aspect;
+      if (item && RATIO_TO_ASPECT[item.ratio]) return RATIO_TO_ASPECT[item.ratio];
+      return "9:16";
     }
 
     /**
@@ -1011,9 +1061,14 @@
       filtered.forEach(({ item, originalIndex }) => {
         const isVideo = item.type === "video";
         const isVisible = item.visible !== false;
-        const thumbUrl = isVideo
-          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`
+        const safeTitle = escapeHtml(item.title || "");
+        const rawThumbUrl = isVideo
+          ? `https://i.ytimg.com/vi/${encodeURIComponent(item.id || "")}/hqdefault.jpg`
           : item.image;
+        const safeThumbUrl = (isVideo || isSafeImageUrl(rawThumbUrl)) ? escapeHtml(rawThumbUrl) : "";
+        const aspectLabel = getItemAspect(item);
+        const isReels = aspectLabel === "9:16";
+        const safeCategory = escapeHtml(item.category || item.type || "");
 
         const card = document.createElement("div");
         card.className = `admin-card ${!isVisible ? "is-hidden-project" : ""}`;
@@ -1041,19 +1096,19 @@
           </div>
 
           <div class="card-thumb-wrap">
-            <img class="card-thumb" src="${thumbUrl}" alt="${item.title}" loading="lazy" />
+            <img class="card-thumb" src="${safeThumbUrl}" alt="${safeTitle}" loading="lazy" />
             <div class="card-badges">
-              <span class="badge-pill ${item.aspect === "9:16" || item.ratio === "ratio-9-16" ? "badge-reels" : "badge-widescreen"}">
-                ${item.aspect === "9:16" || item.ratio === "ratio-9-16" ? "9:16 Reels" : "16:9 Wide"}
+              <span class="badge-pill ${isReels ? "badge-reels" : "badge-widescreen"}">
+                ${isReels ? "9:16 Reels" : escapeHtml(aspectLabel)}
               </span>
-              <span class="badge-pill">${item.category || item.type}</span>
+              <span class="badge-pill">${safeCategory}</span>
             </div>
           </div>
 
           <div class="card-body">
-            <h4 class="card-title">${item.title}</h4>
+            <h4 class="card-title">${safeTitle}</h4>
             <div class="card-meta">
-              ${(item.tags || []).map(t => `<span class="tag-badge">#${t}</span>`).join("")}
+              ${(item.tags || []).map(t => `<span class="tag-badge">#${escapeHtml(t)}</span>`).join("")}
             </div>
           </div>
 
@@ -1084,7 +1139,7 @@
           item.visible = e.target.checked;
           saveProjects(false);
           renderCards();
-          showToast(item.visible ? "Vídeo ativado no portfólio!" : "Vídeo ocultado do portfólio!");
+          showToast(item.visible ? "Item ativado no portfólio!" : "Item ocultado do portfólio!");
         });
 
         // Botões de Mover ↑ / ↓
@@ -1137,7 +1192,8 @@
         }
       });
 
-      card.addEventListener("dragleave", () => {
+      card.addEventListener("dragleave", (e) => {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
         card.classList.remove("drag-over-active");
       });
 
@@ -1195,6 +1251,9 @@
     const itemForm = document.getElementById("item-form");
     const editIndexInput = document.getElementById("edit-index");
     const modalTitle = document.getElementById("modal-title");
+    const inputType = document.getElementById("input-type");
+    const labelMediaSource = document.getElementById("label-media-source");
+    const hintMediaSource = document.getElementById("hint-media-source");
     const inputYt = document.getElementById("input-yt-url");
     const inputTitle = document.getElementById("input-title");
     const inputAspect = document.getElementById("input-aspect");
@@ -1203,24 +1262,58 @@
     const inputVisible = document.getElementById("input-visible");
     const thumbPreviewBox = document.getElementById("thumb-preview-box");
 
+    function updateMediaInputUI() {
+      const isDesign = inputType.value === "design";
+      if (labelMediaSource) {
+        labelMediaSource.textContent = isDesign ? "URL ou Caminho da Imagem" : "Link ou ID do YouTube";
+      }
+      if (inputYt) {
+        inputYt.placeholder = isDesign
+          ? "Ex: assets/arte.jpg ou https://images.unsplash.com/..."
+          : "Ex: https://youtube.com/shorts/aNsA0iwBbqc ou aNsA0iwBbqc";
+      }
+      if (hintMediaSource) {
+        hintMediaSource.textContent = isDesign
+          ? "Aceita caminho relativo (assets/...) ou URL completa da imagem (https://...)."
+          : "Aceita link completo de Shorts, vídeo comum ou apenas o ID de 11 caracteres.";
+      }
+    }
+
     function updateThumbPreview() {
-      const id = extractYouTubeId(inputYt.value);
+      const raw = inputYt.value.trim();
+      if (inputType.value === "design") {
+        if (isSafeImageUrl(raw)) {
+          thumbPreviewBox.innerHTML = `<img src="${escapeHtml(raw)}" alt="Preview" />`;
+        } else {
+          thumbPreviewBox.textContent = "Informe uma URL de imagem válida acima para pré-visualizar";
+        }
+        return;
+      }
+
+      const id = extractYouTubeId(raw);
       if (id && id.length === 11) {
+        const safeId = encodeURIComponent(id);
         thumbPreviewBox.innerHTML = `
-          <img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" alt="Preview" onerror="this.src='https://i.ytimg.com/vi/${id}/sddefault.jpg'" />
+          <img src="https://i.ytimg.com/vi/${safeId}/hqdefault.jpg" alt="Preview" onerror="this.src='https://i.ytimg.com/vi/${safeId}/sddefault.jpg'" />
         `;
       } else {
-        thumbPreviewBox.innerHTML = "Cole o link do YouTube acima para pré-visualizar";
+        thumbPreviewBox.textContent = "Cole o link do YouTube acima para pré-visualizar";
       }
     }
 
     inputYt.addEventListener("input", updateThumbPreview);
+    inputType.addEventListener("change", () => {
+      updateMediaInputUI();
+      updateThumbPreview();
+    });
 
     function openAddModal() {
       editIndexInput.value = "-1";
-      modalTitle.textContent = "Adicionar Novo Vídeo";
+      modalTitle.textContent = "Adicionar Novo Item";
       itemForm.reset();
+      inputType.value = "video";
       inputVisible.checked = true;
+      updateMediaInputUI();
       updateThumbPreview();
       itemModal.classList.add("is-open");
       inputYt.focus();
@@ -1231,12 +1324,14 @@
       if (!item) return;
       editIndexInput.value = index;
       modalTitle.textContent = "Editar Item";
-      inputYt.value = item.id || item.image || "";
+      inputType.value = item.type === "design" ? "design" : "video";
+      inputYt.value = item.type === "design" ? (item.image || item.id || "") : (item.id || item.image || "");
       inputTitle.value = item.title || "";
-      inputAspect.value = item.aspect || (item.ratio === "ratio-16-9" ? "16:9" : "9:16");
+      inputAspect.value = getItemAspect(item);
       inputCategory.value = item.category || "video";
       inputTags.value = (item.tags || []).join(", ");
       inputVisible.checked = item.visible !== false;
+      updateMediaInputUI();
       updateThumbPreview();
       itemModal.classList.add("is-open");
       inputTitle.focus();
@@ -1246,11 +1341,39 @@
       itemModal.classList.remove("is-open");
     }
 
+    function buildProjectPayload(fields, previousItem = null) {
+      const type = fields.type === "design" ? "design" : "video";
+      const aspect = ASPECT_TO_RATIO[fields.aspect] ? fields.aspect : "16:9";
+      const ratio = ASPECT_TO_RATIO[aspect];
+      const base = previousItem ? { ...previousItem } : {};
+      delete base.id;
+      delete base.image;
+
+      const payload = {
+        ...base,
+        type,
+        category: fields.category || "video",
+        title: String(fields.title || "").trim(),
+        aspect,
+        ratio,
+        tags: Array.isArray(fields.tags) ? fields.tags : [],
+        visible: fields.visible !== false
+      };
+
+      if (type === "video") {
+        payload.id = extractYouTubeId(fields.rawSource);
+      } else {
+        payload.image = String(fields.rawSource || "").trim();
+      }
+
+      return payload;
+    }
+
     itemForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const rawYt = inputYt.value.trim();
-      const ytId = extractYouTubeId(rawYt);
+      const rawSource = inputYt.value.trim();
       const title = inputTitle.value.trim();
+      const type = inputType.value;
       const aspect = inputAspect.value;
       const category = inputCategory.value;
       const visible = inputVisible.checked;
@@ -1259,31 +1382,21 @@
         .map(t => t.trim().toLowerCase().replace(/^#/, ""))
         .filter(Boolean);
 
-      const ratio = aspect === "9:16" ? "ratio-9-16" : "ratio-16-9";
-      const index = parseInt(editIndexInput.value, 10);
-
-      const itemData = {
-        type: category === "design" ? "design" : "video",
-        category,
-        title,
-        aspect,
-        ratio,
-        tags,
-        visible
-      };
-
-      if (itemData.type === "video") {
-        itemData.id = ytId;
-      } else {
-        itemData.image = rawYt;
+      if (type === "design" && !isSafeImageUrl(rawSource)) {
+        alert("Informe uma URL de imagem válida (https://..., http://... ou assets/...).");
+        return;
       }
 
+      const index = parseInt(editIndexInput.value, 10);
+      const previousItem = index >= 0 ? state.projects[index] : null;
+      const itemData = buildProjectPayload({ type, category, rawSource, title, aspect, tags, visible }, previousItem);
+
       if (index >= 0) {
-        state.projects[index] = { ...state.projects[index], ...itemData };
-        showToast("Vídeo atualizado com sucesso!");
+        state.projects[index] = itemData;
+        showToast("Item atualizado com sucesso!");
       } else {
         state.projects.unshift(itemData); // Adiciona no início da lista
-        showToast("Vídeo adicionado no topo da lista!");
+        showToast("Item adicionado no topo da lista!");
       }
 
       saveProjects(false);
@@ -1304,7 +1417,7 @@
         return copy;
       });
 
-      codeOutput.value = "PROJECTS: " + JSON.stringify(cleanArray, null, 2);
+      codeOutput.value = "window.DEFAULT_PROJECTS = " + JSON.stringify(cleanArray, null, 2) + ";\n";
       codeModal.classList.add("is-open");
     }
 
@@ -1376,64 +1489,42 @@
         "Content-Type": "application/json"
       };
 
-      // 1. Obter arquivo index.html atual no GitHub
-      const resIndex = await fetch(`https://api.github.com/repos/${repo}/contents/index.html`, { headers });
-      if (!resIndex.ok) {
-        const err = await resIndex.json().catch(() => ({}));
-        throw new Error(err.message || `Erro ao acessar o repositório (${resIndex.status})`);
+      // 1. Verificar SHA atual de projects.js no GitHub (ou criar se 404)
+      const resProjects = await fetch(`https://api.github.com/repos/${repo}/contents/projects.js`, { headers });
+      let sha;
+      if (resProjects.ok) {
+        const dataProjects = await resProjects.json();
+        sha = dataProjects.sha;
+      } else if (resProjects.status !== 404) {
+        const err = await resProjects.json().catch(() => ({}));
+        throw new Error(err.message || `Erro ao acessar o repositório (${resProjects.status})`);
       }
-      const dataIndex = await resIndex.json();
-      const rawIndexContent = base64ToUtf8(dataIndex.content.replace(/\s/g, ""));
 
-      // 2. Preparar array de projetos limpo
+      // 2. Preparar conteúdo limpo de projects.js
       const cleanArray = state.projects.map(p => {
         const copy = { ...p };
         if (copy.visible === true) delete copy.visible;
         return copy;
       });
+      const updatedProjectsContent = "window.DEFAULT_PROJECTS = " + JSON.stringify(cleanArray, null, 2) + ";\n";
 
-      const updatedIndexContent = rawIndexContent.replace(
-        /PROJECTS:\s*\[[\s\S]*?\](?=\s*\n\s*\}\s*;)/,
-        "PROJECTS: " + JSON.stringify(cleanArray, null, 2)
-      );
-
-      // 3. Enviar commit de index.html
-      const putIndex = await fetch(`https://api.github.com/repos/${repo}/contents/index.html`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify({
-          message: "feat: atualiza catalogo de videos via Painel Admin",
-          content: utf8ToBase64(updatedIndexContent),
-          sha: dataIndex.sha
-        })
-      });
-      if (!putIndex.ok) {
-        const err = await putIndex.json().catch(() => ({}));
-        throw new Error(err.message || `Erro ao salvar index.html (${putIndex.status})`);
+      // 3. Enviar commit apenas de projects.js
+      const putBody = {
+        message: "feat: atualiza catalogo de projetos via Painel Admin",
+        content: utf8ToBase64(updatedProjectsContent)
+      };
+      if (sha) {
+        putBody.sha = sha;
       }
 
-      // 4. Também atualiza admin.html no repositório de forma transparente
-      try {
-        const resAdmin = await fetch(`https://api.github.com/repos/${repo}/contents/admin.html`, { headers });
-        if (resAdmin.ok) {
-          const dataAdmin = await resAdmin.json();
-          const rawAdminContent = base64ToUtf8(dataAdmin.content.replace(/\s/g, ""));
-          const updatedAdminContent = rawAdminContent.replace(
-            /const\s+DEFAULT_PROJECTS\s*=\s*\[[\s\S]*?\];/,
-            "const DEFAULT_PROJECTS = " + JSON.stringify(state.projects, null, 2) + ";"
-          );
-          await fetch(`https://api.github.com/repos/${repo}/contents/admin.html`, {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({
-              message: "chore: sincroniza catalogo padrao no admin",
-              content: utf8ToBase64(updatedAdminContent),
-              sha: dataAdmin.sha
-            })
-          });
-        }
-      } catch (e) {
-        console.warn("Aviso ao sincronizar admin.html:", e);
+      const putProjects = await fetch(`https://api.github.com/repos/${repo}/contents/projects.js`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(putBody)
+      });
+      if (!putProjects.ok) {
+        const err = await putProjects.json().catch(() => ({}));
+        throw new Error(err.message || `Erro ao salvar projects.js (${putProjects.status})`);
       }
     }
 
