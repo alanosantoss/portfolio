@@ -292,12 +292,13 @@ test('admin.html loadProjects faz fallback seguro para window.DEFAULT_PROJECTS',
 });
 
 // --- Task 2 Tests ---
-test('index.html exibe Hero com CTA WhatsApp genérico, sem link admin no footer e sem código morto', () => {
+test('index.html exibe CTA compacto de orçamento no topo, sem texto hero, sem link admin no footer e sem código morto', () => {
   const defaults = loadDefaultProjects();
   const indexHtml = readText(indexPath);
 
-  assert(indexHtml.includes('class="hero-strip"'), 'Hero strip deve existir');
-  assert(indexHtml.includes('<h1 class="hero-title">'), 'Página deve ter <h1> no Hero');
+  assert(!indexHtml.includes('class="hero-strip"'), 'Hero strip com texto deve ser removida');
+  assert(!indexHtml.includes('Edição de vídeo, design e soluções com IA para marcas e criadores.'), 'Texto introdutório abaixo do cabeçalho deve ser removido');
+  assert(indexHtml.includes('id="header-whatsapp"'), 'Cabeçalho deve conter CTA compacto #header-whatsapp');
   assert(!indexHtml.includes('projeto de edição'), 'Mensagem do WhatsApp deve ser genérica');
   assert(!/<footer[\s\S]*?admin\.html[\s\S]*?<\/footer>/i.test(indexHtml), 'Footer público não deve linkar admin.html');
   assert(!/<footer[\s\S]*?#555|#666/i.test(indexHtml), 'Footer não deve usar cores de baixo contraste #555/#666');
@@ -306,14 +307,9 @@ test('index.html exibe Hero com CTA WhatsApp genérico, sem link admin no footer
 
   const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
   vmRun.sandbox.initContacts();
-  const heroWa = vmRun.dom.elements.get('hero-whatsapp');
-  assert(heroWa && heroWa.href.startsWith('https://wa.me/5511991584991?text='), 'CTA Hero deve montar link do WhatsApp');
-  assert(!decodeURIComponent(heroWa.href).includes('projeto de edição'), 'Link do Hero deve usar mensagem genérica');
-
-  vmRun.sandbox.setCategory('sobre');
-  assert(vmRun.dom.elements.get('hero-strip').classList.contains('is-hidden'), 'Hero deve ocultar na aba sobre');
-  vmRun.sandbox.setCategory('home');
-  assert(!vmRun.dom.elements.get('hero-strip').classList.contains('is-hidden'), 'Hero deve aparecer na aba home');
+  const headerWa = vmRun.dom.elements.get('header-whatsapp');
+  assert(headerWa && headerWa.href.startsWith('https://wa.me/5511991584991?text='), 'CTA do topo deve montar link do WhatsApp');
+  assert(!decodeURIComponent(headerWa.href).includes('projeto de edição'), 'Link do topo deve usar mensagem genérica');
 });
 
 test('renderSubNav filtra tags por mínimo de 2 itens e oculta barras rasas', () => {

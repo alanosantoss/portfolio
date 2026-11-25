@@ -254,6 +254,24 @@
       display: block;
     }
 
+    .header-cta {
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #111111;
+      background-color: #ffffff;
+      padding: 6px 12px;
+      border-radius: 999px;
+      transition: opacity var(--transition), transform var(--transition);
+    }
+
+    .header-cta:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
     /* =========================================================================
        CONTAINER PRINCIPAL & GRADE MASONRY EDITORIAL
     ========================================================================= */
@@ -262,48 +280,6 @@
       max-width: var(--max-width);
       margin: 0 auto;
       padding: 0 40px 96px;
-    }
-
-    .hero-strip {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 0 0 24px;
-      margin-bottom: 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .hero-strip.is-hidden {
-      display: none;
-    }
-
-    .hero-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.98rem;
-      font-weight: 500;
-      line-height: 1.45;
-      color: #e5e5e5;
-      letter-spacing: -0.015em;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: #111111;
-      background-color: #ffffff;
-      padding: 8px 16px;
-      border-radius: 999px;
-      transition: opacity var(--transition), transform var(--transition);
-    }
-
-    .hero-cta:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
     }
 
     .site-footer {
@@ -844,7 +820,12 @@
 
       .social-links {
         grid-area: social;
-        gap: 14px;
+        gap: 10px;
+      }
+
+      .header-cta {
+        font-size: 0.74rem;
+        padding: 5px 10px;
       }
 
       .nav-links {
@@ -859,13 +840,6 @@
 
       .main-container {
         padding: 0 20px 56px;
-      }
-
-      .hero-strip {
-        flex-direction: column;
-        align-items: flex-start;
-        padding-bottom: 18px;
-        margin-bottom: 18px;
       }
 
       .masonry-grid,
@@ -1107,6 +1081,8 @@
       </nav>
 
       <div class="social-links" aria-label="Redes sociais e contato">
+        <a id="header-whatsapp" class="header-cta" href="#" target="_blank" rel="noopener noreferrer">Orçamento</a>
+
         <!-- WhatsApp -->
         <a id="social-whatsapp" class="social-link" href="#" target="_blank" rel="noopener noreferrer"
           aria-label="WhatsApp">
@@ -1139,13 +1115,6 @@
        CONTEÚDO PRINCIPAL (GRADE MASONRY FILTRÁVEL)
   ========================================================================== -->
   <main class="main-container">
-    <section id="hero-strip" class="hero-strip" aria-label="Apresentação">
-      <h1 class="hero-title">Edição de vídeo, design e soluções com IA para marcas e criadores.</h1>
-      <a id="hero-whatsapp" class="hero-cta" href="#" target="_blank" rel="noopener noreferrer">
-        Orçamento no WhatsApp
-      </a>
-    </section>
-
     <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
 
     <!-- Seção Sobre -->
@@ -1368,7 +1337,6 @@
     };
 
     // Elementos DOM
-    const heroStrip = document.getElementById("hero-strip");
     const galleryGrid = document.getElementById("gallery-grid");
     const aboutSection = document.getElementById("about-section");
     const lightbox = document.getElementById("lightbox");
@@ -1381,14 +1349,14 @@
       const cleanPhone = CONFIG.WHATSAPP_NUMBER.replace(/\D/g, "");
       const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
 
+      const headerWa = document.getElementById("header-whatsapp");
       const socialWa = document.getElementById("social-whatsapp");
       const socialLi = document.getElementById("social-linkedin");
-      const heroWa = document.getElementById("hero-whatsapp");
       const aboutWa = document.getElementById("about-whatsapp");
       const aboutLi = document.getElementById("about-linkedin");
 
+      if (headerWa) headerWa.href = waUrl;
       if (socialWa) socialWa.href = waUrl;
-      if (heroWa) heroWa.href = waUrl;
       if (aboutWa) aboutWa.href = waUrl;
       if (socialLi) socialLi.href = CONFIG.LINKEDIN_URL;
       if (aboutLi) aboutLi.href = CONFIG.LINKEDIN_URL;
@@ -1589,10 +1557,6 @@
     let lastColumnCount = getColumnCount();
 
     function renderGallery() {
-      if (heroStrip) {
-        heroStrip.classList.toggle("is-hidden", state.activeCategory === "sobre");
-      }
-
       if (state.activeCategory === "sobre") {
         galleryGrid.style.display = "none";
         aboutSection.classList.add("is-visible");
@@ -1871,10 +1835,6 @@
       const targetCategory = VALID_CATEGORIES.includes(category) ? category : "home";
       state.activeCategory = targetCategory;
       state.activeSubFilter = "all";
-
-      if (heroStrip) {
-        heroStrip.classList.toggle("is-hidden", targetCategory === "sobre");
-      }
 
       if (updateHash) {
         const targetHash = `#${targetCategory}`;
