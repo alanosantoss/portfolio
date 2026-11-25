@@ -738,6 +738,15 @@
       display: block;
     }
 
+    .lightbox-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #cccccc;
+      letter-spacing: 0.01em;
+      line-height: 1.4;
+      padding: 0 8px;
+    }
+
     .lightbox-close {
       position: fixed;
       top: 24px;
@@ -1097,6 +1106,7 @@
 
     <div class="lightbox-stage">
       <div id="lightbox-content"></div>
+      <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
 
     <button id="lightbox-next" class="lightbox-nav lightbox-next" type="button" aria-label="Próximo">
@@ -1486,24 +1496,32 @@
     /**
      * 5. Lightbox Cinema Adaptável (Compacto 9:16, Widescreen 16:9 ou Imagem)
      */
+    const CATEGORY_LABELS = {
+      video: "vídeo",
+      design: "design",
+      ia: "ia"
+    };
+
     function renderLightboxContent() {
       if (state.lightboxIndex < 0 || state.lightboxIndex >= state.currentItems.length) return;
       const item = state.currentItems[state.lightboxIndex];
       const isVideo = item.type === "video";
       const isVertical = item.aspect === "9:16" || item.ratio === "ratio-9-16";
       const lightboxStage = document.querySelector(".lightbox-stage");
+      const lightboxCaption = document.getElementById("lightbox-caption");
+      const safeTitleAttr = escapeHtml(item.title || "");
 
       if (isVideo) {
         if (lightboxStage) {
           lightboxStage.classList.toggle("is-vertical", isVertical);
         }
         lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&disablekb=1`;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id || "")}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`;
 
         lightboxContent.innerHTML = `
           <iframe
             src="${embedUrl}"
-            title="${item.title}"
+            title="${safeTitleAttr}"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
             referrerpolicy="strict-origin-when-cross-origin"
@@ -1514,21 +1532,36 @@
           lightboxStage.classList.remove("is-vertical");
         }
         lightboxContent.className = "lightbox-image-wrap";
-        lightboxContent.innerHTML = `
-          <img class="lightbox-image" src="${item.image}" alt="${item.title}" />
-        `;
+        if (isSafeImageUrl(item.image)) {
+          lightboxContent.innerHTML = `
+            <img class="lightbox-image" src="${escapeHtml(item.image)}" alt="${safeTitleAttr}" />
+          `;
+        } else {
+          lightboxContent.innerHTML = "";
+        }
+      }
+
+      if (lightboxCaption) {
+        const catLabel = CATEGORY_LABELS[item.category] || item.category || "";
+        lightboxCaption.textContent = catLabel ? `${item.title || ""} • ${catLabel}` : (item.title || "");
       }
     }
 
     let isClosingLightbox = false;
+    let lastFocusedElement = null;
 
     function openLightbox(index) {
       if (isClosingLightbox) return;
+      lastFocusedElement = document.activeElement;
       state.lightboxIndex = index;
       renderLightboxContent();
       lightbox.classList.remove("is-closing");
       lightbox.classList.add("is-open");
       document.body.style.overflow = "hidden";
+      const closeBtn = document.getElementById("lightbox-close");
+      if (closeBtn && typeof closeBtn.focus === "function") {
+        closeBtn.focus();
+      }
     }
 
     function closeLightbox() {
@@ -1540,6 +1573,10 @@
         lightbox.classList.remove("is-open");
         lightbox.classList.remove("is-closing");
         lightboxContent.innerHTML = "";
+        const lightboxCaption = document.getElementById("lightbox-caption");
+        if (lightboxCaption) {
+          lightboxCaption.textContent = "";
+        }
         const lightboxStage = document.querySelector(".lightbox-stage");
         if (lightboxStage) {
           lightboxStage.classList.remove("is-vertical");
@@ -1547,6 +1584,10 @@
         document.body.style.overflow = "";
         state.lightboxIndex = -1;
         isClosingLightbox = false;
+        if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+          lastFocusedElement.focus();
+        }
+        lastFocusedElement = null;
       }, 250);
     }
 
@@ -1580,6 +1621,21 @@
         if (!lightbox.classList.contains("is-open")) return;
         if (e.key === "ArrowLeft") stepLightbox(-1);
         if (e.key === "ArrowRight") stepLightbox(1);
+        if (e.key === "Tab") {
+          const focusables = [
+            document.getElementById("lightbox-close"),
+            document.getElementById("lightbox-prev"),
+            document.getElementById("lightbox-next")
+          ].filter(Boolean);
+          if (focusables.length > 0) {
+            const currentIndex = focusables.indexOf(document.activeElement);
+            const nextIndex = e.shiftKey
+              ? (currentIndex <= 0 ? focusables.length - 1 : currentIndex - 1)
+              : (currentIndex === -1 || currentIndex >= focusables.length - 1 ? 0 : currentIndex + 1);
+            e.preventDefault();
+            focusables[nextIndex].focus();
+          }
+        }
       });
     }
 

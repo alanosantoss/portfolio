@@ -88,7 +88,7 @@ function createDomStub() {
         for (const fn of list) fn(ev);
       },
       contains: () => false,
-      focus: () => {},
+      focus: () => { document.activeElement = el; },
       select: () => {},
       click: () => {}
     };
@@ -108,6 +108,10 @@ function createDomStub() {
     addEventListener: (type, fn) => {
       if (!listeners.has(type)) listeners.set(type, []);
       listeners.get(type).push(fn);
+    },
+    dispatchEvent: (ev) => {
+      const list = listeners.get(ev.type) || [];
+      for (const fn of list) fn(ev);
     },
     execCommand: () => true
   };
@@ -158,10 +162,11 @@ function loadPageVm(html, options = {}) {
     confirm: () => true,
     alert: () => {},
     console: { log: () => {}, warn: () => {}, error: () => {} },
-    setTimeout,
-    clearTimeout,
+    setTimeout: options.manualTimers ? (fn) => { timers.push(fn); return timers.length; } : setTimeout,
+    clearTimeout: options.manualTimers ? () => {} : clearTimeout,
     encodeURIComponent
   };
+  const timers = [];
   sandbox.globalThis = sandbox;
 
   const script = extractInlineScript(html);
@@ -176,6 +181,12 @@ function loadPageVm(html, options = {}) {
     dom,
     windowObj,
     storageMap,
+    flushTimers: () => {
+      while (timers.length > 0) {
+        const fn = timers.shift();
+        fn();
+      }
+    },
     evalExpr: (expr) => vm.runInContext(expr, context)
   };
 }
@@ -414,6 +425,65 @@ test('attachThumbFallback percorre maxresdefault -> sddefault -> hqdefault e tra
     'CSS deve exibir título no overlay em telas touch/mobile'
   );
   assert(!indexHtml.includes('-webkit-optimize-contrast'), 'CSS não deve conter -webkit-optimize-contrast');
+});
+
+// --- Task 4 Tests ---
+test('Lightbox usa controls=1, exibe legenda escapada e gerencia foco no modal', () => {
+  const sample = [
+    { type: 'video', category: 'video', id: 'vid12345678', title: 'Teste "Vídeo" <script>', aspect: '9:16', ratio: 'ratio-9-16', tags: [] },
+    { type: 'design', category: 'ia', title: 'Arte IA', image: 'javascript:alert(1)', ratio: 'ratio-4-3', tags: [] }
+  ];
+  const indexHtml = readText(indexPath);
+  assert(indexHtml.includes('id="lightbox-caption"'), 'Lightbox deve conter #lightbox-caption');
+
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: sample, manualTimers: true });
+  const triggerBtn = vmRun.dom.makeElement('article');
+  triggerBtn.focus();
+
+  vmRun.sandbox.openLightbox(0);
+  const content = vmRun.dom.elements.get('lightbox-content');
+  const caption = vmRun.dom.elements.get('lightbox-caption');
+  const closeBtn = vmRun.dom.elements.get('lightbox-close');
+  const prevBtn = vmRun.dom.elements.get('lightbox-prev');
+  const nextBtn = vmRun.dom.elements.get('lightbox-next');
+
+  assert(content.innerHTML.includes('controls=1'), 'Lightbox YouTube deve usar controls=1');
+  assert(!content.innerHTML.includes('controls=0'), 'Lightbox YouTube não deve usar controls=0');
+  assert(!content.innerHTML.includes('disablekb=1'), 'Lightbox YouTube não deve desabilitar teclado');
+  assert(!content.innerHTML.includes('<script>'), 'Título no iframe deve ser escapado');
+  assert(caption.textContent.includes('Teste "Vídeo" <script>'), 'Legenda deve mostrar título via textContent');
+  assert.strictEqual(vmRun.dom.document.activeElement, closeBtn, 'Foco inicial deve ir para #lightbox-close');
+
+  // Shift+Tab no primeiro botão volta para #lightbox-next
+  let prevented = false;
+  vmRun.dom.document.dispatchEvent({
+    type: 'keydown',
+    key: 'Tab',
+    shiftKey: true,
+    preventDefault: () => { prevented = true; }
+  });
+  assert(prevented, 'Tab trap deve chamar preventDefault na borda');
+  assert.strictEqual(vmRun.dom.document.activeElement, nextBtn, 'Shift+Tab em closeBtn deve ir para nextBtn');
+
+  // Tab no último botão volta para #lightbox-close
+  prevented = false;
+  vmRun.dom.document.dispatchEvent({
+    type: 'keydown',
+    key: 'Tab',
+    shiftKey: false,
+    preventDefault: () => { prevented = true; }
+  });
+  assert(prevented, 'Tab em nextBtn deve voltar para closeBtn');
+  assert.strictEqual(vmRun.dom.document.activeElement, closeBtn);
+
+  // Item design com URL insegura não deve renderizar javascript:
+  vmRun.sandbox.stepLightbox(1);
+  assert(!content.innerHTML.includes('javascript:'), 'Lightbox deve bloquear URL insegura');
+
+  // Ao fechar, foco retorna ao card de origem
+  vmRun.sandbox.closeLightbox();
+  vmRun.flushTimers();
+  assert.strictEqual(vmRun.dom.document.activeElement, triggerBtn, 'Foco deve retornar ao elemento anterior ao fechar');
 });
 
 let passed = 0;
