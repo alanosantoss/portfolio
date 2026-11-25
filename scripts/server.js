@@ -5,6 +5,10 @@ const { exec } = require('child_process');
 
 const PORT = 8089;
 const ROOT_DIR = path.resolve(__dirname, '..');
+const ALLOWED_ORIGINS = new Set([
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`
+]);
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -18,6 +22,57 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.has(origin);
+}
+
+function validateProjectsPayload(projects) {
+  if (!Array.isArray(projects) || projects.length === 0) return false;
+  const validTypes = new Set(['video', 'design']);
+  const validCategories = new Set(['video', 'design', 'ia']);
+
+  return projects.every((item) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+    if (!validTypes.has(item.type) || !validCategories.has(item.category)) return false;
+    if (typeof item.title !== 'string' || !item.title.trim()) return false;
+    if (item.type === 'video' && (typeof item.id !== 'string' || !item.id.trim())) return false;
+    if (item.type === 'design' && (typeof item.image !== 'string' || !item.image.trim())) return false;
+    return true;
+  });
+}
+
+function formatProjectsFile(projects) {
+  const cleanProjects = projects.map((p) => {
+    const copy = { ...p };
+    if (copy.visible === true) delete copy.visible;
+    return copy;
+  });
+  return 'window.DEFAULT_PROJECTS = ' + JSON.stringify(cleanProjects, null, 2) + ';\n';
+}
+
+function resolveSafeStaticPath(reqPath) {
+  let raw = String(reqPath || '/').split('?')[0];
+  try {
+    raw = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  if (raw === '/' || raw === '') raw = '/index.html';
+
+  const relative = raw.replace(/^[/\\]+/, '');
+  const segments = relative.split(/[/\\]+/).filter(Boolean);
+  if (segments.some((seg) => seg === '..' || seg.startsWith('.'))) {
+    return null;
+  }
+
+  const resolved = path.resolve(ROOT_DIR, relative);
+  if (resolved !== ROOT_DIR && !resolved.startsWith(ROOT_DIR + path.sep)) {
+    return null;
+  }
+  return resolved;
+}
+
 function runCommand(cmd, cwd) {
   return new Promise((resolve, reject) => {
     exec(cmd, { cwd }, (error, stdout, stderr) => {
@@ -30,8 +85,17 @@ function runCommand(cmd, cwd) {
 }
 
 const server = http.createServer(async (req, res) => {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && !isAllowedOrigin(origin)) {
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: false, error: 'Origem não autorizada.' }));
+    return;
+  }
+
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -44,45 +108,46 @@ const server = http.createServer(async (req, res) => {
   // API para Salvar e Enviar direto para o Git
   if (req.method === 'POST' && req.url === '/api/save-git') {
     let body = '';
-    req.on('data', chunk => { body += chunk; });
+    let aborted = false;
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > 1024 * 1024) {
+        aborted = true;
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: 'Payload muito grande.' }));
+        req.destroy();
+      }
+    });
     req.on('end', async () => {
+      if (aborted) return;
       try {
         const payload = JSON.parse(body);
         const projects = payload.projects;
 
-        if (!Array.isArray(projects) || projects.length === 0) {
+        if (!validateProjectsPayload(projects)) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ ok: false, error: 'Lista de projetos inválida.' }));
           return;
         }
 
-        const cleanProjects = projects.map(p => {
-          const copy = { ...p };
-          if (copy.visible === true) delete copy.visible;
-          return copy;
-        });
+        // 1. Atualizar projects.js no disco
+        const projectsPath = path.join(ROOT_DIR, 'projects.js');
+        fs.writeFileSync(projectsPath, formatProjectsFile(projects), 'utf8');
 
-        // 1. Atualizar index.html no disco
-        const indexPath = path.join(ROOT_DIR, 'index.html');
-        let indexHtml = fs.readFileSync(indexPath, 'utf8');
-        indexHtml = indexHtml.replace(
-          /PROJECTS:\s*\[[\s\S]*?\](?=\s*\n\s*\}\s*;)/,
-          'PROJECTS: ' + JSON.stringify(cleanProjects, null, 2)
-        );
-        fs.writeFileSync(indexPath, indexHtml, 'utf8');
+        // 2. Verificar se há alterações antes de commitar
+        const statusOut = await runCommand('git status --porcelain projects.js', ROOT_DIR);
+        if (!statusOut.trim()) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            ok: true,
+            message: 'Nenhuma alteração pendente para enviar.'
+          }));
+          return;
+        }
 
-        // 2. Atualizar admin.html no disco
-        const adminPath = path.join(ROOT_DIR, 'admin.html');
-        let adminHtml = fs.readFileSync(adminPath, 'utf8');
-        adminHtml = adminHtml.replace(
-          /const\s+DEFAULT_PROJECTS\s*=\s*\[[\s\S]*?\];/,
-          'const DEFAULT_PROJECTS = ' + JSON.stringify(projects, null, 2) + ';'
-        );
-        fs.writeFileSync(adminPath, adminHtml, 'utf8');
-
-        // 3. Executar Git add, commit e push
-        console.log('[Git] Adicionando arquivos modificados...');
-        await runCommand('git add index.html admin.html', ROOT_DIR);
+        // 3. Executar Git add, commit e push apenas de projects.js
+        console.log('[Git] Adicionando projects.js...');
+        await runCommand('git add projects.js', ROOT_DIR);
 
         console.log('[Git] Criando commit...');
         await runCommand('git commit -m "feat: atualizacao de projetos via painel admin"', ROOT_DIR);
@@ -106,11 +171,12 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Servidor de arquivos estáticos
-  let reqPath = req.url.split('?')[0];
-  if (reqPath === '/' || reqPath === '') reqPath = '/index.html';
-
-  const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(ROOT_DIR, safePath);
+  const filePath = resolveSafeStaticPath(req.url);
+  if (!filePath) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found');
+    return;
+  }
 
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
@@ -127,14 +193,24 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  const url = `http://localhost:${PORT}/admin.html`;
-  console.log(`=======================================================`);
-  console.log(`   Painel Admin Alan Oliveira rodando com sucesso!`);
-  console.log(`   URL: ${url}`);
-  console.log(`   Tudo que salvar aqui vai direto para o GitHub (git push)`);
-  console.log(`=======================================================`);
+if (require.main === module) {
+  server.listen(PORT, '127.0.0.1', () => {
+    const url = `http://localhost:${PORT}/admin.html`;
+    console.log(`=======================================================`);
+    console.log(`   Painel Admin Alan Oliveira rodando com sucesso!`);
+    console.log(`   URL: ${url}`);
+    console.log(`   Tudo que salvar aqui vai direto para o GitHub (git push)`);
+    console.log(`=======================================================`);
 
-  // Abre automaticamente o navegador no Windows
-  exec(`start ${url}`);
-});
+    // Abre automaticamente o navegador no Windows
+    exec(`start ${url}`);
+  });
+}
+
+module.exports = {
+  server,
+  isAllowedOrigin,
+  validateProjectsPayload,
+  formatProjectsFile,
+  resolveSafeStaticPath
+};

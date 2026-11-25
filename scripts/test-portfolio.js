@@ -568,6 +568,72 @@ test('admin.html dragleave ignora filhos internos e pushToGitHubAPI envia apenas
   assert(decoded.startsWith('window.DEFAULT_PROJECTS = '), 'Conteúdo enviado deve iniciar com window.DEFAULT_PROJECTS = ');
 });
 
+// --- Task 6 Tests ---
+test('server.js valida origem local, payload, path estático e formatação de projects.js', async () => {
+  const http = require('http');
+  const serverPath = path.join(ROOT, 'scripts', 'server.js');
+  const serverSource = readText(serverPath);
+
+  assert(serverSource.includes("'127.0.0.1'"), 'server.js deve escutar apenas em 127.0.0.1');
+  assert(!serverSource.includes("Access-Control-Allow-Origin', '*'"), 'server.js não deve usar CORS *');
+  assert(!/PROJECTS:\\s*\\\[/.test(serverSource), 'server.js não deve usar regex em index.html');
+
+  const srv = require('./server.js');
+  assert.strictEqual(typeof srv.isAllowedOrigin, 'function', 'server.js deve exportar isAllowedOrigin');
+  assert.strictEqual(srv.isAllowedOrigin(undefined), true);
+  assert.strictEqual(srv.isAllowedOrigin('http://localhost:8089'), true);
+  assert.strictEqual(srv.isAllowedOrigin('http://127.0.0.1:8089'), true);
+  assert.strictEqual(srv.isAllowedOrigin('https://evil.example'), false);
+
+  assert.strictEqual(srv.validateProjectsPayload([]), false);
+  assert.strictEqual(srv.validateProjectsPayload([{ title: '' }]), false);
+  assert.strictEqual(
+    srv.validateProjectsPayload([{ type: 'design', category: 'ia', title: 'Ok', image: 'assets/a.jpg' }]),
+    true
+  );
+
+  const formatted = srv.formatProjectsFile([
+    { type: 'video', category: 'video', id: 'abc12345678', title: 'V1', ratio: 'ratio-9-16', tags: [], visible: true }
+  ]);
+  assert(formatted.startsWith('window.DEFAULT_PROJECTS = '), 'formatProjectsFile deve iniciar com window.DEFAULT_PROJECTS = ');
+  assert(!formatted.includes('"visible": true'), 'formatProjectsFile deve remover visible: true');
+
+  assert.strictEqual(srv.resolveSafeStaticPath('/../secret.txt'), null, 'Path traversal deve retornar null');
+  assert(srv.resolveSafeStaticPath('/index.html').endsWith('index.html'));
+
+  // Teste real de HTTP rejeitando Origin externo com 403
+  await new Promise((resolve, reject) => {
+    srv.server.listen(0, '127.0.0.1', () => {
+      const { port } = srv.server.address();
+      const req = http.request(
+        {
+          hostname: '127.0.0.1',
+          port,
+          path: '/api/save-git',
+          method: 'POST',
+          headers: {
+            'Origin': 'https://evil.example',
+            'Content-Type': 'application/json'
+          }
+        },
+        (res) => {
+          res.resume();
+          srv.server.close(() => {
+            try {
+              assert.strictEqual(res.statusCode, 403, 'Origin externo em /api/save-git deve receber HTTP 403');
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          });
+        }
+      );
+      req.on('error', (err) => srv.server.close(() => reject(err)));
+      req.end(JSON.stringify({ projects: [] }));
+    });
+  });
+});
+
 (async function runTests() {
   let passed = 0;
   console.log('--- Executando testes automatizados do portfólio ---');
