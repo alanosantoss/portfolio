@@ -299,6 +299,8 @@ test('index.html exibe CTA compacto de orçamento no topo, sem texto hero, sem l
   assert(!indexHtml.includes('class="hero-strip"'), 'Hero strip com texto deve ser removida');
   assert(!indexHtml.includes('Edição de vídeo, design e soluções com IA para marcas e criadores.'), 'Texto introdutório abaixo do cabeçalho deve ser removido');
   assert(indexHtml.includes('id="header-whatsapp"'), 'Cabeçalho deve conter CTA compacto #header-whatsapp');
+  assert(!indexHtml.includes('id="social-whatsapp"'), 'Ícone avulso do WhatsApp no topo deve ser removido');
+  assert(/<a[^>]*id="header-whatsapp"[^>]*>[\s\S]*?<svg[\s\S]*?Orçamento[\s\S]*?<\/a>/i.test(indexHtml), '#header-whatsapp deve unir ícone do WhatsApp e texto Orçamento');
   assert(!indexHtml.includes('projeto de edição'), 'Mensagem do WhatsApp deve ser genérica');
   assert(!/<footer[\s\S]*?admin\.html[\s\S]*?<\/footer>/i.test(indexHtml), 'Footer público não deve linkar admin.html');
   assert(!/<footer[\s\S]*?#555|#666/i.test(indexHtml), 'Footer não deve usar cores de baixo contraste #555/#666');
