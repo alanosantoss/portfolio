@@ -76,16 +76,22 @@ function createDomStub() {
       getAttribute: (k) => (attrs.has(k) ? attrs.get(k) : null),
       removeAttribute: (k) => attrs.delete(k),
       appendChild: (child) => { children.push(child); return child; },
+      replaceChildren: (...nodes) => { children.length = 0; children.push(...nodes); },
       remove: () => {},
       querySelector: () => makeElement(),
       querySelectorAll: () => [],
-      addEventListener: (type, fn) => {
+      addEventListener: (type, fn, opts) => {
         if (!elListeners.has(type)) elListeners.set(type, []);
-        elListeners.get(type).push(fn);
+        elListeners.get(type).push({ fn, once: !!(opts && opts.once) });
       },
       dispatchEvent: (ev) => {
-        const list = elListeners.get(ev.type) || [];
-        for (const fn of list) fn(ev);
+        const list = (elListeners.get(ev.type) || []).slice();
+        const remaining = [];
+        for (const entry of list) {
+          if (!entry.once) remaining.push(entry);
+        }
+        elListeners.set(ev.type, remaining);
+        for (const entry of list) entry.fn(ev);
       },
       contains: () => false,
       focus: () => { document.activeElement = el; },
@@ -632,6 +638,66 @@ test('server.js valida origem local, payload, path estático e formatação de p
       req.end(JSON.stringify({ projects: [] }));
     });
   });
+});
+
+// --- Final Review Fix-Pass Tests ---
+test('index.html sobrevive a SecurityError em pushState (file://) e sincroniza via popstate', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+
+  vmRun.windowObj.history.pushState = () => {
+    throw new Error('SecurityError');
+  };
+
+  vmRun.sandbox.setCategory('video');
+  assert.strictEqual(vmRun.evalExpr('state.activeCategory'), 'video');
+  assert.strictEqual(vmRun.windowObj.location.hash, '#video', 'Fallback deve atualizar location.hash');
+
+  vmRun.windowObj.location.hash = '#design';
+  vmRun.windowObj.dispatchEvent({ type: 'popstate' });
+  assert.strictEqual(vmRun.evalExpr('state.activeCategory'), 'design', 'popstate deve atualizar categoria');
+});
+
+test('admin.html updateThumbPreview valida ID estrito e evita onerror inline ou loop', () => {
+  const defaults = loadDefaultProjects();
+  const adminHtml = readText(adminPath);
+  const vmRun = loadPageVm(adminHtml, { defaultProjects: defaults });
+
+  const inputType = vmRun.dom.elements.get('input-type');
+  const inputYt = vmRun.dom.elements.get('input-yt-url');
+  const previewBox = vmRun.dom.elements.get('thumb-preview-box');
+
+  inputType.value = 'video';
+  inputYt.value = "'-alert()-'";
+  vmRun.sandbox.updateThumbPreview();
+  assert.strictEqual(previewBox.children.length, 0, 'ID com aspas/parênteses não deve criar <img>');
+  assert(!previewBox.innerHTML.includes('onerror='), 'Preview não deve usar onerror inline');
+
+  inputYt.value = 'aNsA0iwBbqc';
+  vmRun.sandbox.updateThumbPreview();
+  assert.strictEqual(previewBox.children.length, 1, 'ID válido deve criar <img> via DOM');
+  const img = previewBox.children[0];
+  assert.strictEqual(img.src, 'https://i.ytimg.com/vi/aNsA0iwBbqc/hqdefault.jpg');
+
+  img.dispatchEvent({ type: 'error' });
+  assert.strictEqual(img.src, 'https://i.ytimg.com/vi/aNsA0iwBbqc/sddefault.jpg');
+
+  img.src = 'sentinel';
+  img.dispatchEvent({ type: 'error' });
+  assert.strictEqual(img.src, 'sentinel', 'Fallback de erro no preview deve disparar no máximo 1 vez');
+});
+
+test('isSafeImageUrl bloqueia caracteres de controle e tabulações em index.html e admin.html', () => {
+  const defaults = loadDefaultProjects();
+  const indexVm = loadPageVm(readText(indexPath), { defaultProjects: defaults });
+  const adminVm = loadPageVm(readText(adminPath), { defaultProjects: defaults });
+
+  for (const vmRun of [indexVm, adminVm]) {
+    assert.strictEqual(vmRun.sandbox.isSafeImageUrl('java\tscript:alert(1)'), false);
+    assert.strictEqual(vmRun.sandbox.isSafeImageUrl('\u0001javascript:alert(1)'), false);
+    assert.strictEqual(vmRun.sandbox.isSafeImageUrl('https://images.unsplash.com/photo-1'), true);
+  }
 });
 
 (async function runTests() {

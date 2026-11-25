@@ -937,6 +937,7 @@
       if (typeof url !== "string") return false;
       const trimmed = url.trim();
       if (!trimmed || trimmed.startsWith("//")) return false;
+      if (/[\u0000-\u001f\u007f]/.test(trimmed)) return false;
       if (/^https?:\/\//i.test(trimmed)) return true;
       if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return false;
       return !trimmed.includes("..");
@@ -1283,20 +1284,28 @@
       const raw = inputYt.value.trim();
       if (inputType.value === "design") {
         if (isSafeImageUrl(raw)) {
-          thumbPreviewBox.innerHTML = `<img src="${escapeHtml(raw)}" alt="Preview" />`;
+          const img = document.createElement("img");
+          img.alt = "Preview";
+          img.src = raw;
+          thumbPreviewBox.replaceChildren(img);
         } else {
+          thumbPreviewBox.replaceChildren();
           thumbPreviewBox.textContent = "Informe uma URL de imagem válida acima para pré-visualizar";
         }
         return;
       }
 
       const id = extractYouTubeId(raw);
-      if (id && id.length === 11) {
-        const safeId = encodeURIComponent(id);
-        thumbPreviewBox.innerHTML = `
-          <img src="https://i.ytimg.com/vi/${safeId}/hqdefault.jpg" alt="Preview" onerror="this.src='https://i.ytimg.com/vi/${safeId}/sddefault.jpg'" />
-        `;
+      if (/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+        const img = document.createElement("img");
+        img.alt = "Preview";
+        img.src = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+        img.addEventListener("error", () => {
+          img.src = `https://i.ytimg.com/vi/${id}/sddefault.jpg`;
+        }, { once: true });
+        thumbPreviewBox.replaceChildren(img);
       } else {
+        thumbPreviewBox.replaceChildren();
         thumbPreviewBox.textContent = "Cole o link do YouTube acima para pré-visualizar";
       }
     }
