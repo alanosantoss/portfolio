@@ -158,6 +158,10 @@ function loadPageVm(html, options = {}) {
   const script = extractInlineScript(html);
   const context = vm.createContext(sandbox);
   vm.runInContext(script, context);
+  const domReadyListeners = dom.listeners.get('DOMContentLoaded') || [];
+  for (const fn of domReadyListeners) {
+    fn({ type: 'DOMContentLoaded' });
+  }
   return {
     sandbox,
     dom,
@@ -253,6 +257,76 @@ test('admin.html loadProjects faz fallback seguro para window.DEFAULT_PROJECTS',
   });
   vmRun.sandbox.loadProjects();
   assert.strictEqual(vmRun.evalExpr('state.projects.length'), defaults.length);
+});
+
+// --- Task 2 Tests ---
+test('index.html exibe Hero com CTA WhatsApp genérico, sem link admin no footer e sem código morto', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+
+  assert(indexHtml.includes('class="hero-strip"'), 'Hero strip deve existir');
+  assert(indexHtml.includes('<h1 class="hero-title">'), 'Página deve ter <h1> no Hero');
+  assert(!indexHtml.includes('projeto de edição'), 'Mensagem do WhatsApp deve ser genérica');
+  assert(!/<footer[\s\S]*?admin\.html[\s\S]*?<\/footer>/i.test(indexHtml), 'Footer público não deve linkar admin.html');
+  assert(!/<footer[\s\S]*?#555|#666/i.test(indexHtml), 'Footer não deve usar cores de baixo contraste #555/#666');
+  assert(!indexHtml.includes('playInlineVideo') && !indexHtml.includes('stopCurrentInlineVideo'), 'Código morto inline deve ser removido');
+  assert(!indexHtml.includes('.ratio-21-9') && !indexHtml.includes('.ratio-16-10'), 'Classes ratio não utilizadas devem ser removidas');
+
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+  vmRun.sandbox.initContacts();
+  const heroWa = vmRun.dom.elements.get('hero-whatsapp');
+  assert(heroWa && heroWa.href.startsWith('https://wa.me/5511991584991?text='), 'CTA Hero deve montar link do WhatsApp');
+  assert(!decodeURIComponent(heroWa.href).includes('projeto de edição'), 'Link do Hero deve usar mensagem genérica');
+
+  vmRun.sandbox.setCategory('sobre');
+  assert(vmRun.dom.elements.get('hero-strip').classList.contains('is-hidden'), 'Hero deve ocultar na aba sobre');
+  vmRun.sandbox.setCategory('home');
+  assert(!vmRun.dom.elements.get('hero-strip').classList.contains('is-hidden'), 'Hero deve aparecer na aba home');
+});
+
+test('renderSubNav filtra tags por mínimo de 2 itens e oculta barras rasas', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+  const subNav = vmRun.dom.elements.get('sub-nav');
+
+  vmRun.sandbox.setCategory('video');
+  assert(!subNav.classList.contains('is-hidden'), 'Aba video deve exibir sub-nav');
+  assert(subNav.innerHTML.includes('data-subfilter="reels"'), 'Video deve incluir filtro reels');
+  assert(subNav.innerHTML.includes('data-subfilter="social-media"'), 'Video deve incluir filtro social-media');
+  assert(subNav.innerHTML.includes('data-subfilter="fitness"'), 'Video deve incluir filtro fitness');
+  assert(!subNav.innerHTML.includes('data-subfilter="institucional"'), 'Tag com apenas 1 item não deve virar filtro');
+
+  vmRun.sandbox.setCategory('design');
+  assert(subNav.classList.contains('is-hidden'), 'Aba design deve ocultar sub-nav quando há menos de 2 tags elegíveis');
+
+  vmRun.sandbox.setCategory('ia');
+  assert(subNav.classList.contains('is-hidden'), 'Aba ia deve ocultar sub-nav quando há menos de 2 tags elegíveis');
+});
+
+test('setCategory e hashchange sincronizam #hash sem loops', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults });
+
+  let pushCount = 0;
+  vmRun.windowObj.history.pushState = (_s, _t, url) => {
+    pushCount++;
+    vmRun.windowObj.location.hash = url;
+  };
+
+  vmRun.sandbox.setCategory('video');
+  assert.strictEqual(vmRun.windowObj.location.hash, '#video');
+  assert.strictEqual(pushCount, 1);
+
+  vmRun.windowObj.location.hash = '#sobre';
+  vmRun.windowObj.dispatchEvent({ type: 'hashchange' });
+  assert.strictEqual(vmRun.evalExpr('state.activeCategory'), 'sobre');
+  assert.strictEqual(pushCount, 1, 'hashchange não deve disparar novo pushState');
+
+  vmRun.windowObj.location.hash = '#inexistente';
+  vmRun.windowObj.dispatchEvent({ type: 'hashchange' });
+  assert.strictEqual(vmRun.evalExpr('state.activeCategory'), 'home');
 });
 
 let passed = 0;

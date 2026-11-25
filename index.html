@@ -264,6 +264,56 @@
       padding: 0 40px 96px;
     }
 
+    .hero-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 0 24px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-strip.is-hidden {
+      display: none;
+    }
+
+    .hero-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.98rem;
+      font-weight: 500;
+      line-height: 1.45;
+      color: #e5e5e5;
+      letter-spacing: -0.015em;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #111111;
+      background-color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 999px;
+      transition: opacity var(--transition), transform var(--transition);
+    }
+
+    .hero-cta:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .site-footer {
+      text-align: center;
+      padding: 24px 20px 48px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
     .masonry-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -282,56 +332,6 @@
       transform: translateY(12px);
       animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       border-radius: 4px;
-    }
-
-    .masonry-item.is-playing {
-      cursor: default;
-    }
-
-    .masonry-item.is-playing .masonry-media,
-    .masonry-item.is-playing .play-indicator,
-    .masonry-item.is-playing .masonry-overlay {
-      display: none !important;
-    }
-
-    .inline-video-iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-      border-radius: inherit;
-      background-color: #000000;
-      z-index: 5;
-    }
-
-    .inline-close-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.2s ease;
-      opacity: 0.9;
-    }
-
-    .inline-close-btn:hover {
-      background: rgba(0, 0, 0, 0.95);
-      border-color: rgba(255, 255, 255, 0.5);
-      transform: scale(1.08);
-      opacity: 1;
     }
 
     @keyframes fadeUp {
@@ -355,16 +355,8 @@
       aspect-ratio: 4 / 3;
     }
 
-    .ratio-21-9 {
-      aspect-ratio: 21 / 9;
-    }
-
     .ratio-3-2 {
       aspect-ratio: 3 / 2;
-    }
-
-    .ratio-16-10 {
-      aspect-ratio: 16 / 10;
     }
 
     .masonry-media {
@@ -827,6 +819,13 @@
         padding: 0 20px 56px;
       }
 
+      .hero-strip {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-bottom: 18px;
+        margin-bottom: 18px;
+      }
+
       .masonry-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -933,6 +932,13 @@
        CONTEÚDO PRINCIPAL (GRADE MASONRY FILTRÁVEL)
   ========================================================================== -->
   <main class="main-container">
+    <section id="hero-strip" class="hero-strip" aria-label="Apresentação">
+      <h1 class="hero-title">Edição de vídeo, design e soluções com IA para marcas e criadores.</h1>
+      <a id="hero-whatsapp" class="hero-cta" href="#" target="_blank" rel="noopener noreferrer">
+        Orçamento no WhatsApp
+      </a>
+    </section>
+
     <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
 
     <!-- Seção Sobre -->
@@ -990,7 +996,7 @@
       <!-- Grade dos Serviços (3 Colunas) -->
       <div class="about-grid">
         <div class="about-col">
-          <h3 class="about-col-title">Edição de Vídeo</h3>
+          <h2 class="about-col-title">Edição de Vídeo</h2>
           <p class="about-col-text">
             Reels, TikTok e Shorts com cortes dinâmicos, legendas modernas e ritmo focado em retenção. Vídeos para
             YouTube com narrativa fluida, tratamento de áudio e cor, além de edição para eventos, institucionais e
@@ -999,7 +1005,7 @@
         </div>
 
         <div class="about-col">
-          <h3 class="about-col-title">Design & Imagens com IA</h3>
+          <h2 class="about-col-title">Design & Imagens com IA</h2>
           <p class="about-col-text">
             Thumbnails de alto clique, criativos para tráfego pago e artes para redes sociais no Photoshop. Geração de
             imagens e cenários com IA finalizados manualmente, upscale e restauração de fotos em baixa definição, e
@@ -1008,7 +1014,7 @@
         </div>
 
         <div class="about-col">
-          <h3 class="about-col-title">Landing Pages, Automações & IA</h3>
+          <h2 class="about-col-title">Landing Pages, Automações & IA</h2>
           <p class="about-col-text">
             Criação de landing pages rápidas com visual profissional, micro-sistemas e ferramentas sob medida para
             resolver gargalos internos de empresas (como visualizadores de arquivos pesados), automações práticas com IA
@@ -1021,7 +1027,7 @@
 
       <!-- Como eu trabalho -->
       <div class="about-bottom">
-        <h3 class="about-col-title">Como eu trabalho</h3>
+        <h2 class="about-col-title">Como eu trabalho</h2>
         <p class="about-col-text">
           Alinhamento claro de estilo, referências e prazo antes de começar; entregas organizadas com rodadas de revisão
           combinadas; comunicação direta e arquivos finais limpos, prontos para publicação ou uso imediato.
@@ -1034,10 +1040,9 @@
     </section>
   </main>
 
-  <!-- Rodapé Minimalista com link discreto para o Painel Admin -->
-  <footer style="text-align: center; padding: 24px 20px 48px; font-size: 0.76rem; color: #555; letter-spacing: 0.02em;">
-    <span>Alan Oliveira</span> • <a href="admin.html" style="color: #666; transition: color 0.2s;"
-      onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#666'">painel admin</a>
+  <!-- Rodapé Minimalista -->
+  <footer class="site-footer">
+    <span>Alan Oliveira</span>
   </footer>
 
   <!-- =========================================================================
@@ -1080,7 +1085,7 @@
      */
     const CONFIG = {
       WHATSAPP_NUMBER: "5511991584991",
-      WHATSAPP_MESSAGE: "Olá Alan, vi seu portfólio e gostaria de falar sobre um projeto de edição.",
+      WHATSAPP_MESSAGE: "Olá Alan, vi seu portfólio e gostaria de conversar sobre um projeto.",
       EMAIL: "alan.d.santos2021@gmail.com",
       LINKEDIN_URL: "https://www.linkedin.com/in/alan-oliveira-765286274/"
     };
@@ -1088,21 +1093,21 @@
     // Subcategorias dinâmicas por divisão principal (ocultas na home e sobre)
     const SUBCATEGORIES = {
       video: [
-        { id: "all", label: "todos" },
         { id: "reels", label: "reels" },
         { id: "16:9", label: "16:9" },
         { id: "social-media", label: "social media" },
         { id: "fitness", label: "fitness" },
-        { id: "institucional", label: "institucional" }
+        { id: "institucional", label: "institucional" },
+        { id: "comercial", label: "comercial" },
+        { id: "ugc", label: "ugc" },
+        { id: "viral", label: "viral" }
       ],
       design: [
-        { id: "all", label: "todos" },
         { id: "social-media", label: "social media" },
         { id: "identidade", label: "identidade visual" },
         { id: "editorial", label: "editorial" }
       ],
       ia: [
-        { id: "all", label: "todos" },
         { id: "video-ia", label: "vídeo ia" },
         { id: "renders", label: "renders" }
       ]
@@ -1117,6 +1122,7 @@
     };
 
     // Elementos DOM
+    const heroStrip = document.getElementById("hero-strip");
     const galleryGrid = document.getElementById("gallery-grid");
     const aboutSection = document.getElementById("about-section");
     const lightbox = document.getElementById("lightbox");
@@ -1131,10 +1137,12 @@
 
       const socialWa = document.getElementById("social-whatsapp");
       const socialLi = document.getElementById("social-linkedin");
+      const heroWa = document.getElementById("hero-whatsapp");
       const aboutWa = document.getElementById("about-whatsapp");
       const aboutLi = document.getElementById("about-linkedin");
 
       if (socialWa) socialWa.href = waUrl;
+      if (heroWa) heroWa.href = waUrl;
       if (aboutWa) aboutWa.href = waUrl;
       if (socialLi) socialLi.href = CONFIG.LINKEDIN_URL;
       if (aboutLi) aboutLi.href = CONFIG.LINKEDIN_URL;
@@ -1185,13 +1193,29 @@
         return;
       }
 
-      const filters = SUBCATEGORIES[state.activeCategory] || [];
-      if (filters.length === 0) {
+      const candidates = SUBCATEGORIES[state.activeCategory] || [];
+      const categoryItems = getProjectsList().filter(
+        (item) => item.category === state.activeCategory
+      );
+      const qualified = candidates.filter((f) => {
+        const count = categoryItems.filter(
+          (item) => Array.isArray(item.tags) && item.tags.includes(f.id)
+        ).length;
+        return count >= 2;
+      });
+
+      if (qualified.length < 2) {
+        state.activeSubFilter = "all";
         subNav.classList.add("is-hidden");
         subNav.innerHTML = "";
         return;
       }
 
+      if (!qualified.some((f) => f.id === state.activeSubFilter)) {
+        state.activeSubFilter = "all";
+      }
+
+      const filters = [{ id: "all", label: "todos" }, ...qualified];
       subNav.classList.remove("is-hidden");
       subNav.innerHTML = filters
         .map(
@@ -1243,58 +1267,12 @@
     }
 
     /**
-     * 4. Reprodução de Vídeo & Renderização da Grade
+     * 4. Renderização da Grade
      */
-    let currentPlayingCard = null;
-
-    function stopCurrentInlineVideo() {
-      if (!currentPlayingCard) return;
-      const iframe = currentPlayingCard.querySelector(".inline-video-iframe");
-      const closeBtn = currentPlayingCard.querySelector(".inline-close-btn");
-      if (iframe) iframe.remove();
-      if (closeBtn) closeBtn.remove();
-      currentPlayingCard.classList.remove("is-playing");
-      currentPlayingCard = null;
-    }
-
-    function playInlineVideo(card, item) {
-      if (currentPlayingCard === card) return;
-      stopCurrentInlineVideo();
-
-      currentPlayingCard = card;
-      card.classList.add("is-playing");
-
-      const iframe = document.createElement("iframe");
-      iframe.className = "inline-video-iframe";
-      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id)}?autoplay=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1`;
-      iframe.title = item.title;
-      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-      iframe.allowFullscreen = true;
-      iframe.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
-
-      const closeBtn = document.createElement("button");
-      closeBtn.type = "button";
-      closeBtn.className = "inline-close-btn";
-      closeBtn.setAttribute("aria-label", "Fechar vídeo");
-      closeBtn.setAttribute("title", "Fechar reprodução");
-      closeBtn.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      `;
-
-      closeBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        stopCurrentInlineVideo();
-      });
-
-      card.appendChild(iframe);
-      card.appendChild(closeBtn);
-    }
-
     function renderGallery() {
-      stopCurrentInlineVideo();
+      if (heroStrip) {
+        heroStrip.classList.toggle("is-hidden", state.activeCategory === "sobre");
+      }
 
       if (state.activeCategory === "sobre") {
         galleryGrid.style.display = "none";
@@ -1472,10 +1450,6 @@
           return;
         }
         if (e.key === "Escape") {
-          if (currentPlayingCard) {
-            stopCurrentInlineVideo();
-            return;
-          }
           if (lightbox.classList.contains("is-open")) {
             closeLightbox();
           }
@@ -1489,14 +1463,32 @@
     /**
      * 6. Controle de Categoria Principal & Subfiltro
      */
-    function setCategory(category) {
-      stopCurrentInlineVideo();
-      state.activeCategory = category;
+    const VALID_CATEGORIES = ["home", "video", "design", "ia", "sobre"];
+
+    function normalizeHashCategory(rawHash) {
+      const cleaned = (rawHash || "").replace(/^#/, "");
+      return VALID_CATEGORIES.includes(cleaned) ? cleaned : "home";
+    }
+
+    function setCategory(category, updateHash = true) {
+      const targetCategory = VALID_CATEGORIES.includes(category) ? category : "home";
+      state.activeCategory = targetCategory;
       state.activeSubFilter = "all";
+
+      if (heroStrip) {
+        heroStrip.classList.toggle("is-hidden", targetCategory === "sobre");
+      }
+
+      if (updateHash) {
+        const targetHash = `#${targetCategory}`;
+        if (window.location.hash !== targetHash) {
+          history.pushState(null, "", targetHash);
+        }
+      }
 
       const catButtons = document.querySelectorAll("#category-nav .nav-btn");
       catButtons.forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.category === category);
+        btn.classList.toggle("is-active", btn.dataset.category === targetCategory);
       });
 
       renderSubNav();
@@ -1504,7 +1496,6 @@
     }
 
     function setSubFilter(subfilter) {
-      stopCurrentInlineVideo();
       state.activeSubFilter = subfilter;
 
       const subButtons = document.querySelectorAll("#sub-nav .sub-btn");
@@ -1529,6 +1520,10 @@
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       }
+
+      window.addEventListener("hashchange", () => {
+        setCategory(normalizeHashCategory(window.location.hash), false);
+      });
     }
 
     // Inicialização
@@ -1537,17 +1532,13 @@
       initNavigation();
       initLightbox();
 
-      const initialHash = (window.location.hash || "").replace("#", "");
-      if (["video", "design", "ia", "sobre"].includes(initialHash)) {
-        setCategory(initialHash);
-      } else {
-        renderSubNav();
-        renderGallery();
-      }
+      const initialCategory = normalizeHashCategory(window.location.hash);
+      setCategory(initialCategory, false);
 
       // Sincronização em tempo real entre abas (Admin -> Portfólio)
       window.addEventListener("storage", (e) => {
         if (e.key === "portfolio_projects") {
+          renderSubNav();
           renderGallery();
         }
       });
