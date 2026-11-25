@@ -6,7 +6,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Edição Dinâmica",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["institucional"]
+    tags: ["saude", "institucional"]
   },
   {
     type: "design",
@@ -31,7 +31,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Cortes",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["comercial"]
+    tags: ["saude", "institucional"]
   },
   {
     type: "video",
@@ -101,7 +101,7 @@ window.DEFAULT_PROJECTS = [
     title: "UGC Campaigns - Brazil",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["institucional", "comercial", "ugc"]
+    tags: ["saude", "comercial", "ugc"]
   },
   {
     type: "design",
@@ -118,7 +118,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Retenção",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["comercial"]
+    tags: ["saude", "fitness"]
   },
   {
     type: "video",
@@ -153,7 +153,7 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Ritmo",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["saude"]
+    tags: ["saude", "comercial"]
   },
   {
     type: "design",
