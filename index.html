@@ -918,6 +918,172 @@
         gap: 16px;
       }
     }
+
+    /* =========================================================================
+       TELA INICIAL DE BOAS-VINDAS (TRIAGEM DE SERVIÇO)
+    ========================================================================= */
+    .welcome-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 950;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(11, 11, 11, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, visibility 0.28s ease;
+    }
+
+    .welcome-gate.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .welcome-card {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+      background: #161616;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 40px 36px 32px;
+      text-align: center;
+      transform: translateY(10px) scale(0.98);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .welcome-gate.is-open .welcome-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .welcome-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: color var(--transition), background var(--transition);
+    }
+
+    .welcome-close:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .welcome-eyebrow {
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .welcome-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .welcome-subtitle {
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .welcome-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .welcome-option {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 8px;
+      padding: 20px 18px;
+      background: #1d1d1d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      transition: border-color var(--transition), background var(--transition), transform var(--transition);
+    }
+
+    .welcome-option:hover {
+      background: #232323;
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .welcome-option-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .welcome-option-desc {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .welcome-skip {
+      font-size: 0.84rem;
+      color: var(--muted);
+      padding: 6px 12px;
+      transition: color var(--transition);
+    }
+
+    .welcome-skip:hover {
+      color: #ffffff;
+    }
+
+    .nav-btn.is-hidden-by-gate {
+      display: none;
+    }
+
+    .nav-switch-area {
+      display: none;
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0.75;
+      padding-left: 14px;
+      border-left: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .nav-switch-area.is-visible {
+      display: inline-flex;
+    }
+
+    .nav-switch-area:hover {
+      opacity: 1;
+    }
+
+    @media (max-width: 680px) {
+      .welcome-card {
+        padding: 32px 20px 24px;
+      }
+
+      .welcome-options {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -937,6 +1103,7 @@
         <button type="button" class="nav-btn" data-category="design">design</button>
         <button type="button" class="nav-btn" data-category="ia">ia</button>
         <button type="button" class="nav-btn" data-category="sobre">sobre</button>
+        <button type="button" id="switch-area-btn" class="nav-btn nav-switch-area">trocar área</button>
       </nav>
 
       <div class="social-links" aria-label="Redes sociais e contato">
@@ -1084,6 +1251,44 @@
   <footer class="site-footer">
     <span>Alan Oliveira</span>
   </footer>
+
+  <!-- =========================================================================
+       TELA INICIAL DE BOAS-VINDAS (TRIAGEM DE SERVIÇO)
+  ========================================================================== -->
+  <div id="welcome-gate" class="welcome-gate" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div class="welcome-card">
+      <button id="welcome-close" class="welcome-close" type="button" aria-label="Fechar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <p class="welcome-eyebrow">Alan Oliveira</p>
+      <h2 id="welcome-title" class="welcome-title">Você precisa do quê?</h2>
+      <p class="welcome-subtitle">Escolha uma área para ir direto aos projetos certos.</p>
+
+      <div class="welcome-options">
+        <button type="button" class="welcome-option" data-welcome-cat="design">
+          <span class="welcome-option-title">Designer</span>
+          <span class="welcome-option-desc">Identidade visual, social media e peças criativas.</span>
+        </button>
+
+        <button type="button" class="welcome-option" data-welcome-cat="video">
+          <span class="welcome-option-title">Editor de vídeo</span>
+          <span class="welcome-option-desc">Reels, YouTube, comerciais e motion.</span>
+        </button>
+
+        <button type="button" class="welcome-option" data-welcome-cat="ia">
+          <span class="welcome-option-title">Serviços com IA</span>
+          <span class="welcome-option-desc">Vídeos, visuais e fluxos com inteligência artificial.</span>
+        </button>
+      </div>
+
+      <button id="welcome-skip" class="welcome-skip" type="button">Ver portfólio completo</button>
+    </div>
+  </div>
 
   <!-- =========================================================================
        LIGHTBOX CINEMA MODAL
@@ -1690,8 +1895,27 @@
       renderGallery();
     }
 
+    function applyCategoryLock(category) {
+      state.lockedCategory = category || null;
+      try {
+        if (state.lockedCategory) {
+          sessionStorage.setItem("portfolio_welcome_cat", state.lockedCategory);
+        } else {
+          sessionStorage.removeItem("portfolio_welcome_cat");
+        }
+      } catch (_) {}
+
+      document.querySelectorAll("#category-nav .nav-btn[data-category]").forEach((btn) => {
+        const cat = btn.dataset.category;
+        const hide = Boolean(state.lockedCategory) && cat !== state.lockedCategory && cat !== "sobre";
+        btn.classList.toggle("is-hidden-by-gate", hide);
+      });
+
+      document.getElementById("switch-area-btn")?.classList.toggle("is-visible", Boolean(state.lockedCategory));
+    }
+
     function initNavigation() {
-      const categoryButtons = document.querySelectorAll("#category-nav .nav-btn");
+      const categoryButtons = document.querySelectorAll("#category-nav .nav-btn[data-category]");
       categoryButtons.forEach((btn) => {
         btn.addEventListener("click", () => setCategory(btn.dataset.category));
       });
@@ -1700,7 +1924,7 @@
       if (brandHome) {
         brandHome.addEventListener("click", (e) => {
           e.preventDefault();
-          setCategory("home");
+          setCategory(state.lockedCategory || "home");
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
       }
@@ -1715,6 +1939,61 @@
       window.addEventListener("popstate", syncFromLocation);
     }
 
+    function initWelcomeGate(initialHash) {
+      const gate = document.getElementById("welcome-gate");
+      if (!gate) return;
+
+      const openGate = () => {
+        gate.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+      };
+
+      const closeGate = (category, unlockAll = false) => {
+        try {
+          sessionStorage.setItem("portfolio_welcome_seen", "1");
+        } catch (_) {}
+        gate.classList.remove("is-open");
+        document.body.style.overflow = "";
+        if (category) {
+          applyCategoryLock(category);
+          setCategory(category);
+        } else if (unlockAll) {
+          applyCategoryLock(null);
+          setCategory("home");
+        }
+      };
+
+      gate.querySelectorAll("[data-welcome-cat]").forEach((btn) => {
+        btn.addEventListener("click", () => closeGate(btn.dataset.welcomeCat));
+      });
+
+      document.getElementById("welcome-skip")?.addEventListener("click", () => closeGate(null, true));
+      document.getElementById("welcome-close")?.addEventListener("click", () => closeGate());
+      document.getElementById("switch-area-btn")?.addEventListener("click", openGate);
+      gate.addEventListener("click", (e) => {
+        if (e.target === gate) closeGate();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && gate.classList.contains("is-open")) closeGate();
+      });
+
+      if (["video", "design", "ia", "sobre"].includes(initialHash)) return;
+
+      let seen = false;
+      let savedCat = "";
+      try {
+        seen = sessionStorage.getItem("portfolio_welcome_seen") === "1";
+        savedCat = sessionStorage.getItem("portfolio_welcome_cat") || "";
+      } catch (_) {}
+
+      if (!seen) {
+        openGate();
+      } else if (["video", "design", "ia"].includes(savedCat)) {
+        applyCategoryLock(savedCat);
+        setCategory(savedCat);
+      }
+    }
+
     // Inicialização
     document.addEventListener("DOMContentLoaded", () => {
       initContacts();
@@ -1723,6 +2002,8 @@
 
       const initialCategory = normalizeHashCategory(window.location.hash);
       setCategory(initialCategory, false);
+
+      initWelcomeGate(initialHash);
 
       // Sincronização em tempo real entre abas (Admin -> Portfólio)
       window.addEventListener("storage", (e) => {
