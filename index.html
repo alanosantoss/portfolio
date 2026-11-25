@@ -1722,7 +1722,7 @@
           lightboxStage.classList.toggle("is-vertical", isVertical);
         }
         lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id || "")}?autoplay=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id || "")}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&disablekb=1`;
 
         lightboxContent.innerHTML = `
           <iframe

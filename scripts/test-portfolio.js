@@ -440,7 +440,7 @@ test('attachThumbFallback percorre maxresdefault -> sddefault -> hqdefault e tra
 });
 
 // --- Task 4 Tests ---
-test('Lightbox usa controls=1, exibe legenda escapada e gerencia foco no modal', () => {
+test('Lightbox usa controls=0, exibe legenda escapada e gerencia foco no modal', () => {
   const sample = [
     { type: 'video', category: 'video', id: 'vid12345678', title: 'Teste "Vídeo" <script>', aspect: '9:16', ratio: 'ratio-9-16', tags: [] },
     { type: 'design', category: 'ia', title: 'Arte IA', image: 'javascript:alert(1)', ratio: 'ratio-4-3', tags: [] }
@@ -459,9 +459,7 @@ test('Lightbox usa controls=1, exibe legenda escapada e gerencia foco no modal',
   const prevBtn = vmRun.dom.elements.get('lightbox-prev');
   const nextBtn = vmRun.dom.elements.get('lightbox-next');
 
-  assert(content.innerHTML.includes('controls=1'), 'Lightbox YouTube deve usar controls=1');
-  assert(!content.innerHTML.includes('controls=0'), 'Lightbox YouTube não deve usar controls=0');
-  assert(!content.innerHTML.includes('disablekb=1'), 'Lightbox YouTube não deve desabilitar teclado');
+  assert(content.innerHTML.includes('controls=0'), 'Lightbox YouTube deve usar controls=0');
   assert(!content.innerHTML.includes('<script>'), 'Título no iframe deve ser escapado');
   assert(caption.textContent.includes('Teste "Vídeo" <script>'), 'Legenda deve mostrar título via textContent');
   assert.strictEqual(vmRun.dom.document.activeElement, closeBtn, 'Foco inicial deve ir para #lightbox-close');
