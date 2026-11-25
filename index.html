@@ -696,8 +696,8 @@
     }
 
     .lightbox-video-wrap.is-vertical {
-      height: min(68vh, calc(78vw * 16 / 9));
-      width: min(calc(68vh * 9 / 16), 78vw);
+      height: min(82vh, calc(84vw * 16 / 9));
+      width: min(calc(82vh * 9 / 16), 84vw);
       aspect-ratio: 9 / 16;
       border-radius: 14px;
       margin: 0 auto;
@@ -1722,7 +1722,7 @@
           lightboxStage.classList.toggle("is-vertical", isVertical);
         }
         lightboxContent.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id || "")}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&disablekb=1`;
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.id || "")}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&disablekb=1&vq=highres&enablejsapi=1`;
 
         lightboxContent.innerHTML = `
           <iframe
@@ -1733,6 +1733,14 @@
             referrerpolicy="strict-origin-when-cross-origin"
           ></iframe>
         `;
+        const ytIframe = lightboxContent.querySelector("iframe");
+        ytIframe?.addEventListener("load", () => {
+          // shortcut: YouTube ignora vq/setPlaybackQuality em alguns embeds (ABR proprio)
+          try {
+            ytIframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "setPlaybackQuality", args: ["highres"] }), "https://www.youtube-nocookie.com");
+            ytIframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "setPlaybackQuality", args: ["hd1080"] }), "https://www.youtube-nocookie.com");
+          } catch (_) {}
+        });
       } else {
         if (lightboxStage) {
           lightboxStage.classList.remove("is-vertical");
