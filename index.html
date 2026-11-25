@@ -1820,6 +1820,10 @@
           return;
         }
         if (e.key === "Escape") {
+          const welcomeGate = document.getElementById("welcome-gate");
+          if (welcomeGate && welcomeGate.classList.contains("is-open")) {
+            return;
+          }
           if (lightbox.classList.contains("is-open")) {
             closeLightbox();
           }
@@ -1875,7 +1879,7 @@
         }
       }
 
-      const catButtons = document.querySelectorAll("#category-nav .nav-btn");
+      const catButtons = document.querySelectorAll("#category-nav .nav-btn[data-category]");
       catButtons.forEach((btn) => {
         btn.classList.toggle("is-active", btn.dataset.category === targetCategory);
       });
@@ -1939,7 +1943,7 @@
       window.addEventListener("popstate", syncFromLocation);
     }
 
-    function initWelcomeGate(initialHash) {
+    function initWelcomeGate(initialCategory) {
       const gate = document.getElementById("welcome-gate");
       if (!gate) return;
 
@@ -1977,7 +1981,7 @@
         if (e.key === "Escape" && gate.classList.contains("is-open")) closeGate();
       });
 
-      if (["video", "design", "ia", "sobre"].includes(initialHash)) return;
+      if (["video", "design", "ia", "sobre"].includes(initialCategory)) return;
 
       let seen = false;
       let savedCat = "";
@@ -1990,7 +1994,7 @@
         openGate();
       } else if (["video", "design", "ia"].includes(savedCat)) {
         applyCategoryLock(savedCat);
-        setCategory(savedCat);
+        setCategory(savedCat, false);
       }
     }
 
@@ -2003,7 +2007,7 @@
       const initialCategory = normalizeHashCategory(window.location.hash);
       setCategory(initialCategory, false);
 
-      initWelcomeGate(initialHash);
+      initWelcomeGate(initialCategory);
 
       // Sincronização em tempo real entre abas (Admin -> Portfólio)
       window.addEventListener("storage", (e) => {

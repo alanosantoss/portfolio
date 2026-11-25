@@ -128,6 +128,7 @@ function createDomStub() {
 function loadPageVm(html, options = {}) {
   const dom = createDomStub();
   const storageMap = new Map(Object.entries(options.storage || {}));
+  const sessionMap = new Map(Object.entries(options.sessionStorage || {}));
   const winListeners = new Map();
 
   const windowObj = {
@@ -156,6 +157,11 @@ function loadPageVm(html, options = {}) {
       getItem: (k) => (storageMap.has(k) ? storageMap.get(k) : null),
       setItem: (k, v) => storageMap.set(k, String(v)),
       removeItem: (k) => storageMap.delete(k)
+    },
+    sessionStorage: {
+      getItem: (k) => (sessionMap.has(k) ? sessionMap.get(k) : null),
+      setItem: (k, v) => sessionMap.set(k, String(v)),
+      removeItem: (k) => sessionMap.delete(k)
     },
     navigator: { clipboard: { writeText: async () => {} } },
     history: windowObj.history,
@@ -698,6 +704,31 @@ test('isSafeImageUrl bloqueia caracteres de controle e tabulações em index.htm
     assert.strictEqual(vmRun.sandbox.isSafeImageUrl('\u0001javascript:alert(1)'), false);
     assert.strictEqual(vmRun.sandbox.isSafeImageUrl('https://images.unsplash.com/photo-1'), true);
   }
+});
+
+// --- Merge Integration Tests (welcome-gate + PR branch) ---
+test('welcome-gate inicializa sem erro, restaura área salva e respeita hash direto', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+
+  const firstVisit = loadPageVm(indexHtml, { defaultProjects: defaults });
+  assert(firstVisit.dom.elements.get('welcome-gate').classList.contains('is-open'), 'Primeira visita sem hash deve abrir welcome-gate');
+
+  const returningVisit = loadPageVm(indexHtml, {
+    defaultProjects: defaults,
+    sessionStorage: { portfolio_welcome_seen: '1', portfolio_welcome_cat: 'design' }
+  });
+  assert(!returningVisit.dom.elements.get('welcome-gate').classList.contains('is-open'), 'Visita com área salva não deve reabrir gate');
+  assert.strictEqual(returningVisit.evalExpr('state.lockedCategory'), 'design');
+  assert.strictEqual(returningVisit.evalExpr('state.activeCategory'), 'design');
+  assert(returningVisit.dom.elements.get('switch-area-btn').classList.contains('is-visible'), 'Botão trocar área deve ficar visível com área travada');
+
+  const directHashVisit = loadPageVm(indexHtml, {
+    defaultProjects: defaults,
+    hash: '#video'
+  });
+  assert(!directHashVisit.dom.elements.get('welcome-gate').classList.contains('is-open'), 'Hash direto #video não deve abrir welcome-gate');
+  assert.strictEqual(directHashVisit.evalExpr('state.activeCategory'), 'video');
 });
 
 (async function runTests() {
