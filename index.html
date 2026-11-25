@@ -889,7 +889,15 @@
     @media (max-width: 480px) {
       .masonry-grid,
       .masonry-col {
-        gap: 16px;
+        gap: 10px;
+      }
+
+      .masonry-overlay {
+        padding: 10px 12px;
+      }
+
+      .masonry-title {
+        font-size: 0.74rem;
       }
     }
 
@@ -1503,7 +1511,6 @@
     }
 
     function getColumnCount(width = window.innerWidth) {
-      if (width <= 480) return 1;
       if (width <= 768) return 2;
       if (width <= 900) return 3;
       return 4;

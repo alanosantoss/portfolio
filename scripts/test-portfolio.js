@@ -402,6 +402,17 @@ test('renderGallery distribui cards em colunas pela menor altura e exibe estado 
   vmRun.sandbox.setCategory('ia');
   assert.strictEqual(grid.children.length, 1, 'Categoria sem itens deve exibir estado vazio');
   assert(grid.children[0].classList.contains('masonry-empty'), 'Estado vazio deve usar .masonry-empty');
+
+  const mobileVm = loadPageVm(indexHtml, {
+    defaultProjects: sample,
+    innerWidth: 375
+  });
+  const mobileGrid = mobileVm.dom.elements.get('gallery-grid');
+  assert.strictEqual(mobileGrid.children.length, 2, 'Mobile 375px deve renderizar 2 colunas');
+  assert.strictEqual(mobileVm.sandbox.getColumnCount(320), 2);
+  assert.strictEqual(mobileVm.sandbox.getColumnCount(768), 2);
+  assert.strictEqual(mobileVm.sandbox.getColumnCount(900), 3);
+  assert.strictEqual(mobileVm.sandbox.getColumnCount(1280), 4);
 });
 
 test('attachThumbFallback percorre maxresdefault -> sddefault -> hqdefault e trata erro em design', () => {
