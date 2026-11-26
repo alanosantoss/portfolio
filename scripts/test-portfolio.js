@@ -460,19 +460,32 @@ test('attachThumbFallback percorre maxresdefault -> sddefault -> hqdefault e tra
 });
 
 // --- Task 4 Tests ---
-test('Lightbox usa controls=0, exibe legenda escapada e gerencia foco no modal', () => {
+test('Lightbox usa controls=0, exibe legenda escapada, poster e tokens transitions.dev', () => {
   const sample = [
     { type: 'video', category: 'video', id: 'vid12345678', title: 'Teste "Vídeo" <script>', aspect: '9:16', ratio: 'ratio-9-16', tags: [] },
     { type: 'design', category: 'ia', title: 'Arte IA', image: 'javascript:alert(1)', ratio: 'ratio-4-3', tags: [] }
   ];
   const indexHtml = readText(indexPath);
   assert(indexHtml.includes('id="lightbox-caption"'), 'Lightbox deve conter #lightbox-caption');
+  assert(indexHtml.includes('id="lightbox-stage"'), 'Lightbox deve conter #lightbox-stage');
+  assert(indexHtml.includes('--ease-smooth-out:'), 'CSS deve incluir tokens de transição do transitions.dev (--ease-smooth-out)');
+  assert(indexHtml.includes('--duration-medium:'), 'CSS deve incluir duração --duration-medium do transitions.dev');
+  assert(indexHtml.includes('--scale-large:'), 'CSS deve incluir --scale-large do transitions.dev');
+  assert(indexHtml.includes('prefers-reduced-motion'), 'CSS deve respeitar prefers-reduced-motion');
 
   const vmRun = loadPageVm(indexHtml, { defaultProjects: sample, manualTimers: true });
+  const stage = vmRun.dom.document.getElementById('lightbox-stage');
+  stage.getBoundingClientRect = () => ({ left: 400, top: 100, width: 360, height: 640 });
+
   const triggerBtn = vmRun.dom.makeElement('article');
+  triggerBtn.getBoundingClientRect = () => ({ left: 80, top: 220, width: 180, height: 320 });
   triggerBtn.focus();
 
-  vmRun.sandbox.openLightbox(0);
+  const rafQueue = [];
+  vmRun.sandbox.requestAnimationFrame = (fn) => { rafQueue.push(fn); return rafQueue.length; };
+  vmRun.sandbox.cancelAnimationFrame = () => {};
+
+  vmRun.sandbox.openLightbox(0, triggerBtn);
   const content = vmRun.dom.elements.get('lightbox-content');
   const caption = vmRun.dom.elements.get('lightbox-caption');
   const closeBtn = vmRun.dom.elements.get('lightbox-close');
@@ -480,6 +493,12 @@ test('Lightbox usa controls=0, exibe legenda escapada e gerencia foco no modal',
   const nextBtn = vmRun.dom.elements.get('lightbox-next');
 
   assert(content.innerHTML.includes('controls=0'), 'Lightbox YouTube deve usar controls=0');
+  assert(content.innerHTML.includes('class="lightbox-poster"'), 'Vídeo deve exibir poster de transição atrás do iframe');
+  assert(stage.style.transform && stage.style.transform.includes('translate3d('), 'Abertura pelo card deve calcular animação FLIP de origem');
+  assert(rafQueue.length >= 1, 'Animação FLIP deve agendar requestAnimationFrame para transição suave');
+  while (rafQueue.length > 0) rafQueue.shift()();
+  assert(stage.style.transform.includes('translate3d(0, 0, 0)'), 'Frame seguinte deve animar estágio até o centro');
+
   assert(!content.innerHTML.includes('<script>'), 'Título no iframe deve ser escapado');
   assert(caption.textContent.includes('Teste "Vídeo" <script>'), 'Legenda deve mostrar título via textContent');
   assert.strictEqual(vmRun.dom.document.activeElement, closeBtn, 'Foco inicial deve ir para #lightbox-close');
@@ -510,9 +529,10 @@ test('Lightbox usa controls=0, exibe legenda escapada e gerencia foco no modal',
   vmRun.sandbox.stepLightbox(1);
   assert(!content.innerHTML.includes('javascript:'), 'Lightbox deve bloquear URL insegura');
 
-  // Ao fechar, foco retorna ao card de origem
+  // Ao fechar, foco retorna ao card de origem e estilos inline são limpos
   vmRun.sandbox.closeLightbox();
   vmRun.flushTimers();
+  assert.strictEqual(stage.style.transform, '', 'Fechamento deve limpar transform inline do estágio');
   assert.strictEqual(vmRun.dom.document.activeElement, triggerBtn, 'Foco deve retornar ao elemento anterior ao fechar');
 });
 
