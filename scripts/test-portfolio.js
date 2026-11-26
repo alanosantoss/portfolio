@@ -784,24 +784,35 @@ test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e 
   assert(modal.classList.contains('is-open'), '#quote-modal deve abrir ao clicar no CTA');
   assert.strictEqual(vmRun.evalExpr('quoteState.service'), 'ia', 'Aba #ia deve pré-selecionar serviço ia');
 
-  // Selecionar respostas e digitar observação atualiza link de envio automaticamente
+  // Selecionar respostas (incluindo múltiplos formatos) e digitar observação atualiza link automaticamente
   vmRun.sandbox.setQuoteField('service', 'video');
+  vmRun.sandbox.setQuoteField('format', 'Reels / Shorts');
   vmRun.sandbox.setQuoteField('format', 'VSL');
+  vmRun.sandbox.setQuoteField('format', 'Anúncio / Criativo');
+  vmRun.sandbox.setQuoteField('format', 'Reels / Shorts'); // desmarca apenas Reels / Shorts
   vmRun.sandbox.setQuoteField('volume', '4 a 8 / mês');
   vmRun.sandbox.setQuoteField('deadline', 'Esta semana');
   notesInput.value = 'Clínica odontológica, funil de vendas';
   notesInput.dispatchEvent({ type: 'input' });
 
+  assert.deepStrictEqual(Array.from(vmRun.evalExpr('quoteState.format')), ['VSL', 'Anúncio / Criativo'], 'Formato deve permitir marcar e desmarcar múltiplos itens');
+
   const builtMsg = vmRun.sandbox.buildQuoteMessage(vmRun.evalExpr('quoteState'));
   assert(builtMsg.includes('Edição de vídeo'), 'Texto gerado deve incluir área escolhida');
-  assert(builtMsg.includes('VSL'), 'Texto gerado deve incluir formato VSL escolhido');
+  assert(builtMsg.includes('VSL, Anúncio / Criativo'), 'Texto gerado deve listar múltiplos formatos selecionados');
+  assert(!builtMsg.includes('Reels / Shorts'), 'Formato desmarcado não deve permanecer no texto');
   assert(builtMsg.includes('4 a 8 / mês'), 'Texto gerado deve incluir média de quantidade/recorrência');
   assert(builtMsg.includes('Esta semana'), 'Texto gerado deve incluir prazo escolhido');
   assert(builtMsg.includes('Clínica odontológica, funil de vendas'), 'Texto gerado deve incluir observação digitada');
 
   const decodedHref = decodeURIComponent(submitBtn.href);
   assert(submitBtn.href.startsWith('https://wa.me/5511991584991?text='), '#quote-submit-btn deve gerar URL wa.me válida');
+  assert(decodedHref.includes('VSL, Anúncio / Criativo'), 'URL do botão deve conter múltiplos formatos');
   assert(decodedHref.includes('Clínica odontológica, funil de vendas'), 'URL do botão deve conter texto automático');
+
+  // Trocar área limpa formatos incompatíveis da área anterior
+  vmRun.sandbox.setQuoteField('service', 'design');
+  assert.deepStrictEqual(Array.from(vmRun.evalExpr('quoteState.format')), [], 'Trocar área deve limpar formatos incompatíveis');
 
   // Fechar com Escape limpa trava de scroll
   vmRun.dom.document.dispatchEvent({ type: 'keydown', key: 'Escape' });

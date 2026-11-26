@@ -1165,6 +1165,11 @@
       margin-bottom: 7px;
     }
 
+    .quote-hint {
+      font-weight: 400;
+      color: var(--muted);
+    }
+
     .quote-pills {
       display: flex;
       flex-wrap: wrap;
@@ -1476,7 +1481,7 @@
         </div>
 
         <div>
-          <span class="quote-field-label">2. O que você precisa?</span>
+          <span class="quote-field-label">2. O que você precisa? <span class="quote-hint">(pode escolher mais de um)</span></span>
           <div id="quote-format-group" class="quote-pills" role="group" aria-label="Formato ou tipo de projeto"></div>
         </div>
 
@@ -1612,7 +1617,7 @@
 
     const quoteState = {
       service: "",
-      format: "",
+      format: [],
       volume: "",
       deadline: "",
       notes: ""
@@ -1635,7 +1640,10 @@
       if (answers.service) {
         lines.push(`• Área: ${QUOTE_SERVICE_LABELS[answers.service] || answers.service}`);
       }
-      if (answers.format) lines.push(`• Formato: ${answers.format}`);
+      const formats = Array.isArray(answers.format)
+        ? answers.format.filter(Boolean)
+        : (answers.format ? [answers.format] : []);
+      if (formats.length > 0) lines.push(`• Formato: ${formats.join(", ")}`);
       if (answers.volume) lines.push(`• Quantidade/recorrência: ${answers.volume}`);
       if (answers.deadline) lines.push(`• Prazo: ${answers.deadline}`);
       const cleanNotes = String(answers.notes || "").replace(/\s+/g, " ").trim();
@@ -1650,17 +1658,18 @@
       if (!group) return;
 
       const options = QUOTE_FORMATS[quoteState.service] || QUOTE_FORMATS.default;
-      if (quoteState.format && !options.includes(quoteState.format)) {
-        quoteState.format = "";
-      }
+      const current = Array.isArray(quoteState.format) ? quoteState.format : [];
+      quoteState.format = current.filter((item) => options.includes(item));
 
       group.innerHTML = "";
       options.forEach((opt) => {
+        const isSelected = quoteState.format.includes(opt);
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = `quote-pill${quoteState.format === opt ? " is-active" : ""}`;
+        btn.className = `quote-pill${isSelected ? " is-active" : ""}`;
         btn.dataset.quoteField = "format";
         btn.dataset.quoteValue = opt;
+        btn.setAttribute("aria-pressed", String(isSelected));
         btn.textContent = opt;
         btn.addEventListener("click", () => setQuoteField("format", opt));
         group.appendChild(btn);
@@ -1670,7 +1679,12 @@
     function syncQuoteUi() {
       document.querySelectorAll("#quote-modal .quote-pill[data-quote-field]").forEach((btn) => {
         const field = btn.dataset.quoteField;
-        btn.classList.toggle("is-active", quoteState[field] === btn.dataset.quoteValue);
+        const val = btn.dataset.quoteValue;
+        const active = Array.isArray(quoteState[field])
+          ? quoteState[field].includes(val)
+          : quoteState[field] === val;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-pressed", String(active));
       });
 
       const submitBtn = document.getElementById("quote-submit-btn");
@@ -1683,6 +1697,11 @@
       if (!(field in quoteState)) return;
       if (field === "notes") {
         quoteState.notes = String(value || "");
+      } else if (field === "format") {
+        const current = Array.isArray(quoteState.format) ? quoteState.format : [];
+        quoteState.format = current.includes(value)
+          ? current.filter((item) => item !== value)
+          : [...current, value];
       } else {
         quoteState[field] = quoteState[field] === value ? "" : value;
         if (field === "service") {
@@ -1702,7 +1721,7 @@
         : "";
       if (presetService && quoteState.service !== presetService) {
         quoteState.service = presetService;
-        quoteState.format = "";
+        quoteState.format = [];
       }
 
       renderQuoteFormats();
