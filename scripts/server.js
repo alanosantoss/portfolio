@@ -130,12 +130,12 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        // 1. Atualizar projects.js no disco
-        const projectsPath = path.join(ROOT_DIR, 'projects.js');
+        // 1. Atualizar public/projects.js no disco
+        const projectsPath = path.join(ROOT_DIR, 'public', 'projects.js');
         fs.writeFileSync(projectsPath, formatProjectsFile(projects), 'utf8');
 
         // 2. Verificar se há alterações antes de commitar
-        const statusOut = await runCommand('git status --porcelain projects.js', ROOT_DIR);
+        const statusOut = await runCommand('git status --porcelain public/projects.js', ROOT_DIR);
         if (!statusOut.trim()) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
@@ -145,9 +145,9 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        // 3. Executar Git add, commit e push apenas de projects.js
-        console.log('[Git] Adicionando projects.js...');
-        await runCommand('git add projects.js', ROOT_DIR);
+        // 3. Executar Git add, commit e push apenas de public/projects.js
+        console.log('[Git] Adicionando public/projects.js...');
+        await runCommand('git add public/projects.js', ROOT_DIR);
 
         console.log('[Git] Criando commit...');
         await runCommand('git commit -m "feat: atualizacao de projetos via painel admin"', ROOT_DIR);
@@ -170,7 +170,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Servidor de arquivos estáticos
+  // Servidor de arquivos estáticos (prioriza dist/ após build, fallback para public/ e raiz)
   const filePath = resolveSafeStaticPath(req.url);
   if (!filePath) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -178,18 +178,27 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  fs.stat(filePath, (err, stats) => {
+  const relativeUrl = path.relative(ROOT_DIR, filePath);
+  const distCandidate = path.join(ROOT_DIR, 'dist', relativeUrl);
+  const publicCandidate = path.join(ROOT_DIR, 'public', relativeUrl);
+  const targetPath = fs.existsSync(distCandidate) && fs.statSync(distCandidate).isFile()
+    ? distCandidate
+    : fs.existsSync(publicCandidate) && fs.statSync(publicCandidate).isFile()
+      ? publicCandidate
+      : filePath;
+
+  fs.stat(targetPath, (err, stats) => {
     if (err || !stats.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('404 Not Found');
       return;
     }
 
-    const ext = path.extname(filePath).toLowerCase();
+    const ext = path.extname(targetPath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
     res.writeHead(200, { 'Content-Type': contentType });
-    fs.createReadStream(filePath).pipe(res);
+    fs.createReadStream(targetPath).pipe(res);
   });
 });
 

@@ -1,0 +1,108 @@
+html.intro-pending,
+html.intro-pending body {
+  overflow: hidden !important;
+  height: 100vh;
+}
+
+html.intro-pending .site-header .nav-links,
+html.intro-pending .site-header .social-links,
+html.intro-pending .site-header .sub-nav {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+html.intro-pending .main-container {
+  opacity: 0;
+  will-change: clip-path, filter, opacity;
+}
+
+html.intro-pending #brand-home {
+  opacity: 0;
+}
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-intro);
+  background-color: var(--bg);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: all;
+  overflow: hidden;
+}
+
+html.intro-pending .intro-overlay {
+  display: flex;
+}
+
+.intro-line {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(140px, 36vw);
+  height: 2px;
+  background-color: #ffffff;
+  transform: translate(-50%, -50%) scaleX(0);
+  transform-origin: center center;
+  will-change: transform, opacity;
+  z-index: 903;
+}
+
+.intro-window {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(290px, 66vw);
+  max-height: 62vh;
+  aspect-ratio: 9 / 16;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: 12px;
+  background: #141414;
+  clip-path: inset(50% 0 50% 0 round 12px);
+  opacity: 0;
+  will-change: clip-path, opacity;
+  z-index: 902;
+}
+
+.intro-reel-track {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  will-change: transform, opacity;
+}
+
+.intro-reel-frame {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #141414;
+}
+
+.intro-reel-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.intro-brand {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-intro-brand);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}

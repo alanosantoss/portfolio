@@ -1,0 +1,152 @@
+.main-container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 40px 96px;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 24px 20px 48px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.about-section {
+  display: none;
+  max-width: 1040px;
+  margin: 32px auto 80px;
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.about-section.is-visible {
+  display: block;
+}
+
+.about-contact-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.about-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.about-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.about-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.about-hero {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  margin-bottom: 32px;
+}
+
+.about-avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+.about-intro p {
+  font-size: 1.08rem;
+  line-height: 1.8;
+  color: #d4d4d4;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.about-intro strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.about-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 38px 0;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+}
+
+.about-col-title {
+  font-size: 1.04rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+  margin-bottom: 12px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.about-col-text {
+  font-size: 0.88rem;
+  line-height: 1.72;
+  color: #a3a3a3;
+  font-weight: 400;
+}
+
+.about-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.about-cta-text {
+  font-size: 0.94rem;
+  line-height: 1.7;
+  color: #ffffff;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.copy-toast {
+  position: absolute;
+  top: -32px;
+  font-size: 0.78rem;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  padding: 4px 12px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: translateY(4px);
+}
+
+.copy-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}

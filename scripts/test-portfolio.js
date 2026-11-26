@@ -16,7 +16,7 @@ function extractInlineScript(html) {
   const regex = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
   for (const match of html.matchAll(regex)) {
     const attrs = match[1] || '';
-    if (!/\bsrc\s*=/.test(attrs) && !/ld\+json/i.test(attrs)) {
+    if (!/\bsrc\s*=/.test(attrs) && !/ld\+json/i.test(attrs) && !/data-intro-boot/i.test(attrs)) {
       return match[2];
     }
   }
@@ -912,6 +912,31 @@ test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e 
   // Fechar com Escape limpa trava de scroll
   vmRun.dom.document.dispatchEvent({ type: 'keydown', key: 'Escape' });
   assert(!modal.classList.contains('is-open'), 'Escape deve fechar #quote-modal');
+});
+
+// --- Cinematic Intro & Morphing Welcome Gate Tests ---
+test('runCinematicIntro respeita prefers-reduced-motion, fallback sem GSAP e sessionStorage', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+
+  assert(indexHtml.includes('INTRO_STATES'), 'index.html deve definir máquina de estados INTRO_STATES');
+  assert(indexHtml.includes('INTRO_CONFIG'), 'index.html deve centralizar parâmetros em INTRO_CONFIG');
+  assert(indexHtml.includes('id="intro-brand"'), 'index.html deve conter #intro-brand');
+  assert(indexHtml.includes('portfolio_intro_seen'), 'index.html deve controlar execução única via portfolio_intro_seen');
+
+  // Sem GSAP (fallback): deve limpar intro-pending, remover overlay, liberar scroll e abrir welcome-gate
+  const fallbackVm = loadPageVm(indexHtml, { defaultProjects: defaults });
+  assert(!fallbackVm.dom.document.documentElement.classList.contains('intro-pending'), 'Fallback deve remover intro-pending');
+  assert.strictEqual(fallbackVm.dom.document.body.style.overflow, 'hidden', 'welcome-gate aberto trava scroll');
+  assert(fallbackVm.dom.elements.get('welcome-gate').classList.contains('is-open'), 'Fallback deve abrir welcome-gate');
+  assert.strictEqual(fallbackVm.evalExpr('introState'), 'GATE_READY', 'Estado deve avançar para GATE_READY');
+
+  // getIntroFrameUrls deve retornar thumbnails seguras e mescladas
+  const frameUrls = fallbackVm.sandbox.getIntroFrameUrls();
+  assert(frameUrls.length >= 6 && frameUrls.length <= 10, 'getIntroFrameUrls deve retornar entre 6 e 10 frames');
+  for (const url of frameUrls) {
+    assert(fallbackVm.sandbox.isSafeImageUrl(url), `URL da intro deve ser segura: ${url}`);
+  }
 });
 
 (async function runTests() {

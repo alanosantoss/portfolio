@@ -1,10 +1,15 @@
 # Arquivos de sistema e ambiente
 .DS_Store
 Thumbs.db
+.env
 
-# Diretórios temporários e logs
+# Diretórios temporários, build e logs
 *.log
 .superpowers/
 .gemini/
 node_modules/
+dist/
+artifacts/
+test-results/
+playwright-report/
 .worktrees/
