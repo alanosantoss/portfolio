@@ -749,6 +749,62 @@ test('welcome-gate inicializa sem erro, restaura área salva e respeita hash dir
   assert.strictEqual(directHashVisit.evalExpr('state.activeCategory'), 'video');
 });
 
+test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e conecta WhatsApp', () => {
+  const defaults = loadDefaultProjects();
+  const indexHtml = readText(indexPath);
+
+  assert(indexHtml.includes('id="quote-modal"'), 'index.html deve conter #quote-modal');
+  assert(indexHtml.includes('id="quote-submit-btn"'), 'Modal deve conter botão principal #quote-submit-btn');
+  assert(indexHtml.includes('id="quote-skip-link"'), 'Modal deve conter botão discreto #quote-skip-link para ir direto');
+  assert(indexHtml.includes('id="quote-notes"'), 'Modal deve conter campo opcional #quote-notes');
+
+  const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults, hash: '#ia' });
+  const modal = vmRun.dom.elements.get('quote-modal');
+  const headerWa = vmRun.dom.elements.get('header-whatsapp');
+  const submitBtn = vmRun.dom.elements.get('quote-submit-btn');
+  const skipLink = vmRun.dom.elements.get('quote-skip-link');
+  const notesInput = vmRun.dom.elements.get('quote-notes');
+
+  assert(skipLink.href.startsWith('https://wa.me/5511991584991?text='), 'Botão de pular deve apontar direto para WhatsApp');
+
+  // Mensagem padrão quando nenhuma opção foi selecionada
+  assert.strictEqual(
+    vmRun.sandbox.buildQuoteMessage({}),
+    vmRun.evalExpr('CONFIG.WHATSAPP_MESSAGE'),
+    'Sem respostas, buildQuoteMessage deve retornar mensagem padrão'
+  );
+
+  // Abrir pelo botão do topo em #ia deve pré-selecionar área ia
+  let prevented = false;
+  headerWa.dispatchEvent({ type: 'click', preventDefault: () => { prevented = true; } });
+  assert(prevented, 'Clique normal em #header-whatsapp deve abrir triagem antes do WhatsApp');
+  assert(modal.classList.contains('is-open'), '#quote-modal deve abrir ao clicar no CTA');
+  assert.strictEqual(vmRun.evalExpr('quoteState.service'), 'ia', 'Aba #ia deve pré-selecionar serviço ia');
+
+  // Selecionar respostas e digitar observação atualiza link de envio automaticamente
+  vmRun.sandbox.setQuoteField('service', 'video');
+  vmRun.sandbox.setQuoteField('format', 'Reels / Shorts');
+  vmRun.sandbox.setQuoteField('volume', 'Pacote recorrente');
+  vmRun.sandbox.setQuoteField('deadline', 'Esta semana');
+  notesInput.value = 'Clínica odontológica, 8 vídeos/mês';
+  notesInput.dispatchEvent({ type: 'input' });
+
+  const builtMsg = vmRun.sandbox.buildQuoteMessage(vmRun.evalExpr('quoteState'));
+  assert(builtMsg.includes('Edição de vídeo'), 'Texto gerado deve incluir área escolhida');
+  assert(builtMsg.includes('Reels / Shorts'), 'Texto gerado deve incluir formato escolhido');
+  assert(builtMsg.includes('Pacote recorrente'), 'Texto gerado deve incluir demanda escolhida');
+  assert(builtMsg.includes('Esta semana'), 'Texto gerado deve incluir prazo escolhido');
+  assert(builtMsg.includes('Clínica odontológica, 8 vídeos/mês'), 'Texto gerado deve incluir observação digitada');
+
+  const decodedHref = decodeURIComponent(submitBtn.href);
+  assert(submitBtn.href.startsWith('https://wa.me/5511991584991?text='), '#quote-submit-btn deve gerar URL wa.me válida');
+  assert(decodedHref.includes('Clínica odontológica, 8 vídeos/mês'), 'URL do botão deve conter texto automático');
+
+  // Fechar com Escape limpa trava de scroll
+  vmRun.dom.document.dispatchEvent({ type: 'keydown', key: 'Escape' });
+  assert(!modal.classList.contains('is-open'), 'Escape deve fechar #quote-modal');
+});
+
 (async function runTests() {
   let passed = 0;
   console.log('--- Executando testes automatizados do portfólio ---');
