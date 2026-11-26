@@ -152,7 +152,7 @@ test.describe("Portfolio E2E", () => {
     await context.close();
   });
 
-  test("second cinematic transition: selected card becomes reveal aperture with opaque backdrop", async ({ page }) => {
+  test("second cinematic transition: circular morph from click coordinates to radial gallery reveal", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(err.message));
 
@@ -167,19 +167,54 @@ test.describe("Portfolio E2E", () => {
     });
     expect(backdropColor).toMatch(/(rgb\(11,\s*11,\s*11\)|rgba\(11,\s*11,\s*11,\s*1\))/);
 
-    // Clica no card "Editor de vídeo"
+    // Clica no card "Editor de vídeo" com coordenadas de mouse específicas
     const videoBtn = page.locator(".welcome-option[data-welcome-cat='video']");
-    await videoBtn.click();
+    await videoBtn.click({ position: { x: 40, y: 30 } });
 
-    // Durante a transição, a classe gate-transitioning é aplicada e o shared aperture é criado
+    // Durante a transição, a classe gate-transitioning é aplicada e o morphSurface ou aperture é criado
     await expect(page.locator("html")).toHaveClass(/gate-transitioning/);
-    await expect(page.locator("#shared-card-aperture")).toBeVisible();
+
+    // Espera a criação do gallery-aperture circular
+    await expect(page.locator("#gallery-aperture")).toBeVisible({ timeout: 2000 });
+
+    // Verifica que a abertura é circular (border-radius: 50%)
+    const borderRadius = await page.locator("#gallery-aperture").evaluate((el) => {
+      return window.getComputedStyle(el).borderRadius;
+    });
+    expect(borderRadius).toMatch(/50%/);
 
     // Ao concluir, a galeria está pronta, URL atualizada e aperture removido
     await expect(page.locator("html")).not.toHaveClass(/gate-transitioning/, { timeout: 3000 });
-    await expect(page.locator("#shared-card-aperture")).toHaveCount(0);
+    await expect(page.locator("#gallery-aperture")).toHaveCount(0);
     await expect(page.locator("#welcome-gate")).not.toHaveClass(/is-open/);
     await expect(page).toHaveURL(/#video$/);
+    await expect(page.locator(".masonry-col").first()).toBeVisible();
+
+    expect(errors).toEqual([]);
+  });
+
+  test("second cinematic transition: keyboard activation uses center of selected card", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+
+    // Pula abertura para testar ativação por teclado
+    await page.locator("#intro-skip-btn").click();
+    await expect(page.locator("#welcome-gate")).toHaveClass(/is-open/, { timeout: 3000 });
+
+    // Foca o botão "Designer" e aciona com Enter (teclado)
+    const designBtn = page.locator(".welcome-option[data-welcome-cat='design']");
+    await designBtn.focus();
+    await page.keyboard.press("Enter");
+
+    // Durante a transição, a classe gate-transitioning é aplicada
+    await expect(page.locator("html")).toHaveClass(/gate-transitioning/);
+    await expect(page.locator("#gallery-aperture")).toBeVisible({ timeout: 2000 });
+
+    // Ao concluir, navega para #design
+    await expect(page.locator("html")).not.toHaveClass(/gate-transitioning/, { timeout: 3000 });
+    await expect(page).toHaveURL(/#design$/);
     await expect(page.locator(".masonry-col").first()).toBeVisible();
 
     expect(errors).toEqual([]);

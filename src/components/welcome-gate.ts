@@ -7,7 +7,6 @@ import {
 } from "../services/storage";
 import { INTRO_STATES, type IntroState } from "../types/app";
 import type { MainCategory, ProjectCategory } from "../types/project";
-import { prefersReducedMotion } from "../utils/media";
 
 export interface WelcomeGateCallbacks {
   onCategoryLock: (category: ProjectCategory | null) => void;
@@ -19,7 +18,12 @@ export interface WelcomeGateCallbacks {
 export interface WelcomeGateController {
   init: (initialCategory: MainCategory, options?: { forceOpen?: boolean }) => void;
   open: () => void;
-  close: (category?: ProjectCategory | null, unlockAll?: boolean, triggerElement?: HTMLElement | null) => void;
+  close: (
+    category?: ProjectCategory | null,
+    unlockAll?: boolean,
+    triggerElement?: HTMLElement | null,
+    clickCoords?: { x: number; y: number } | null
+  ) => void;
   isOpen: () => boolean;
 }
 
@@ -67,10 +71,14 @@ export function createWelcomeGateController(callbacks: WelcomeGateCallbacks): We
     }
   };
 
-  const close = (category?: ProjectCategory | null, unlockAll = false, triggerElement?: HTMLElement | null) => {
+  const close = (
+    category?: ProjectCategory | null,
+    unlockAll = false,
+    triggerElement?: HTMLElement | null,
+    clickCoords?: { x: number; y: number } | null
+  ) => {
     const els = getElements();
     if (!els || !els.card) return;
-    const { gate, backdrop } = els;
 
     if (callbacks.getIntroState() === INTRO_STATES.AREA_TRANSITION) return;
     setSessionStorageItem(STORAGE_KEYS.WELCOME_SEEN, "1");
@@ -87,24 +95,10 @@ export function createWelcomeGateController(callbacks: WelcomeGateCallbacks): We
       }
     };
 
-    if (prefersReducedMotion()) {
-      prepareDestination();
-      gate.style.visibility = "hidden";
-      gate.classList.remove("is-open", "ready");
-      gate.setAttribute("aria-hidden", "true");
-      gate.setAttribute("inert", "");
-      if (backdrop) {
-        backdrop.style.pointerEvents = "none";
-        backdrop.style.backgroundColor = "transparent";
-      }
-      document.documentElement.classList.remove("gate-open", "intro-running", "intro-pending");
-      document.body.style.overflow = "";
-      callbacks.onStateChange(INTRO_STATES.PORTFOLIO_READY);
-      return;
-    }
-
+    // A transicao cinematica executa consistentemente sem bypass por prefers-reduced-motion (politica aprovada da abertura)
     runGalleryReveal({
       triggerElement: triggerElement || null,
+      clickCoords: clickCoords || null,
       onStateChange: callbacks.onStateChange,
       onPrepareDestination: prepareDestination,
       onComplete: () => {
@@ -125,17 +119,21 @@ export function createWelcomeGateController(callbacks: WelcomeGateCallbacks): We
     if (!gate.dataset.gateBound) {
       gate.dataset.gateBound = "1";
       gate.querySelectorAll<HTMLElement>("[data-welcome-cat]").forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e: MouseEvent) => {
           const cat = btn.dataset.welcomeCat as ProjectCategory | undefined;
-          if (cat) close(cat, false, btn);
+          const coords =
+            e.clientX || e.clientY
+              ? { x: e.clientX, y: e.clientY }
+              : null; // Se 0,0 (teclado), passa null para o centro do card ser usado
+          if (cat) close(cat, false, btn, coords);
         });
       });
 
-      document.getElementById("welcome-skip")?.addEventListener("click", () => close(null, true, null));
-      document.getElementById("welcome-close")?.addEventListener("click", () => close(null, false, null));
+      document.getElementById("welcome-skip")?.addEventListener("click", () => close(null, true, null, null));
+      document.getElementById("welcome-close")?.addEventListener("click", () => close(null, false, null, null));
       document.getElementById("switch-area-btn")?.addEventListener("click", open);
       gate.addEventListener("click", (e: MouseEvent) => {
-        if (e.target === gate) close(null, false, null);
+        if (e.target === gate) close(null, false, null, null);
       });
     }
 
