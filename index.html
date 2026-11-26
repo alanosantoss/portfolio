@@ -44,13 +44,14 @@
   <script data-intro-boot>
     (function () {
       try {
-        var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         var hash = (window.location.hash || "").replace("#", "").toLowerCase();
         var directRoute = hash === "video" || hash === "design" || hash === "ia" || hash === "sobre";
-        if (!reduced && !directRoute) {
+        var seen = false;
+        try { seen = sessionStorage.getItem("portfolio_welcome_seen") === "1"; } catch (_) {}
+        if (!directRoute && !seen) {
           document.documentElement.classList.add("intro-pending");
         }
-      } catch (_) { }
+      } catch (_) {}
     })();
   </script>
   <style>html, body { background-color: #111111; color: #ffffff; }</style>
@@ -60,12 +61,15 @@
 <body>
 
   <!-- Intro Cinematográfica (camada temporária removida ao concluir) -->
-  <div id="intro-overlay" class="intro-overlay" aria-hidden="true">
-    <div id="intro-line" class="intro-line"></div>
-    <div id="intro-window" class="intro-window">
-      <div id="intro-reel-track" class="intro-reel-track"></div>
+  <div id="intro-overlay" class="intro-overlay">
+    <button type="button" id="intro-skip-btn" class="intro-skip-btn" aria-label="Pular abertura">Pular abertura</button>
+    <div id="morph-surface" class="intro-window">
+      <div id="reel-mask" class="intro-reel-mask">
+        <div id="reel-track" class="intro-reel-track"></div>
+        <div id="reel-shade" class="intro-reel-shade"></div>
+      </div>
     </div>
-    <span id="intro-brand" class="intro-brand">Alan Oliveira</span>
+    <span id="brand" class="intro-brand">Alan Oliveira</span>
   </div>
 
   <!-- =========================================================================
@@ -225,8 +229,9 @@
   <!-- =========================================================================
        TELA INICIAL DE BOAS-VINDAS (TRIAGEM DE SERVIÇO)
   ========================================================================== -->
+  <div id="backdrop" class="site-backdrop" aria-hidden="true"></div>
   <div id="welcome-gate" class="welcome-gate" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-    <div class="welcome-card">
+    <div class="welcome-card" id="welcome-card">
       <button id="welcome-close" class="welcome-close" type="button" aria-label="Fechar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
           stroke-linecap="round">
@@ -235,7 +240,7 @@
         </svg>
       </button>
 
-      <p class="welcome-eyebrow">Alan Oliveira</p>
+      <p class="welcome-eyebrow" id="gate-brand">Alan Oliveira</p>
       <h2 id="welcome-title" class="welcome-title">Você precisa do quê?</h2>
       <p class="welcome-subtitle">Escolha uma área para ir direto aos projetos certos.</p>
 

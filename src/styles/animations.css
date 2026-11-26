@@ -1,7 +1,8 @@
 html.intro-pending,
+html.intro-running,
+html.gate-open,
 html.intro-pending body {
   overflow: hidden !important;
-  height: 100vh;
 }
 
 html.intro-pending .site-header .nav-links,
@@ -13,75 +14,150 @@ html.intro-pending .site-header .sub-nav {
 }
 
 html.intro-pending .main-container {
-  opacity: 0;
-  will-change: clip-path, filter, opacity;
+  opacity: 1;
 }
 
 html.intro-pending #brand-home {
   opacity: 0;
 }
 
+/* =========================================================================
+   BACKDROP REAL (REVELAÇÃO PROGRESSIVA DA PÁGINA)
+========================================================================== */
+#backdrop,
+.site-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(18, 18, 18, 1);
+  pointer-events: auto;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  will-change: background-color, backdrop-filter;
+}
+
+/* =========================================================================
+   CAMADA CINEMATOGRÁFICA (SUPERFÍCIE DE MORPHING E REEL)
+========================================================================== */
+#intro-overlay,
 .intro-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-intro);
-  background-color: var(--bg);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  pointer-events: all;
+  background-color: transparent !important;
+  pointer-events: none;
   overflow: hidden;
+  display: block;
 }
 
-html.intro-pending .intro-overlay {
-  display: flex;
+/* =========================================================================
+   BOTÃO DISCRETO DE PULAR ABERTURA (ACESSIBILIDADE POR TECLADO)
+========================================================================== */
+.intro-skip-btn {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: calc(var(--z-intro-brand) + 2);
+  background: rgba(18, 18, 18, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-body, "Inter", sans-serif);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  cursor: pointer;
+  pointer-events: auto;
+  opacity: 0.8;
+  transition: color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+  user-select: none;
 }
 
-.intro-line {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: min(140px, 36vw);
-  height: 2px;
-  background-color: #ffffff;
-  transform: translate(-50%, -50%) scaleX(0);
-  transform-origin: center center;
-  will-change: transform, opacity;
-  z-index: 903;
+.intro-skip-btn:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(28, 28, 28, 0.85);
+  opacity: 1;
 }
 
+.intro-skip-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  color: #ffffff;
+  opacity: 1;
+  background: rgba(28, 28, 28, 0.95);
+}
+
+@media (max-width: 600px) {
+  .intro-skip-btn {
+    top: 16px;
+    right: 16px;
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+}
+
+#morph-surface,
 .intro-window {
-  position: fixed;
-  top: 50%;
+  position: absolute;
   left: 50%;
-  width: min(290px, 66vw);
-  max-height: 62vh;
-  aspect-ratio: 9 / 16;
+  top: 50%;
   transform: translate(-50%, -50%);
+  width: 190px;
+  height: 2px;
   overflow: hidden;
-  border-radius: 12px;
-  background: #141414;
-  clip-path: inset(50% 0 50% 0 round 12px);
-  opacity: 0;
-  will-change: clip-path, opacity;
-  z-index: 902;
+  border-radius: 0;
+  border: 0 solid transparent;
+  background: #ffffff;
+  box-shadow: none;
+  will-change: width, height, background-color;
+  contain: layout paint;
+  z-index: 2;
 }
 
+#reel-mask,
+.intro-reel-mask {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 190px;
+  height: 338px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#reel-track,
 .intro-reel-track {
   display: flex;
   flex-direction: column;
+  gap: 0;
   width: 100%;
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
+#reel-shade,
+.intro-reel-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent 22%, rgba(0, 0, 0, 0.45) 51%, transparent 83%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reel-frame,
 .intro-reel-frame {
   width: 100%;
-  aspect-ratio: 9 / 16;
-  flex-shrink: 0;
-  overflow: hidden;
-  background: #141414;
+  flex: none;
+  display: block;
+  object-fit: cover;
+  background: #222222;
 }
 
+.reel-frame img,
 .intro-reel-frame img {
   width: 100%;
   height: 100%;
@@ -89,19 +165,23 @@ html.intro-pending .intro-overlay {
   display: block;
 }
 
+#brand,
 .intro-brand {
-  position: fixed;
-  top: 50%;
+  position: absolute;
   left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
   z-index: var(--z-intro-brand);
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-family: var(--font-heading, "Plus Jakarta Sans", sans-serif);
+  font-size: 19px;
+  font-weight: 400;
   letter-spacing: 0.08em;
+  line-height: 1.15;
   text-transform: uppercase;
-  color: var(--muted);
+  white-space: nowrap;
+  color: #ffffff;
   text-align: center;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.5);
   pointer-events: none;
   opacity: 0;
   will-change: transform, opacity;

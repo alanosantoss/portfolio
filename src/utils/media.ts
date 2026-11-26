@@ -60,7 +60,8 @@ export function getYouTubeEmbedUrl(id: string): string {
 
 export function prefersReducedMotion(): boolean {
   return Boolean(
-    typeof window.matchMedia === "function" &&
+    typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
   );
 }

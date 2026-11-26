@@ -43,7 +43,8 @@ module.exports = tseslint.config(
       ecmaVersion: 2022,
       sourceType: "commonjs",
       globals: {
-        ...globals.node
+        ...globals.node,
+        ...globals.browser
       }
     },
     rules: {

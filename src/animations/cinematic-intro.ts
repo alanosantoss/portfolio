@@ -1,12 +1,5 @@
-import { INTRO_CONFIG } from "../core/config";
-import { getIntroFrameUrls } from "../services/projects";
 import { INTRO_STATES, type IntroState } from "../types/app";
 import type { ProjectItem } from "../types/project";
-import { prefersReducedMotion } from "../utils/media";
-import { preloadIntroFrames, waitForFonts } from "../utils/preload";
-import { escapeHtml } from "../utils/security";
-import { registerIntroEases } from "./easing";
-import { gsap } from "./gsap";
 
 export interface CinematicIntroOptions {
   projects: ProjectItem[];
@@ -14,34 +7,88 @@ export interface CinematicIntroOptions {
   onComplete: () => void;
 }
 
-let activeIntroTimeline: gsap.core.Timeline | null = null;
+const PHASE = {
+  line: 0.28,
+  window: 0.68,
+  reel: 1.78,
+  brand: 2.12,
+  morph: 2.92,
+  end: 3.42
+} as const;
 
-function startVisibleAutoplayVideos(): void {
-  document.querySelectorAll("video[autoplay], video[data-autoplay='true']").forEach((el) => {
-    const vid = el as HTMLVideoElement;
-    if (typeof vid.play === "function") {
-      vid.muted = true;
-      vid.play().catch(() => {});
+const clamp = (x: number): number => Math.max(0, Math.min(1, x));
+const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
+const segment = (t: number, a: number, b: number): number => clamp((t - a) / (b - a));
+
+function bezier(x1: number, y1: number, x2: number, y2: number): (x: number) => number {
+  return (x: number) => {
+    const cx = clamp(x);
+    let lo = 0;
+    let hi = 1;
+    const b = (t: number, a: number, c: number) =>
+      3 * (1 - t) * (1 - t) * t * a + 3 * (1 - t) * t * t * c + t * t * t;
+    for (let i = 0; i < 15; i++) {
+      const m = (lo + hi) / 2;
+      if (b(m, x1, x2) < cx) lo = m;
+      else hi = m;
     }
-  });
+    return b((lo + hi) / 2, y1, y2);
+  };
 }
 
+const morphEase = bezier(0.76, 0, 0.24, 1);
+const revealEase = bezier(0.16, 1, 0.3, 1);
+const reelEase = bezier(0.44, 0.04, 0.22, 1);
+const smoothEase = bezier(0.4, 0, 0.2, 1);
+
+let activeRafId = 0;
+
 export function killCinematicIntro(): void {
-  if (activeIntroTimeline) {
-    activeIntroTimeline.kill();
-    activeIntroTimeline = null;
+  if (activeRafId) {
+    cancelAnimationFrame(activeRafId);
+    activeRafId = 0;
   }
+}
+
+export function ensureIntroOverlayDom(): HTMLElement {
+  let overlay = document.getElementById("intro-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "intro-overlay";
+    overlay.className = "intro-overlay";
+    overlay.innerHTML = `
+      <button type="button" id="intro-skip-btn" class="intro-skip-btn" aria-label="Pular abertura">Pular abertura</button>
+      <div id="morph-surface" class="intro-window">
+        <div id="reel-mask" class="intro-reel-mask">
+          <div id="reel-track" class="intro-reel-track"></div>
+          <div id="reel-shade" class="intro-reel-shade"></div>
+        </div>
+      </div>
+      <span id="brand" class="intro-brand">Alan Oliveira</span>
+    `;
+    const header = document.querySelector(".site-header");
+    if (header && header.parentNode) {
+      header.parentNode.insertBefore(overlay, header);
+    } else {
+      document.body.prepend(overlay);
+    }
+  }
+  return overlay;
 }
 
 export function runCinematicIntro(options: CinematicIntroOptions): void {
   const rootEl = document.documentElement;
-  const overlay = document.getElementById("intro-overlay");
-  const lineEl = document.getElementById("intro-line");
-  const winEl = document.getElementById("intro-window");
-  const trackEl = document.getElementById("intro-reel-track");
-  const introBrandEl = document.getElementById("intro-brand");
+  const overlay = ensureIntroOverlayDom();
+  const shell = (document.getElementById("morph-surface") || document.getElementById("intro-window")) as HTMLElement | null;
+  const mask = (document.getElementById("reel-mask") || document.getElementById("intro-reel-mask")) as HTMLElement | null;
+  const track = (document.getElementById("reel-track") || document.getElementById("intro-reel-track")) as HTMLElement | null;
+  const shade = (document.getElementById("reel-shade") || document.getElementById("intro-reel-shade")) as HTMLElement | null;
+  const brand = (document.getElementById("brand") || document.getElementById("intro-brand")) as HTMLElement | null;
+  const backdrop = (document.getElementById("backdrop") || document.querySelector(".site-backdrop")) as HTMLElement | null;
   const gate = document.getElementById("welcome-gate");
   const welcomeCard = gate?.querySelector<HTMLElement>(".welcome-card") ?? null;
+  const gateBrand = (document.getElementById("gate-brand") || welcomeCard?.querySelector<HTMLElement>(".welcome-eyebrow")) ?? null;
+  const skipBtn = document.getElementById("intro-skip-btn");
 
   killCinematicIntro();
 
@@ -52,222 +99,278 @@ export function runCinematicIntro(options: CinematicIntroOptions): void {
     options.onComplete();
   };
 
-  const cleanupAndFallback = () => {
+  const onSkipClick = () => {
+    finishGate();
+  };
+  skipBtn?.addEventListener("click", onSkipClick);
+
+  const cleanupAndFallback = (_reason: string) => {
+    killCinematicIntro();
+    skipBtn?.removeEventListener("click", onSkipClick);
     options.onStateChange(INTRO_STATES.FALLBACK);
-    rootEl.classList.remove("intro-pending");
+    rootEl.classList.remove("intro-pending", "intro-running");
     document.body.style.overflow = "";
-    overlay?.remove();
-    if (gate) {
-      gsap.set(gate, { clearProps: "all" });
-    }
-    startVisibleAutoplayVideos();
+    if (overlay) overlay.remove();
     invokeCompleteOnce();
   };
 
-  const shouldRun =
-    rootEl.classList.contains("intro-pending") &&
-    !prefersReducedMotion() &&
-    Boolean(overlay && lineEl && winEl && trackEl && introBrandEl && gate && welcomeCard);
+  const hasPending = rootEl.classList.contains("intro-pending");
+  const hasElements = Boolean(
+    overlay && shell && mask && track && shade && brand && gate && welcomeCard && gateBrand && backdrop
+  );
 
-  if (!shouldRun || !overlay || !lineEl || !winEl || !trackEl || !introBrandEl || !gate || !welcomeCard) {
-    cleanupAndFallback();
+  if (!hasPending || !hasElements || !overlay || !shell || !mask || !track || !shade || !brand || !gate || !welcomeCard || !gateBrand || !backdrop) {
+    cleanupAndFallback(`shouldRun=false (pending=${String(hasPending)}, dom=${String(hasElements)})`);
     return;
   }
 
-  registerIntroEases();
+  // 8 frames locais do portfólio real
+  const frameAssets = [
+    "intro-assets/frame-0.jpg",
+    "intro-assets/frame-1.jpg",
+    "intro-assets/frame-2.jpg",
+    "intro-assets/frame-3.jpg",
+    "intro-assets/frame-4.jpg",
+    "intro-assets/frame-5.jpg",
+    "intro-assets/frame-6.jpg",
+    "intro-assets/frame-7.jpg"
+  ];
 
-  const frameUrls = getIntroFrameUrls(options.projects, INTRO_CONFIG.frameCount);
-  trackEl.innerHTML = frameUrls
-    .map((url) => `<div class="intro-reel-frame"><img src="${escapeHtml(url)}" alt="" /></div>`)
+  const order = [0, 4, 1, 5, 2, 6, 3, 7];
+  track.innerHTML = order
+    .map(idx => `<div class="intro-reel-frame reel-frame"><img src="${frameAssets[idx]}" alt="" /></div>`)
     .join("");
 
   options.onStateChange(INTRO_STATES.PRELOADING);
 
+  const revealItems = [
+    welcomeCard.querySelector<HTMLElement>("#welcome-title"),
+    welcomeCard.querySelector<HTMLElement>(".welcome-subtitle"),
+    ...Array.from(welcomeCard.querySelectorAll<HTMLElement>(".welcome-option")),
+    welcomeCard.querySelector<HTMLElement>("#welcome-skip"),
+    welcomeCard.querySelector<HTMLElement>("#welcome-close")
+  ].filter((el): el is HTMLElement => Boolean(el));
+
+  const measureGeometry = () => {
+    const target = welcomeCard.getBoundingClientRect();
+    const label = gateBrand.getBoundingClientRect();
+    const w = Math.min(220, window.innerWidth * 0.47, window.innerHeight * 0.56 * 9 / 16);
+    const h = w * 16 / 9;
+    mask.style.width = `${w}px`;
+    mask.style.height = `${h}px`;
+    Array.from(track.children).forEach((el) => {
+      (el as HTMLElement).style.height = `${h}px`;
+    });
+    return { w, h, target, label };
+  };
+
+  const renderContent = (p: number) => {
+    revealItems.forEach((el, i) => {
+      const v = revealEase(clamp((p - i * 0.085) / 0.58));
+      el.style.opacity = String(v);
+      el.style.translate = `0 ${(1 - v) * 8}px`;
+    });
+  };
+
+  const finishGate = () => {
+    killCinematicIntro();
+    overlay.remove();
+    gate.style.visibility = "visible";
+    gate.classList.add("ready", "is-open");
+    gate.removeAttribute("inert");
+    gate.setAttribute("aria-hidden", "false");
+    rootEl.classList.remove("intro-pending", "intro-running");
+    rootEl.classList.add("gate-open");
+
+    backdrop.style.backgroundColor = "#0B0B0B";
+    backdrop.style.backdropFilter = "none";
+    (backdrop.style as HTMLElement["style"] & { webkitBackdropFilter?: string }).webkitBackdropFilter = "none";
+    backdrop.style.pointerEvents = "auto";
+
+    renderContent(1);
+    gateBrand.style.opacity = "1";
+    revealItems.forEach(el => {
+      el.style.opacity = "";
+      el.style.translate = "";
+    });
+
+    const firstOpt = welcomeCard.querySelector<HTMLElement>(".welcome-option");
+    if (firstOpt && typeof firstOpt.focus === "function") {
+      firstOpt.focus({ preventScroll: true });
+    }
+
+    rootEl.dataset.phase = "7-gate-ready";
+    options.onStateChange(INTRO_STATES.GATE_READY);
+    invokeCompleteOnce();
+  };
+
   const startSequence = () => {
     try {
       options.onStateChange(INTRO_STATES.INTRO_RUNNING);
+      rootEl.classList.add("intro-running");
+      rootEl.classList.remove("gate-open");
 
-      // Mede a geometria real do painel interno de #welcome-gate sem exibi-lo
+      overlay.style.display = "block";
+      overlay.style.visibility = "visible";
       gate.style.visibility = "hidden";
-      gate.style.opacity = "0";
-      gate.style.pointerEvents = "none";
-      gate.classList.add("is-open");
-      const targetRect = welcomeCard.getBoundingClientRect();
-      const eyebrowEl = welcomeCard.querySelector<HTMLElement>(".welcome-eyebrow");
-      const eyebrowRect = eyebrowEl ? eyebrowEl.getBoundingClientRect() : null;
-      gate.classList.remove("is-open");
-      gate.style.visibility = "";
-      gate.style.opacity = "";
-      gate.style.pointerEvents = "";
+      gate.setAttribute("aria-hidden", "true");
+      gate.setAttribute("inert", "");
+      welcomeCard.style.opacity = "1";
+      welcomeCard.style.transform = "none";
+      backdrop.style.pointerEvents = "auto";
 
-      const winRect = winEl.getBoundingClientRect();
-      const trackDistance = Math.max(0, trackEl.scrollHeight - winRect.height);
+      let geom = measureGeometry();
+      const frameCount = order.length;
+      let morphNotified = false;
 
-      const modalContent = [
-        welcomeCard.querySelector("#welcome-title"),
-        welcomeCard.querySelector(".welcome-subtitle"),
-        ...welcomeCard.querySelectorAll(".welcome-option"),
-        welcomeCard.querySelector("#welcome-skip"),
-        welcomeCard.querySelector("#welcome-close")
-      ].filter((el): el is HTMLElement => Boolean(el));
-
-      const P = INTRO_CONFIG.phases;
-
-      const tl = gsap.timeline({
-        onComplete: () => {
-          rootEl.classList.remove("intro-pending");
-          gate.classList.add("is-open");
-          gsap.set([gate, welcomeCard, eyebrowEl, ...modalContent].filter(Boolean), {
-            clearProps: "all"
-          });
-          overlay.remove();
-          activeIntroTimeline = null;
-          options.onStateChange(INTRO_STATES.GATE_READY);
-          startVisibleAutoplayVideos();
-          invokeCompleteOnce();
+      const renderFrame = (t: number) => {
+        if (t < PHASE.line) {
+          rootEl.dataset.phase = "1-line";
+        } else if (t < PHASE.window) {
+          rootEl.dataset.phase = "2-window";
+        } else if (t < PHASE.reel) {
+          rootEl.dataset.phase = "3-reel";
+        } else if (t < PHASE.brand) {
+          rootEl.dataset.phase = "4-brand";
+        } else if (t < PHASE.morph) {
+          rootEl.dataset.phase = "5-morph";
+        } else if (t < PHASE.end) {
+          rootEl.dataset.phase = "6-gate-content";
         }
-      });
 
-      activeIntroTimeline = tl;
+        const { w, h, target, label } = geom;
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
 
-      // Fase A — Initial line (0.00 - 0.30s)
-      tl.fromTo(
-        lineEl,
-        { scaleX: 0, opacity: 1, width: INTRO_CONFIG.lineWidth },
-        { scaleX: 1, duration: P.lineDuration, ease: "introReveal" },
-        P.lineStart
-      );
+        const line = revealEase(segment(t, 0, PHASE.line));
+        const vertical = morphEase(segment(t, PHASE.line, PHASE.window));
+        const r = reelEase(segment(t, PHASE.line + 0.14, PHASE.reel));
+        const fade = smoothEase(segment(t, PHASE.reel - 0.16, PHASE.brand - 0.04));
+        const m = morphEase(segment(t, PHASE.brand, PHASE.morph));
+        const handoff = t >= PHASE.morph;
 
-      // Fase B — Vertical reveal (0.30 - 0.65s)
-      tl.to(
-        winEl,
-        {
-          opacity: 1,
-          clipPath: "inset(0% 0 0% 0 round 12px)",
-          duration: P.revealDuration,
-          ease: "introMorph"
+        if (t >= PHASE.brand && !morphNotified) {
+          morphNotified = true;
+          options.onStateChange(INTRO_STATES.MORPHING_TO_GATE);
+        }
+
+        const width = t < PHASE.line ? mix(2, w, line) : mix(w, target.width, m);
+        const height = t < PHASE.line ? 2 : mix(mix(2, h, vertical), target.height, m);
+
+        shell.style.left = `${mix(cx, target.left + target.width / 2, m)}px`;
+        shell.style.top = `${mix(cy, target.top + target.height / 2, m)}px`;
+        shell.style.width = `${width}px`;
+        shell.style.height = `${height}px`;
+        shell.style.opacity = t < PHASE.line ? String(clamp(t / 0.08)) : "1";
+
+        const bgTone = Math.round(mix(255, 22, clamp(vertical * 5)));
+        shell.style.backgroundColor = t < PHASE.line ? "#ffffff" : `rgb(${bgTone}, ${bgTone}, ${bgTone})`;
+        shell.style.borderRadius = `${mix(vertical * 4, 16, m)}px`;
+        shell.style.borderWidth = m > 0.001 ? "1px" : "0";
+        shell.style.borderColor = `rgba(255, 255, 255, ${m * 0.1})`;
+
+        mask.style.opacity = String(revealEase(segment(t, PHASE.line, PHASE.line + 0.18)) * (1 - fade));
+        track.style.transform = `translate3d(0, ${-r * h * (frameCount - 1)}px, 0)`;
+        shade.style.opacity = String(1 - fade);
+
+        const b = revealEase(segment(t, 0.45, 0.8));
+        const br = m;
+        brand.style.opacity = String(b);
+        brand.style.left = `${mix(cx, label.left + label.width / 2, br)}px`;
+        brand.style.top = `${mix(cy, label.top + label.height / 2, br)}px`;
+        brand.style.fontSize = `${mix(19, 13, br)}px`;
+        const c = Math.round(mix(250, 161, Math.max(fade, br)));
+        brand.style.color = `rgb(${c}, ${c}, ${c})`;
+        brand.style.textShadow = br > 0.95 ? "none" : "0 1px 12px rgba(0, 0, 0, 0.5)";
+
+        const bg = smoothEase(segment(t, PHASE.brand + 0.02, PHASE.morph));
+        const tone = Math.round(mix(18, 11, bg));
+        backdrop.style.backgroundColor = `rgb(${tone}, ${tone}, ${tone})`;
+        backdrop.style.backdropFilter = "none";
+        (backdrop.style as HTMLElement["style"] & { webkitBackdropFilter?: string }).webkitBackdropFilter = "none";
+
+        // Handoff sem piscar (zero-flicker handoff):
+        // Mantém a superfície do morph ativa por baixo do modal enquanto o conteúdo faz fade-in.
+        gate.style.visibility = handoff ? "visible" : "hidden";
+        gateBrand.style.opacity = "1";
+
+        if (handoff) {
+          overlay.style.visibility = "visible";
+          brand.style.opacity = "0";
+          if (skipBtn) {
+            skipBtn.style.opacity = "0";
+            skipBtn.style.pointerEvents = "none";
+          }
+        } else {
+          overlay.style.visibility = "visible";
+          if (skipBtn) {
+            skipBtn.style.opacity = "";
+            skipBtn.style.pointerEvents = "";
+          }
+        }
+
+        renderContent(segment(t, PHASE.morph, PHASE.end));
+      };
+
+      const onResize = () => {
+        geom = measureGeometry();
+      };
+      window.addEventListener("resize", onResize, { passive: true });
+
+      // Exposição de QA para Playwright
+      (window as unknown as { introDemo: unknown }).introDemo = {
+        seek(t: number) {
+          killCinematicIntro();
+          overlay.style.display = "block";
+          welcomeCard.style.opacity = "1";
+          welcomeCard.style.transform = "none";
+          geom = measureGeometry();
+          renderFrame(clamp(t / PHASE.end) * PHASE.end);
+          if (t >= PHASE.end) finishGate();
         },
-        P.revealStart
-      );
-      tl.to(lineEl, { opacity: 0, duration: 0.15, ease: "power2.out" }, P.revealStart + 0.05);
+        duration: PHASE.end
+      };
 
-      // Fase C — Project reel (0.65 - 1.60s)
-      if (trackDistance > 0) {
-        tl.to(
-          trackEl,
-          {
-            y: -trackDistance,
-            duration: P.reelDuration,
-            ease: "introReel"
-          },
-          P.reelStart
-        );
-      }
+      renderFrame(0);
+      let elapsed = 0;
+      let previousFrame: number | null = null;
 
-      // Fase D — Brand reveal (1.60 - 1.95s)
-      tl.to(trackEl, { opacity: 0, duration: P.brandDuration, ease: "power2.inOut" }, P.brandStart);
-      tl.to(
-        winEl,
-        { backgroundColor: "#161616", duration: P.brandDuration, ease: "power2.inOut" },
-        P.brandStart
-      );
-      tl.fromTo(
-        introBrandEl,
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: P.brandDuration, ease: "introReveal" },
-        P.brandStart + 0.05
-      );
+      const tick = (now: number) => {
+        if (document.hidden) {
+          previousFrame = null;
+          activeRafId = requestAnimationFrame(tick);
+          return;
+        }
+        if (previousFrame === null) {
+          previousFrame = now;
+          activeRafId = requestAnimationFrame(tick);
+          return;
+        }
+        const delta = Math.min(50, Math.max(0, now - previousFrame));
+        previousFrame = now;
+        elapsed = Math.min(PHASE.end, elapsed + delta / 1000);
+        renderFrame(elapsed);
 
-      // Fase E — Geometry morph para a caixa real de #welcome-gate (1.95 - 2.65s)
-      tl.add(() => {
-        options.onStateChange(INTRO_STATES.MORPHING_TO_GATE);
-      }, P.morphStart);
-      tl.set(
-        winEl,
-        {
-          left: winRect.left,
-          top: winRect.top,
-          width: winRect.width,
-          height: winRect.height,
-          xPercent: 0,
-          yPercent: 0,
-          transform: "none",
-          maxHeight: "none"
-        },
-        P.morphStart
-      );
+        if (elapsed >= PHASE.end) {
+          window.removeEventListener("resize", onResize);
+          finishGate();
+        } else {
+          activeRafId = requestAnimationFrame(tick);
+        }
+      };
 
-      tl.to(
-        winEl,
-        {
-          left: targetRect.left,
-          top: targetRect.top,
-          width: targetRect.width,
-          height: targetRect.height,
-          borderRadius: "16px",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-          duration: P.morphDuration,
-          ease: "introMorph"
-        },
-        P.morphStart
-      );
-
-      if (eyebrowRect) {
-        const brandCenterY = window.innerHeight / 2;
-        const targetCenterY = eyebrowRect.top + eyebrowRect.height / 2;
-        tl.to(
-          introBrandEl,
-          {
-            y: targetCenterY - brandCenterY,
-            duration: P.morphDuration,
-            ease: "introMorph"
-          },
-          P.morphStart
-        );
-      }
-
-      // Fase F — Backdrop reveal simultâneo (2.10 - 2.65s)
-      tl.to(
-        overlay,
-        {
-          backgroundColor: "rgba(11, 11, 11, 0.92)",
-          backdropFilter: "blur(12px)",
-          duration: P.backdropDuration,
-          ease: "power2.out"
-        },
-        P.backdropStart
-      );
-
-      // Fase G — Modal content reveal (2.55 - 3.00s)
-      tl.set(gate, { opacity: 1, visibility: "visible", pointerEvents: "none" }, P.contentStart);
-      tl.set(welcomeCard, { opacity: 1, transform: "none" }, P.contentStart);
-      if (eyebrowEl) {
-        tl.set(eyebrowEl, { opacity: 1 }, P.contentStart);
-      }
-      tl.set(introBrandEl, { opacity: 0 }, P.contentStart);
-      tl.set(winEl, { opacity: 0 }, P.contentStart + 0.04);
-
-      tl.fromTo(
-        modalContent,
-        { opacity: 0, y: 8 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: P.contentDuration,
-          stagger: P.contentStagger,
-          ease: "introReveal"
-        },
-        P.contentStart
-      );
-    } catch {
-      cleanupAndFallback();
+      activeRafId = requestAnimationFrame(tick);
+    } catch (err) {
+      cleanupAndFallback(`render_error: ${String(err)}`);
     }
   };
 
-  Promise.all([
-    preloadIntroFrames(frameUrls, INTRO_CONFIG.preloadTimeoutMs),
-    waitForFonts(INTRO_CONFIG.fontTimeoutMs)
-  ])
-    .then(startSequence)
-    .catch(cleanupAndFallback);
+  const imageWarmers = Array.from(track.querySelectorAll("img")).map(img =>
+    img.decode ? img.decode().catch(() => {}) : Promise.resolve()
+  );
+
+  Promise.allSettled(imageWarmers).then(() => {
+    startSequence();
+  });
 }
+

@@ -128,6 +128,11 @@ function registerGlobalEvents(): void {
     }
 
     if (e.key === "Escape") {
+      const skipBtn = document.getElementById("intro-skip-btn");
+      if (document.documentElement.classList.contains("intro-running") && skipBtn) {
+        skipBtn.click();
+        return;
+      }
       if (quoteModalController.isOpen()) {
         quoteModalController.close();
         return;
