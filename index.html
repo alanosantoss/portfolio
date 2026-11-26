@@ -41,6 +41,17 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&display=swap"
     rel="stylesheet" />
 
+  <script data-intro-boot>
+    (function () {
+      try {
+        var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!reduced) {
+          document.documentElement.classList.add("intro-pending");
+        }
+      } catch (_) {}
+    })();
+  </script>
+
   <style>
     /* =========================================================================
        ESTÉTICA EDITORIAL MINIMALISTA (REFERÊNCIA LUCAS GUERRA)
@@ -1309,10 +1320,136 @@
         padding: 24px 18px 20px;
       }
     }
+
+    /* =========================================================================
+       INTRO CINEMATOGRÁFICA (LINHA -> JANELA 9:16 -> REEL -> FLIP -> REVEAL)
+    ========================================================================= */
+    html.intro-pending,
+    html.intro-pending body {
+      overflow: hidden !important;
+      height: 100vh;
+    }
+
+    html.intro-pending .site-header .nav-links,
+    html.intro-pending .site-header .social-links,
+    html.intro-pending .site-header .sub-nav {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    html.intro-pending .main-container {
+      opacity: 0;
+      will-change: clip-path, filter, opacity;
+    }
+
+    html.intro-pending #brand-home {
+      opacity: 0;
+    }
+
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background-color: var(--bg);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      overflow: hidden;
+    }
+
+    html.intro-pending .intro-overlay {
+      display: flex;
+    }
+
+    .intro-line {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(140px, 36vw);
+      height: 2px;
+      background-color: #ffffff;
+      transform: translate(-50%, -50%) scaleX(0);
+      transform-origin: center center;
+      will-change: transform, opacity;
+      z-index: 903;
+    }
+
+    .intro-window {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: min(290px, 66vw);
+      max-height: 62vh;
+      aspect-ratio: 9 / 16;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      border-radius: 12px;
+      background: #141414;
+      clip-path: inset(50% 0 50% 0 round 12px);
+      opacity: 0;
+      will-change: clip-path, opacity;
+      z-index: 902;
+    }
+
+    .intro-reel-track {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      will-change: transform, opacity;
+    }
+
+    .intro-reel-frame {
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #141414;
+    }
+
+    .intro-reel-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .brand.is-intro-centered {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 910;
+      font-size: clamp(1.65rem, 4.2vw, 2.5rem);
+      letter-spacing: -0.03em;
+      text-align: center;
+      pointer-events: none;
+      text-shadow: 0 4px 28px rgba(0, 0, 0, 0.65);
+    }
+
+    @media (max-width: 680px) {
+      .intro-window {
+        width: min(230px, 62vw);
+        max-height: 56vh;
+      }
+
+      .brand.is-intro-centered {
+        font-size: clamp(1.5rem, 6.5vw, 2.1rem);
+      }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- Intro Cinematográfica (camada temporária removida ao concluir) -->
+  <div id="intro-overlay" class="intro-overlay" aria-hidden="true">
+    <div id="intro-line" class="intro-line"></div>
+    <div id="intro-window" class="intro-window">
+      <div id="intro-reel-track" class="intro-reel-track"></div>
+    </div>
+  </div>
 
   <!-- =========================================================================
        CABEÇALHO EDITORIAL EM 2 NÍVEIS (DIVISÕES PRINCIPAIS + SUBCATEGORIAS)
@@ -1610,6 +1747,7 @@
   <script src="projects.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/Flip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/CustomEase.min.js"></script>
   <script>
     /**
      * =========================================================================
@@ -2097,11 +2235,6 @@
         card.dataset.index = String(index);
         card.dataset.tags = (item.tags || []).join(" ");
         card.dataset.category = item.category || "";
-        card.addEventListener("animationend", () => {
-          card.style.animation = "none";
-          card.style.opacity = "1";
-          card.style.transform = "none";
-        }, { once: true });
 
         const img = document.createElement("img");
         img.className = "masonry-media";
@@ -2280,8 +2413,6 @@
     function clearFlipOrigin(card) {
       if (!card) return;
       if (card.dataset) delete card.dataset.flipId;
-      card.style.opacity = "";
-      card.style.transform = "";
       card.style.zIndex = "";
     }
 
@@ -2551,9 +2682,6 @@
         const nextCard = galleryGrid?.querySelector?.(`.masonry-item[data-index="${state.lightboxIndex}"]`);
         if (nextCard) {
           lastLightboxOrigin = nextCard;
-          lastLightboxOrigin.style.animation = "none";
-          lastLightboxOrigin.style.opacity = "0";
-          lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
         }
       }
 
@@ -2763,6 +2891,223 @@
       }
     }
 
+    function getIntroFrameUrls() {
+      const items = getProjectsList();
+      const urls = [];
+      for (const item of items) {
+        if (item.type === "video" && item.id) {
+          urls.push(`https://i.ytimg.com/vi/${encodeURIComponent(item.id)}/hqdefault.jpg`);
+        } else if (isSafeImageUrl(item.image)) {
+          urls.push(item.image);
+        }
+        if (urls.length >= 7) break;
+      }
+      return urls;
+    }
+
+    function preloadIntroFrames(urls, timeoutMs = 450) {
+      if (!urls.length) return Promise.resolve();
+      const loaders = urls.map((url) => new Promise((resolve) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = resolve;
+        img.src = url;
+      }));
+      const timer = new Promise((resolve) => setTimeout(resolve, timeoutMs));
+      return Promise.race([Promise.all(loaders), timer]);
+    }
+
+    function startVisibleAutoplayVideos() {
+      document.querySelectorAll("video[autoplay], video[data-autoplay='true']").forEach((vid) => {
+        if (typeof vid.play === "function") {
+          vid.muted = true;
+          vid.play().catch(() => {});
+        }
+      });
+    }
+
+    function runCinematicIntro(onComplete) {
+      const rootEl = document.documentElement;
+      const overlay = document.getElementById("intro-overlay");
+      const lineEl = document.getElementById("intro-line");
+      const winEl = document.getElementById("intro-window");
+      const trackEl = document.getElementById("intro-reel-track");
+      const brandEl = document.getElementById("brand-home");
+      const mainEl = document.querySelector(".main-container");
+      const navLinks = document.querySelector(".site-header .nav-links");
+      const socialLinks = document.querySelector(".site-header .social-links");
+      const subNav = document.getElementById("sub-nav");
+
+      const finishImmediately = () => {
+        rootEl.classList.remove("intro-pending");
+        overlay?.remove();
+        startVisibleAutoplayVideos();
+        if (typeof onComplete === "function") onComplete();
+      };
+
+      const shouldRun = rootEl.classList.contains("intro-pending")
+        && !prefersReducedMotion()
+        && typeof gsap !== "undefined"
+        && typeof Flip !== "undefined"
+        && overlay && lineEl && winEl && trackEl && brandEl && mainEl;
+
+      if (!shouldRun) {
+        finishImmediately();
+        return;
+      }
+
+      const hasCustomEase = typeof CustomEase !== "undefined";
+      if (hasCustomEase) {
+        gsap.registerPlugin(Flip, CustomEase);
+      } else {
+        gsap.registerPlugin(Flip);
+      }
+
+      const introEase = hasCustomEase
+        ? CustomEase.create("introExpo", "M0,0 C0.16,1 0.3,1 1,1")
+        : "expo.out";
+      const snapEase = hasCustomEase
+        ? CustomEase.create("introSnap", "M0,0 C0.68,0 0.2,1 1,1")
+        : "power4.inOut";
+
+      const frameUrls = getIntroFrameUrls();
+      trackEl.innerHTML = frameUrls
+        .map((url) => `<div class="intro-reel-frame"><img src="${escapeHtml(url)}" alt="" /></div>`)
+        .join("");
+
+      const headerTop = brandEl.parentElement;
+      const placeholder = document.createElement("span");
+      placeholder.className = "brand";
+      placeholder.setAttribute("aria-hidden", "true");
+      placeholder.style.visibility = "hidden";
+      placeholder.style.pointerEvents = "none";
+      placeholder.textContent = brandEl.textContent;
+      headerTop.insertBefore(placeholder, brandEl);
+
+      document.body.appendChild(brandEl);
+      brandEl.classList.add("is-intro-centered");
+      gsap.set(brandEl, { opacity: 0, y: 12 });
+
+      const startSequence = () => {
+        const winRect = winEl.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const startInset = `inset(${Math.max(0, Math.round(winRect.top))}px ${Math.max(0, Math.round(vw - winRect.right))}px ${Math.max(0, Math.round(vh - winRect.bottom))}px ${Math.max(0, Math.round(winRect.left))}px round 12px)`;
+        const endInset = "inset(0px 0px 0px 0px round 0px)";
+
+        gsap.set(mainEl, {
+          opacity: 0,
+          clipPath: startInset,
+          filter: "blur(18px)"
+        });
+
+        const trackDistance = Math.max(0, trackEl.scrollHeight - winRect.height);
+        const headerRevealTargets = [
+          ...document.querySelectorAll("#category-nav .nav-btn:not(.is-hidden-by-gate)"),
+          socialLinks,
+          subNav
+        ].filter(Boolean);
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            rootEl.classList.remove("intro-pending");
+            overlay.remove();
+            gsap.set(mainEl, { clearProps: "clipPath,filter,opacity,willChange" });
+            gsap.set([navLinks, socialLinks, subNav, ...headerRevealTargets].filter(Boolean), {
+              clearProps: "opacity,visibility,transform,pointerEvents"
+            });
+            startVisibleAutoplayVideos();
+            if (typeof onComplete === "function") onComplete();
+          }
+        });
+
+        // 1. Linha horizontal branca no centro
+        tl.fromTo(lineEl, { scaleX: 0, opacity: 1 }, { scaleX: 1, duration: 0.35, ease: introEase }, 0);
+
+        // 2. Expansão vertical da linha para janela 9:16
+        tl.to(winEl, {
+          opacity: 1,
+          clipPath: "inset(0% 0 0% 0 round 12px)",
+          duration: 0.5,
+          ease: snapEase
+        }, 0.35);
+        tl.to(lineEl, { opacity: 0, duration: 0.2, ease: "power2.out" }, 0.42);
+
+        // 3. Sequência acelerada de frames com deslocamento vertical contínuo
+        if (trackDistance > 0) {
+          tl.to(trackEl, {
+            y: -trackDistance,
+            duration: 1.5,
+            ease: snapEase
+          }, 0.55);
+        }
+
+        // 4. Revela Alan Oliveira centralizado sobre a sequência
+        tl.to(brandEl, { opacity: 1, y: 0, duration: 0.55, ease: introEase }, 1.15);
+
+        // 5. Substitui conteúdo da janela pela galeria real desfocada
+        tl.to(mainEl, { opacity: 1, duration: 0.45, ease: "power2.out" }, 1.9);
+        tl.to(trackEl, { opacity: 0, duration: 0.4, ease: "power2.inOut" }, 1.95);
+        tl.to(winEl, { opacity: 0, duration: 0.35, ease: "power2.out" }, 2.1);
+
+        // 6. Expande máscara clip-path até preencher a viewport (sem scale)
+        tl.to(overlay, { opacity: 0, duration: 0.5, ease: "power2.out" }, 2.3);
+        tl.to(mainEl, {
+          clipPath: endInset,
+          duration: 0.95,
+          ease: snapEase
+        }, 2.35);
+
+        // 7. GSAP Flip move Alan Oliveira do centro para o cabeçalho
+        tl.add(() => {
+          const flipState = Flip.getState(brandEl);
+          brandEl.classList.remove("is-intro-centered");
+          gsap.set(brandEl, { clearProps: "transform,y,opacity" });
+          if (placeholder.parentElement) {
+            headerTop.insertBefore(brandEl, placeholder);
+            placeholder.remove();
+          }
+          Flip.from(flipState, {
+            duration: 0.85,
+            ease: introEase,
+            absolute: true,
+            scale: true
+          });
+        }, 2.65);
+
+        // 8. Reduz desfoque da galeria até nitidez completa
+        tl.to(mainEl, {
+          filter: "blur(0px)",
+          duration: 0.95,
+          ease: introEase
+        }, 2.7);
+
+        // 9. Revela demais elementos do cabeçalho e filtros
+        tl.set([navLinks, socialLinks, subNav].filter(Boolean), {
+          visibility: "visible",
+          pointerEvents: "auto"
+        }, 3.15);
+        tl.to([navLinks, socialLinks, subNav].filter(Boolean), {
+          opacity: 1,
+          duration: 0.45,
+          ease: introEase
+        }, 3.18);
+        tl.fromTo(headerRevealTargets, { opacity: 0, y: -8 }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.55,
+          stagger: 0.04,
+          ease: introEase
+        }, 3.2);
+      };
+
+      const fontReady = (document.fonts && document.fonts.ready)
+        ? Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 250))])
+        : Promise.resolve();
+
+      Promise.all([preloadIntroFrames(frameUrls, 250), fontReady]).then(startSequence);
+    }
+
     // Inicialização
     document.addEventListener("DOMContentLoaded", () => {
       initContacts();
@@ -2773,7 +3118,9 @@
       const initialCategory = normalizeHashCategory(window.location.hash);
       setCategory(initialCategory, false);
 
-      initWelcomeGate(initialCategory);
+      runCinematicIntro(() => {
+        initWelcomeGate(initialCategory);
+      });
 
       // Sincronização em tempo real entre abas (Admin -> Portfólio)
       window.addEventListener("storage", (e) => {
