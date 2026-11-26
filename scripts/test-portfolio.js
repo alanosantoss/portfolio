@@ -494,10 +494,14 @@ test('Lightbox usa controls=0, exibe legenda escapada, poster e tokens transitio
 
   assert(content.innerHTML.includes('controls=0'), 'Lightbox YouTube deve usar controls=0');
   assert(content.innerHTML.includes('class="lightbox-poster"'), 'Vídeo deve exibir poster de transição atrás do iframe');
+  assert(indexHtml.includes('.lightbox-video-wrap iframe.is-ready'), 'Iframe do vídeo deve entrar com fade (.is-ready) sobre o poster');
   assert(stage.style.transform && stage.style.transform.includes('translate3d('), 'Abertura pelo card deve calcular animação FLIP de origem');
-  assert(rafQueue.length >= 1, 'Animação FLIP deve agendar requestAnimationFrame para transição suave');
-  while (rafQueue.length > 0) rafQueue.shift()();
-  assert(stage.style.transform.includes('translate3d(0, 0, 0)'), 'Frame seguinte deve animar estágio até o centro');
+  assert.strictEqual(rafQueue.length, 1, 'Frame 1 deve ser agendado antes da transição');
+  rafQueue.shift()();
+  assert(stage.style.transform && !stage.style.transform.includes('translate3d(0, 0, 0)'), 'Frame 1 deve manter posição inicial para o browser pintar antes de animar');
+  assert.strictEqual(rafQueue.length, 1, 'Double-rAF deve agendar Frame 2 para iniciar transição suave');
+  rafQueue.shift()();
+  assert(stage.style.transform.includes('translate3d(0, 0, 0)'), 'Frame 2 deve animar estágio até o centro');
 
   assert(!content.innerHTML.includes('<script>'), 'Título no iframe deve ser escapado');
   assert(caption.textContent.includes('Teste "Vídeo" <script>'), 'Legenda deve mostrar título via textContent');
