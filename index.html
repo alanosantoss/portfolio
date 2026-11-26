@@ -94,6 +94,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       scroll-behavior: smooth;
+      scrollbar-gutter: stable;
     }
 
     body {
@@ -630,9 +631,6 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      background-color: rgba(12, 12, 12, 0.84);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -641,6 +639,15 @@
       visibility: hidden;
       pointer-events: none;
       transition: opacity 520ms var(--ease-cinematic), visibility 520ms var(--ease-cinematic);
+    }
+
+    .lightbox-backdrop {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-color: rgba(12, 12, 12, 0.84);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     .lightbox.is-open {
@@ -658,6 +665,7 @@
     .lightbox-stage {
       width: 100%;
       max-width: 880px;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -681,6 +689,18 @@
       opacity: 0;
       transition: transform 420ms var(--ease-cinematic),
         opacity 380ms var(--ease-cinematic);
+    }
+
+    html.has-gsap-flip .lightbox,
+    html.has-gsap-flip .lightbox-stage,
+    html.has-gsap-flip .lightbox.is-closing,
+    html.has-gsap-flip .lightbox.is-closing .lightbox-stage {
+      transition: none;
+    }
+
+    html.has-gsap-flip .lightbox-stage {
+      transform: none;
+      opacity: 1;
     }
 
     /* Formato Vertical Reels no Lightbox — Proporção Estrita 9:16 com Padding Superior & Inferior */
@@ -736,7 +756,9 @@
     }
 
     .lightbox-image-wrap {
-      width: 100%;
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1556,6 +1578,7 @@
        LIGHTBOX CINEMA MODAL
   ========================================================================== -->
   <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Visualização em tela cheia">
+    <div id="lightbox-backdrop" class="lightbox-backdrop" aria-hidden="true"></div>
     <button id="lightbox-close" class="lightbox-close" type="button" aria-label="Fechar">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
         stroke-linecap="round">
@@ -1585,6 +1608,8 @@
   </div>
 
   <script src="projects.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.1/dist/Flip.min.js"></script>
   <script>
     /**
      * =========================================================================
@@ -2069,8 +2094,14 @@
         card.setAttribute("role", "button");
         card.setAttribute("aria-label", `${isVideo ? "Assistir" : "Ver"}: ${safeTitle}`);
 
+        card.dataset.index = String(index);
         card.dataset.tags = (item.tags || []).join(" ");
         card.dataset.category = item.category || "";
+        card.addEventListener("animationend", () => {
+          card.style.animation = "none";
+          card.style.opacity = "1";
+          card.style.transform = "none";
+        }, { once: true });
 
         const img = document.createElement("img");
         img.className = "masonry-media";
@@ -2205,10 +2236,20 @@
       }
     }
 
+    const hasGsapFlip = typeof gsap !== "undefined" && typeof Flip !== "undefined";
+    if (hasGsapFlip) {
+      gsap.registerPlugin(Flip);
+      document.documentElement?.classList.add("has-gsap-flip");
+    }
+
+    const LIGHTBOX_FLIP_ID = "lightbox-active-card";
     let isClosingLightbox = false;
     let lastFocusedElement = null;
     let lastLightboxOrigin = null;
     let lightboxMotionRaf = null;
+    let activeFlipTween = null;
+    let activeBackdropTween = null;
+    let activeCaptionTween = null;
 
     function prefersReducedMotion() {
       return Boolean(
@@ -2222,6 +2263,26 @@
         cancelAnimationFrame(lightboxMotionRaf);
       }
       lightboxMotionRaf = null;
+    }
+
+    function killLightboxGsap() {
+      [activeFlipTween, activeBackdropTween, activeCaptionTween].forEach((tw) => {
+        if (tw && typeof tw.kill === "function") tw.kill();
+      });
+      activeFlipTween = null;
+      activeBackdropTween = null;
+      activeCaptionTween = null;
+      if (hasGsapFlip && typeof gsap.killTweensOf === "function") {
+        gsap.killTweensOf([lightbox, document.getElementById("lightbox-stage"), lightboxContent, document.getElementById("lightbox-caption"), lastLightboxOrigin].filter(Boolean));
+      }
+    }
+
+    function clearFlipOrigin(card) {
+      if (!card) return;
+      if (card.dataset) delete card.dataset.flipId;
+      card.style.opacity = "";
+      card.style.transform = "";
+      card.style.zIndex = "";
     }
 
     function clearLightboxStageMotion(stage) {
@@ -2278,7 +2339,6 @@
         stage.style.opacity = "0";
         void stage.offsetHeight;
 
-        // Double-rAF + curva cinematográfica garante entrada lenta e 100% GPU sem engasgos
         lightboxMotionRaf = requestAnimationFrame(() => {
           lightboxMotionRaf = requestAnimationFrame(() => {
             lightboxMotionRaf = null;
@@ -2320,16 +2380,72 @@
       }
     }
 
+    function hasValidRect(el) {
+      if (!el || typeof el.getBoundingClientRect !== "function") return false;
+      const r = el.getBoundingClientRect();
+      return Boolean(r && r.width > 0 && r.height > 0);
+    }
+
     function openLightbox(index, originEl) {
       if (isClosingLightbox) return;
+      killLightboxGsap();
+      cancelLightboxMotionRaf();
+      clearFlipOrigin(lastLightboxOrigin);
+
       lastFocusedElement = document.activeElement;
       lastLightboxOrigin = originEl || lastFocusedElement;
       state.lightboxIndex = index;
+
+      const canUseFlip = hasGsapFlip && !prefersReducedMotion() && hasValidRect(lastLightboxOrigin);
+      let openState = null;
+
+      if (canUseFlip) {
+        lastLightboxOrigin.style.animation = "none";
+        lastLightboxOrigin.style.opacity = "1";
+        lastLightboxOrigin.style.transform = "none";
+        lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
+        openState = Flip.getState(lastLightboxOrigin, { props: "borderRadius" });
+        lastLightboxOrigin.style.opacity = "0";
+      }
+
       renderLightboxContent(lastLightboxOrigin);
+      lightboxContent.style.visibility = "";
       lightbox.classList.remove("is-closing");
       lightbox.classList.add("is-open");
       document.body.style.overflow = "hidden";
-      animateLightboxStage(lastLightboxOrigin, "open");
+
+      if (canUseFlip && openState) {
+        lightboxContent.dataset.flipId = LIGHTBOX_FLIP_ID;
+        const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
+        const captionEl = document.getElementById("lightbox-caption");
+        activeBackdropTween = gsap.fromTo(backdropEl, { opacity: 0 }, { opacity: 1, duration: 0.48, ease: "power2.out" });
+        if (captionEl) {
+          activeCaptionTween = gsap.fromTo(captionEl, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.42, delay: 0.28, ease: "power3.out" });
+        }
+        activeFlipTween = Flip.from(openState, {
+          targets: lightboxContent,
+          duration: 0.72,
+          ease: "power3.inOut",
+          scale: true,
+          prune: true,
+          onComplete: () => {
+            gsap.set(lightboxContent, { clearProps: "transform" });
+            activeFlipTween = null;
+          }
+        });
+      } else {
+        if (hasGsapFlip && !prefersReducedMotion()) {
+          const stage = document.getElementById("lightbox-stage");
+          const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
+          activeBackdropTween = gsap.fromTo(backdropEl, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" });
+          if (stage) {
+            activeFlipTween = gsap.fromTo(stage, { scale: 0.88, opacity: 0, y: 24 }, { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: "power3.out", clearProps: "transform" });
+          }
+        } else {
+          animateLightboxStage(lastLightboxOrigin, "open");
+        }
+      }
+
       const closeBtn = document.getElementById("lightbox-close");
       if (closeBtn && typeof closeBtn.focus === "function") {
         closeBtn.focus();
@@ -2339,40 +2455,114 @@
     function closeLightbox() {
       if (isClosingLightbox || !lightbox.classList.contains("is-open")) return;
       isClosingLightbox = true;
-      lightbox.classList.add("is-closing");
-      animateLightboxStage(lastLightboxOrigin, "close");
+      killLightboxGsap();
+      cancelLightboxMotionRaf();
 
-      setTimeout(() => {
+      const finishClose = () => {
         cancelLightboxMotionRaf();
         lightbox.classList.remove("is-open");
         lightbox.classList.remove("is-closing");
+        lightbox.style.opacity = "";
+        const backdropEl = document.getElementById("lightbox-backdrop");
+        if (backdropEl) backdropEl.style.opacity = "";
+        lightboxContent.style.visibility = "";
+        lightboxContent.style.transform = "";
+        if (lightboxContent.dataset) delete lightboxContent.dataset.flipId;
         lightboxContent.innerHTML = "";
         const lightboxCaption = document.getElementById("lightbox-caption");
         if (lightboxCaption) {
           lightboxCaption.textContent = "";
+          lightboxCaption.style.opacity = "";
+          lightboxCaption.style.transform = "";
         }
         const lightboxStage = document.getElementById("lightbox-stage");
         if (lightboxStage) {
           lightboxStage.classList.remove("is-vertical");
           clearLightboxStageMotion(lightboxStage);
         }
+        clearFlipOrigin(lastLightboxOrigin);
         document.body.style.overflow = "";
         state.lightboxIndex = -1;
         isClosingLightbox = false;
+        activeFlipTween = null;
+        activeBackdropTween = null;
+        activeCaptionTween = null;
         if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
           lastFocusedElement.focus();
         }
         lastFocusedElement = null;
         lastLightboxOrigin = null;
-      }, 440);
+      };
+
+      const canUseFlipClose = hasGsapFlip && !prefersReducedMotion() && hasValidRect(lastLightboxOrigin) && hasValidRect(lightboxContent);
+
+      if (canUseFlipClose) {
+        lightbox.classList.add("is-closing");
+        lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
+        lightboxContent.dataset.flipId = LIGHTBOX_FLIP_ID;
+        const closeState = Flip.getState(lightboxContent, { props: "borderRadius" });
+
+        lightboxContent.style.visibility = "hidden";
+        lastLightboxOrigin.style.animation = "none";
+        lastLightboxOrigin.style.opacity = "1";
+        lastLightboxOrigin.style.zIndex = "110";
+
+        const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
+        const captionEl = document.getElementById("lightbox-caption");
+        if (captionEl) {
+          activeCaptionTween = gsap.to(captionEl, { opacity: 0, y: 8, duration: 0.2, ease: "power2.in" });
+        }
+        activeBackdropTween = gsap.to(backdropEl, { opacity: 0, duration: 0.45, ease: "power2.inOut" });
+        activeFlipTween = Flip.from(closeState, {
+          targets: lastLightboxOrigin,
+          duration: 0.58,
+          ease: "power3.inOut",
+          scale: true,
+          prune: true,
+          onComplete: finishClose
+        });
+        return;
+      }
+
+      lightbox.classList.add("is-closing");
+      if (hasGsapFlip && !prefersReducedMotion()) {
+        const stage = document.getElementById("lightbox-stage");
+        const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
+        activeBackdropTween = gsap.to(backdropEl, { opacity: 0, duration: 0.32, ease: "power2.in" });
+        if (stage) {
+          activeFlipTween = gsap.to(stage, { scale: 0.9, opacity: 0, y: 16, duration: 0.3, ease: "power2.in", onComplete: finishClose });
+          return;
+        }
+      }
+      animateLightboxStage(lastLightboxOrigin, "close");
+      setTimeout(finishClose, 440);
     }
 
     function stepLightbox(delta) {
       const total = state.currentItems.length;
       if (!total) return;
       state.lightboxIndex = (state.lightboxIndex + delta + total) % total;
-      renderLightboxContent();
-      animateLightboxStage(null, "step", delta);
+
+      if (hasGsapFlip) {
+        clearFlipOrigin(lastLightboxOrigin);
+        const nextCard = galleryGrid?.querySelector?.(`.masonry-item[data-index="${state.lightboxIndex}"]`);
+        if (nextCard) {
+          lastLightboxOrigin = nextCard;
+          lastLightboxOrigin.style.animation = "none";
+          lastLightboxOrigin.style.opacity = "0";
+          lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
+        }
+      }
+
+      renderLightboxContent(lastLightboxOrigin);
+      if (hasGsapFlip && !prefersReducedMotion()) {
+        const stage = document.getElementById("lightbox-stage");
+        if (stage) {
+          gsap.fromTo(stage, { x: delta >= 0 ? 28 : -28, opacity: 0.25 }, { x: 0, opacity: 1, duration: 0.38, ease: "power3.out", clearProps: "transform" });
+        }
+      } else {
+        animateLightboxStage(null, "step", delta);
+      }
     }
 
     function initLightbox() {
@@ -2381,7 +2571,7 @@
       document.getElementById("lightbox-next").addEventListener("click", () => stepLightbox(1));
 
       lightbox.addEventListener("click", (e) => {
-        if (e.target === lightbox) closeLightbox();
+        if (e.target === lightbox || e.target?.id === "lightbox-backdrop") closeLightbox();
       });
 
       document.addEventListener("keydown", (e) => {

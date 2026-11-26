@@ -103,6 +103,7 @@ function createDomStub() {
 
   const document = {
     activeElement: null,
+    documentElement: makeElement('html'),
     body: makeElement('body'),
     createElement: (tag) => makeElement(tag),
     getElementById: (id) => {
@@ -180,6 +181,9 @@ function loadPageVm(html, options = {}) {
   };
   const timers = [];
   sandbox.globalThis = sandbox;
+  if (options.globals) {
+    Object.assign(sandbox, options.globals);
+  }
 
   const script = extractInlineScript(html);
   const context = vm.createContext(sandbox);
@@ -538,6 +542,82 @@ test('Lightbox usa controls=0, exibe legenda escapada, poster e tokens transitio
   vmRun.flushTimers();
   assert.strictEqual(stage.style.transform, '', 'Fechamento deve limpar transform inline do estágio');
   assert.strictEqual(vmRun.dom.document.activeElement, triggerBtn, 'Foco deve retornar ao elemento anterior ao fechar');
+});
+
+test('GSAP Flip anima do card do grid para o Lightbox na abertura e retorna ao card no fechamento', () => {
+  const sample = [
+    { type: 'video', category: 'video', id: 'vid12345678', title: 'Video Flip', aspect: '9:16', ratio: 'ratio-9-16', tags: [] }
+  ];
+  const indexHtml = readText(indexPath);
+
+  assert(indexHtml.includes('gsap.min.js'), 'index.html deve carregar GSAP Core via CDN');
+  assert(indexHtml.includes('Flip.min.js'), 'index.html deve carregar plugin GSAP Flip via CDN');
+  assert(indexHtml.includes('gsap.registerPlugin(Flip)'), 'index.html deve registrar plugin Flip no GSAP');
+  assert(indexHtml.includes('html.has-gsap-flip'), 'CSS deve desabilitar transições conflitantes quando GSAP Flip estiver ativo');
+  assert(indexHtml.includes('scrollbar-gutter: stable'), 'html deve manter scrollbar-gutter stable para evitar deslocamento no Lightbox');
+
+  const registered = [];
+  const flipCalls = [];
+  const gsapCalls = [];
+  const FlipMock = {
+    getState: (el, opts) => {
+      const marker = { el, opts, flipId: el?.dataset?.flipId };
+      flipCalls.push({ fn: 'getState', el, opts, flipId: el?.dataset?.flipId });
+      return marker;
+    },
+    from: (stateObj, vars) => {
+      flipCalls.push({ fn: 'from', stateObj, vars });
+      if (vars && typeof vars.onComplete === 'function') {
+        FlipMock._lastOnComplete = vars.onComplete;
+      }
+      return { kill: () => {} };
+    }
+  };
+  const gsapMock = {
+    registerPlugin: (...plugins) => registered.push(...plugins),
+    fromTo: (el, fromVars, toVars) => { gsapCalls.push({ fn: 'fromTo', el, fromVars, toVars }); return { kill: () => {} }; },
+    to: (el, vars) => { gsapCalls.push({ fn: 'to', el, vars }); return { kill: () => {} }; },
+    set: (el, vars) => { gsapCalls.push({ fn: 'set', el, vars }); },
+    killTweensOf: () => {}
+  };
+
+  const vmRun = loadPageVm(indexHtml, {
+    defaultProjects: sample,
+    manualTimers: true,
+    globals: { gsap: gsapMock, Flip: FlipMock }
+  });
+
+  assert(registered.includes(FlipMock), 'Flip deve ser registrado via gsap.registerPlugin(Flip)');
+  assert(vmRun.dom.document.documentElement.classList.contains('has-gsap-flip'), 'html deve receber classe has-gsap-flip');
+
+  const card = vmRun.dom.makeElement('article');
+  card.getBoundingClientRect = () => ({ left: 40, top: 180, width: 220, height: 390 });
+  const content = vmRun.dom.document.getElementById('lightbox-content');
+  content.getBoundingClientRect = () => ({ left: 460, top: 60, width: 380, height: 675 });
+
+  vmRun.sandbox.openLightbox(0, card);
+  const openGetState = flipCalls.find((c) => c.fn === 'getState');
+  const openFlipFrom = flipCalls.find((c) => c.fn === 'from');
+  assert(openGetState && openGetState.el === card, 'Abertura deve capturar Flip.getState no card clicado');
+  assert(openGetState.flipId, 'Card clicado deve receber data-flip-id antes do Flip.getState');
+  assert.strictEqual(card.style.opacity, '0', 'Card de origem deve ficar oculto durante exibição no Lightbox');
+  assert(openFlipFrom && openFlipFrom.vars.targets === content, 'Flip.from na abertura deve mirar #lightbox-content');
+  assert.strictEqual(openFlipFrom.vars.scale, true, 'Flip.from deve usar scale: true');
+  assert.strictEqual(content.dataset.flipId, openGetState.flipId, '#lightbox-content deve compartilhar o mesmo data-flip-id');
+
+  // Fechamento deve capturar estado de #lightbox-content e animar retorno até o card
+  flipCalls.length = 0;
+  vmRun.sandbox.closeLightbox();
+  const closeGetState = flipCalls.find((c) => c.fn === 'getState');
+  const closeFlipFrom = flipCalls.find((c) => c.fn === 'from');
+  assert(closeGetState && closeGetState.el === content, 'Fechamento deve capturar Flip.getState de #lightbox-content');
+  assert(closeFlipFrom && closeFlipFrom.vars.targets === card, 'Flip.from no fechamento deve retornar para o card original');
+  assert.strictEqual(card.style.opacity, '1', 'Card original deve ficar visível para receber animação de volta');
+
+  // Completa callback do Flip no fechamento
+  FlipMock._lastOnComplete();
+  assert(!vmRun.dom.elements.get('lightbox').classList.contains('is-open'), 'Lightbox deve fechar ao concluir Flip de volta');
+  assert.strictEqual(card.dataset.flipId, undefined, 'data-flip-id temporário deve ser limpo após fechar');
 });
 
 // --- Task 5 Tests ---
