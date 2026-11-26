@@ -2397,16 +2397,7 @@
       state.lightboxIndex = index;
 
       const canUseFlip = hasGsapFlip && !prefersReducedMotion() && hasValidRect(lastLightboxOrigin);
-      let openState = null;
-
-      if (canUseFlip) {
-        lastLightboxOrigin.style.animation = "none";
-        lastLightboxOrigin.style.opacity = "1";
-        lastLightboxOrigin.style.transform = "none";
-        lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
-        openState = Flip.getState(lastLightboxOrigin, { props: "borderRadius" });
-        lastLightboxOrigin.style.opacity = "0";
-      }
+      const originRect = canUseFlip ? lastLightboxOrigin.getBoundingClientRect() : null;
 
       renderLightboxContent(lastLightboxOrigin);
       lightboxContent.style.visibility = "";
@@ -2414,25 +2405,37 @@
       lightbox.classList.add("is-open");
       document.body.style.overflow = "hidden";
 
-      if (canUseFlip && openState) {
-        lightboxContent.dataset.flipId = LIGHTBOX_FLIP_ID;
+      if (canUseFlip && originRect) {
         const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
         const captionEl = document.getElementById("lightbox-caption");
-        activeBackdropTween = gsap.fromTo(backdropEl, { opacity: 0 }, { opacity: 1, duration: 0.48, ease: "power2.out" });
+        activeBackdropTween = gsap.fromTo(backdropEl, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power2.out" });
         if (captionEl) {
-          activeCaptionTween = gsap.fromTo(captionEl, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.42, delay: 0.28, ease: "power3.out" });
+          activeCaptionTween = gsap.fromTo(captionEl, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.42, delay: 0.22, ease: "power3.out" });
         }
-        activeFlipTween = Flip.from(openState, {
-          targets: lightboxContent,
-          duration: 0.72,
-          ease: "power3.inOut",
-          scale: true,
-          prune: true,
-          onComplete: () => {
-            gsap.set(lightboxContent, { clearProps: "transform" });
-            activeFlipTween = null;
-          }
-        });
+        const targetRect = lightboxContent.getBoundingClientRect();
+        if (targetRect && targetRect.width > 0 && targetRect.height > 0) {
+          const dx = (originRect.left + originRect.width / 2) - (targetRect.left + targetRect.width / 2);
+          const dy = (originRect.top + originRect.height / 2) - (targetRect.top + targetRect.height / 2);
+          const sx = Math.max(0.25, Math.min(0.95, originRect.width / targetRect.width));
+          const sy = Math.max(0.25, Math.min(0.95, originRect.height / targetRect.height));
+          activeFlipTween = gsap.fromTo(
+            lightboxContent,
+            { x: dx, y: dy, scaleX: sx, scaleY: sy, opacity: 0.35 },
+            {
+              x: 0,
+              y: 0,
+              scaleX: 1,
+              scaleY: 1,
+              opacity: 1,
+              duration: 0.65,
+              ease: "power3.out",
+              clearProps: "transform,opacity",
+              onComplete: () => {
+                activeFlipTween = null;
+              }
+            }
+          );
+        }
       } else {
         if (hasGsapFlip && !prefersReducedMotion()) {
           const stage = document.getElementById("lightbox-stage");
@@ -2498,27 +2501,27 @@
 
       if (canUseFlipClose) {
         lightbox.classList.add("is-closing");
-        lastLightboxOrigin.dataset.flipId = LIGHTBOX_FLIP_ID;
-        lightboxContent.dataset.flipId = LIGHTBOX_FLIP_ID;
-        const closeState = Flip.getState(lightboxContent, { props: "borderRadius" });
-
-        lightboxContent.style.visibility = "hidden";
-        lastLightboxOrigin.style.animation = "none";
-        lastLightboxOrigin.style.opacity = "1";
-        lastLightboxOrigin.style.zIndex = "110";
+        const originRect = lastLightboxOrigin.getBoundingClientRect();
+        const targetRect = lightboxContent.getBoundingClientRect();
+        const dx = (originRect.left + originRect.width / 2) - (targetRect.left + targetRect.width / 2);
+        const dy = (originRect.top + originRect.height / 2) - (targetRect.top + targetRect.height / 2);
+        const sx = Math.max(0.25, Math.min(0.95, originRect.width / Math.max(1, targetRect.width)));
+        const sy = Math.max(0.25, Math.min(0.95, originRect.height / Math.max(1, targetRect.height)));
 
         const backdropEl = document.getElementById("lightbox-backdrop") || lightbox;
         const captionEl = document.getElementById("lightbox-caption");
         if (captionEl) {
           activeCaptionTween = gsap.to(captionEl, { opacity: 0, y: 8, duration: 0.2, ease: "power2.in" });
         }
-        activeBackdropTween = gsap.to(backdropEl, { opacity: 0, duration: 0.45, ease: "power2.inOut" });
-        activeFlipTween = Flip.from(closeState, {
-          targets: lastLightboxOrigin,
-          duration: 0.58,
+        activeBackdropTween = gsap.to(backdropEl, { opacity: 0, duration: 0.42, ease: "power2.inOut" });
+        activeFlipTween = gsap.to(lightboxContent, {
+          x: dx,
+          y: dy,
+          scaleX: sx,
+          scaleY: sy,
+          opacity: 0,
+          duration: 0.45,
           ease: "power3.inOut",
-          scale: true,
-          prune: true,
           onComplete: finishClose
         });
         return;

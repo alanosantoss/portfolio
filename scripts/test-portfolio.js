@@ -596,28 +596,19 @@ test('GSAP Flip anima do card do grid para o Lightbox na abertura e retorna ao c
   content.getBoundingClientRect = () => ({ left: 460, top: 60, width: 380, height: 675 });
 
   vmRun.sandbox.openLightbox(0, card);
-  const openGetState = flipCalls.find((c) => c.fn === 'getState');
-  const openFlipFrom = flipCalls.find((c) => c.fn === 'from');
-  assert(openGetState && openGetState.el === card, 'Abertura deve capturar Flip.getState no card clicado');
-  assert(openGetState.flipId, 'Card clicado deve receber data-flip-id antes do Flip.getState');
-  assert.strictEqual(card.style.opacity, '0', 'Card de origem deve ficar oculto durante exibição no Lightbox');
-  assert(openFlipFrom && openFlipFrom.vars.targets === content, 'Flip.from na abertura deve mirar #lightbox-content');
-  assert.strictEqual(openFlipFrom.vars.scale, true, 'Flip.from deve usar scale: true');
-  assert.strictEqual(content.dataset.flipId, openGetState.flipId, '#lightbox-content deve compartilhar o mesmo data-flip-id');
+  const openTween = gsapCalls.find((c) => c.fn === 'fromTo' && c.el === content);
+  assert(openTween, 'Abertura deve animar #lightbox-content com gsap.fromTo a partir do card');
+  assert.strictEqual(openTween.toVars.scaleX, 1, 'Abertura deve animar scaleX até 1');
+  assert.strictEqual(openTween.toVars.scaleY, 1, 'Abertura deve animar scaleY até 1');
+  assert.notStrictEqual(card.style.opacity, '0', 'Card original não deve ficar oculto/preso em opacity 0');
 
-  // Fechamento deve capturar estado de #lightbox-content e animar retorno até o card
-  flipCalls.length = 0;
+  // Fechamento deve animar #lightbox-content de volta em direção ao card
+  gsapCalls.length = 0;
   vmRun.sandbox.closeLightbox();
-  const closeGetState = flipCalls.find((c) => c.fn === 'getState');
-  const closeFlipFrom = flipCalls.find((c) => c.fn === 'from');
-  assert(closeGetState && closeGetState.el === content, 'Fechamento deve capturar Flip.getState de #lightbox-content');
-  assert(closeFlipFrom && closeFlipFrom.vars.targets === card, 'Flip.from no fechamento deve retornar para o card original');
-  assert.strictEqual(card.style.opacity, '1', 'Card original deve ficar visível para receber animação de volta');
-
-  // Completa callback do Flip no fechamento
-  FlipMock._lastOnComplete();
-  assert(!vmRun.dom.elements.get('lightbox').classList.contains('is-open'), 'Lightbox deve fechar ao concluir Flip de volta');
-  assert.strictEqual(card.dataset.flipId, undefined, 'data-flip-id temporário deve ser limpo após fechar');
+  const closeTween = gsapCalls.find((c) => c.fn === 'to' && c.el === content);
+  assert(closeTween && typeof closeTween.vars.onComplete === 'function', 'Fechamento deve animar #lightbox-content de volta ao card');
+  closeTween.vars.onComplete();
+  assert(!vmRun.dom.elements.get('lightbox').classList.contains('is-open'), 'Lightbox deve fechar ao concluir animação de volta');
 });
 
 // --- Task 5 Tests ---
