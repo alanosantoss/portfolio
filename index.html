@@ -1481,10 +1481,11 @@
         </div>
 
         <div>
-          <span class="quote-field-label">3. Demanda / frequência</span>
-          <div id="quote-volume-group" class="quote-pills" role="group" aria-label="Demanda ou frequência">
-            <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="Projeto pontual">Projeto pontual</button>
-            <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="Pacote recorrente">Pacote recorrente</button>
+          <span class="quote-field-label">3. Quantidade média / recorrência</span>
+          <div id="quote-volume-group" class="quote-pills" role="group" aria-label="Quantidade média ou recorrência">
+            <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="1 a 2 (pontual)">1 a 2 (pontual)</button>
+            <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="4 a 8 / mês">4 a 8 / mês</button>
+            <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="10+ / mês">10+ / mês</button>
             <button type="button" class="quote-pill" data-quote-field="volume" data-quote-value="Ainda definindo">Ainda definindo</button>
           </div>
         </div>
@@ -1603,8 +1604,8 @@
     };
 
     const QUOTE_FORMATS = {
-      default: ["Reels / Shorts", "Vídeo YouTube 16:9", "Artes / Thumbnails", "Solução com IA"],
-      video: ["Reels / Shorts", "Vídeo YouTube 16:9", "Anúncio / Criativo", "Institucional"],
+      default: ["Reels / Shorts", "VSL", "Vídeo YouTube 16:9", "Artes / Thumbnails", "Solução com IA"],
+      video: ["Reels / Shorts", "VSL", "Vídeo YouTube 16:9", "Anúncio / Criativo", "Institucional"],
       design: ["Artes Social Media", "Thumbnail YouTube", "Identidade Visual", "Grande Formato / Print"],
       ia: ["Vídeo com IA", "Imagens / Renders IA", "Landing Page", "Automação / Sistema"]
     };
@@ -1635,7 +1636,7 @@
         lines.push(`• Área: ${QUOTE_SERVICE_LABELS[answers.service] || answers.service}`);
       }
       if (answers.format) lines.push(`• Formato: ${answers.format}`);
-      if (answers.volume) lines.push(`• Demanda: ${answers.volume}`);
+      if (answers.volume) lines.push(`• Quantidade/recorrência: ${answers.volume}`);
       if (answers.deadline) lines.push(`• Prazo: ${answers.deadline}`);
       const cleanNotes = String(answers.notes || "").replace(/\s+/g, " ").trim();
       if (cleanNotes) lines.push(`• Detalhes: ${cleanNotes}`);

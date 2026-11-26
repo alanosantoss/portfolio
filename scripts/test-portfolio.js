@@ -757,6 +757,7 @@ test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e 
   assert(indexHtml.includes('id="quote-submit-btn"'), 'Modal deve conter botão principal #quote-submit-btn');
   assert(indexHtml.includes('id="quote-skip-link"'), 'Modal deve conter botão discreto #quote-skip-link para ir direto');
   assert(indexHtml.includes('id="quote-notes"'), 'Modal deve conter campo opcional #quote-notes');
+  assert(indexHtml.includes('data-quote-value="4 a 8 / mês"') && indexHtml.includes('data-quote-value="10+ / mês"'), 'Demanda deve incluir opções de média de quantidade/recorrência');
 
   const vmRun = loadPageVm(indexHtml, { defaultProjects: defaults, hash: '#ia' });
   const modal = vmRun.dom.elements.get('quote-modal');
@@ -766,6 +767,8 @@ test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e 
   const notesInput = vmRun.dom.elements.get('quote-notes');
 
   assert(skipLink.href.startsWith('https://wa.me/5511991584991?text='), 'Botão de pular deve apontar direto para WhatsApp');
+  assert(vmRun.evalExpr('QUOTE_FORMATS.video.includes("VSL")'), 'Opções de vídeo devem incluir VSL');
+  assert(vmRun.evalExpr('QUOTE_FORMATS.default.includes("VSL")'), 'Opções padrão também devem incluir VSL');
 
   // Mensagem padrão quando nenhuma opção foi selecionada
   assert.strictEqual(
@@ -783,22 +786,22 @@ test('Modal de pré-orçamento (tudo numa tela) gera texto automático sem IA e 
 
   // Selecionar respostas e digitar observação atualiza link de envio automaticamente
   vmRun.sandbox.setQuoteField('service', 'video');
-  vmRun.sandbox.setQuoteField('format', 'Reels / Shorts');
-  vmRun.sandbox.setQuoteField('volume', 'Pacote recorrente');
+  vmRun.sandbox.setQuoteField('format', 'VSL');
+  vmRun.sandbox.setQuoteField('volume', '4 a 8 / mês');
   vmRun.sandbox.setQuoteField('deadline', 'Esta semana');
-  notesInput.value = 'Clínica odontológica, 8 vídeos/mês';
+  notesInput.value = 'Clínica odontológica, funil de vendas';
   notesInput.dispatchEvent({ type: 'input' });
 
   const builtMsg = vmRun.sandbox.buildQuoteMessage(vmRun.evalExpr('quoteState'));
   assert(builtMsg.includes('Edição de vídeo'), 'Texto gerado deve incluir área escolhida');
-  assert(builtMsg.includes('Reels / Shorts'), 'Texto gerado deve incluir formato escolhido');
-  assert(builtMsg.includes('Pacote recorrente'), 'Texto gerado deve incluir demanda escolhida');
+  assert(builtMsg.includes('VSL'), 'Texto gerado deve incluir formato VSL escolhido');
+  assert(builtMsg.includes('4 a 8 / mês'), 'Texto gerado deve incluir média de quantidade/recorrência');
   assert(builtMsg.includes('Esta semana'), 'Texto gerado deve incluir prazo escolhido');
-  assert(builtMsg.includes('Clínica odontológica, 8 vídeos/mês'), 'Texto gerado deve incluir observação digitada');
+  assert(builtMsg.includes('Clínica odontológica, funil de vendas'), 'Texto gerado deve incluir observação digitada');
 
   const decodedHref = decodeURIComponent(submitBtn.href);
   assert(submitBtn.href.startsWith('https://wa.me/5511991584991?text='), '#quote-submit-btn deve gerar URL wa.me válida');
-  assert(decodedHref.includes('Clínica odontológica, 8 vídeos/mês'), 'URL do botão deve conter texto automático');
+  assert(decodedHref.includes('Clínica odontológica, funil de vendas'), 'URL do botão deve conter texto automático');
 
   // Fechar com Escape limpa trava de scroll
   vmRun.dom.document.dispatchEvent({ type: 'keydown', key: 'Escape' });
