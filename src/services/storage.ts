@@ -1,5 +1,6 @@
 export const STORAGE_KEYS = {
-  PROJECTS: "portfolio_projects",
+  PROJECTS: "portfolio_projects_v2",
+  LEGACY_PROJECTS: "portfolio_projects",
   WELCOME_SEEN: "portfolio_welcome_seen",
   WELCOME_CAT: "portfolio_welcome_cat",
   INTRO_SEEN: "portfolio_intro_seen",

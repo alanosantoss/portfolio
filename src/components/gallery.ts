@@ -1,4 +1,6 @@
+import { ensureGsapPlugins, Flip } from "../animations/gsap";
 import type { MainCategory, ProjectItem } from "../types/project";
+import { prefersReducedMotion } from "../utils/media";
 import { getColumnCount, getRatioWeight } from "../utils/media";
 import { createProjectCard } from "./project-card";
 
@@ -35,6 +37,17 @@ export function renderGallery(options: RenderGalleryOptions): number {
     galleryGrid.style.display = "none";
     aboutSection.classList.add("is-visible");
     return getColumnCount();
+  }
+
+  ensureGsapPlugins();
+  const existingCards = Array.from(galleryGrid.querySelectorAll<HTMLElement>(".masonry-item"));
+  let flipState: Flip.FlipState | null = null;
+  if (!prefersReducedMotion() && existingCards.length > 0) {
+    existingCards.forEach((c) => {
+      const slug = c.dataset.slug || c.dataset.index;
+      if (slug) c.dataset.flipId = `card-${slug}`;
+    });
+    flipState = Flip.getState(existingCards, { props: "opacity" });
   }
 
   aboutSection.classList.remove("is-visible");
@@ -81,6 +94,8 @@ export function renderGallery(options: RenderGalleryOptions): number {
 
   options.items.forEach((item, index) => {
     const card = createProjectCard(item, index, options.onOpenProject);
+    const slug = item.slug || item.id || String(index);
+    card.dataset.flipId = `card-${slug}`;
     let shortestCol = 0;
     for (let c = 1; c < colCount; c++) {
       if ((colHeights[c] ?? 0) < (colHeights[shortestCol] ?? 0)) {
@@ -90,6 +105,24 @@ export function renderGallery(options: RenderGalleryOptions): number {
     cols[shortestCol]?.appendChild(card);
     colHeights[shortestCol] = (colHeights[shortestCol] ?? 0) + getRatioWeight(item) + 0.08;
   });
+
+  if (flipState && !prefersReducedMotion()) {
+    const newCards = galleryGrid.querySelectorAll<HTMLElement>(".masonry-item");
+    Flip.from(flipState, {
+      targets: newCards,
+      duration: 0.35,
+      ease: "power2.out",
+      stagger: 0.02,
+      fade: true,
+      absolute: false,
+      onEnter: (elements) => {
+        elements.forEach((el) => {
+          (el as HTMLElement).style.opacity = "0";
+          (el as HTMLElement).style.transform = "translateY(12px)";
+        });
+      }
+    });
+  }
 
   return colCount;
 }

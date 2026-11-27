@@ -25,6 +25,9 @@ export function buildQuoteMessage(answers: QuoteState): string {
   if (answers.projectTitle) {
     lines.push(`• Projeto de referência: ${answers.projectTitle}`);
   }
+  if (answers.projectUrl) {
+    lines.push(`• Link do projeto: ${answers.projectUrl}`);
+  }
 
   if (answers.service) {
     lines.push(`• Área: ${QUOTE_SERVICE_LABELS[answers.service] || answers.service}`);

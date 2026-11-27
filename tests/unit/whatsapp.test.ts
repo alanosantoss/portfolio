@@ -36,9 +36,11 @@ describe("whatsapp & quote service", () => {
       volume: "1 vídeo",
       deadline: "Urgente",
       notes: "",
-      projectTitle: "Social Media — Edição Dinâmica"
+      projectTitle: "Social Media — Edição Dinâmica",
+      projectUrl: "https://alanosantoss.github.io/portfolio/#project/social-media-edicao-dinamica"
     });
     expect(msg).toContain('Olá Alan! Vi o projeto "Social Media — Edição Dinâmica" no seu portfólio');
     expect(msg).toContain("• Projeto de referência: Social Media — Edição Dinâmica");
+    expect(msg).toContain("• Link do projeto: https://alanosantoss.github.io/portfolio/#project/social-media-edicao-dinamica");
   });
 });

@@ -19,8 +19,8 @@ window.DEFAULT_PROJECTS = [
     tools: ["Premiere Pro", "After Effects"],
     deliverables: ["Vídeo Vertical 9:16", "Cortes para Stories/Reels"],
     outcomes: [
-      { label: "Retenção Médio", value: "85%", context: "Aumento de tempo de tela no feed" },
-      { label: "Entrega", value: "48h", context: "Fluxo ágil de pós-produção" }
+      { label: "Entrega Ágil", value: "48h", context: "Fluxo eficiente de pós-produção" },
+      { label: "Formato Nativo", value: "9:16", context: "Otimizado para plataformas verticais" }
     ]
   },
   {
