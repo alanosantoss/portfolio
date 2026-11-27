@@ -1,11 +1,36 @@
 :root {
-  --bg: #111111;
-  --surface: #181818;
-  --text: #ffffff;
-  --muted: #999999;
-  --muted-hover: #e5e5e5;
-  --gap: 16px;
-  --max-width: 1220px;
+  /* Cores e Superfícies Cinematográficas */
+  --color-background: #0F0F0F;
+  --color-surface: #191919;
+  --color-text-primary: #F5F5F5;
+  --color-text-secondary: #A3A3A3;
+  --color-accent: #D8C5A3;
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  /* Aliases compatíveis com o código existente */
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --text: var(--color-text-primary);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --muted: var(--color-text-secondary);
+  --muted-hover: #F5F5F5;
+  --accent: var(--color-accent);
+  --border: var(--color-border);
+
+  /* Layout e Espaçamentos */
+  --gallery-max-width: 1240px;
+  --gallery-gap: 18px;
+  --media-radius: 12px;
+  --gap: var(--gallery-gap);
+  --max-width: var(--gallery-max-width);
+  --radius-media: var(--media-radius);
+  --radius-card: var(--media-radius);
+
+  /* Typography */
+  --font-heading: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-display: var(--font-heading);
 
   /* Motion tokens (transitions.dev) */
   --duration-quick: 150ms;

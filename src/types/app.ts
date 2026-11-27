@@ -31,4 +31,6 @@ export interface QuoteState {
   volume: string;
   deadline: string;
   notes: string;
+  projectTitle?: string;
+  projectUrl?: string;
 }

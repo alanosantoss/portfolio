@@ -10,5 +10,8 @@ export function registerIntroEases(): void {
   CustomEase.create("introReveal", INTRO_CONFIG.eases.reveal);
   CustomEase.create("introReel", INTRO_CONFIG.eases.reel);
   CustomEase.create("introExit", INTRO_CONFIG.eases.exit);
+  CustomEase.create("lightboxGeometry", "0.76, 0, 0.24, 1");
+  CustomEase.create("lightboxOpacity", "0.16, 1, 0.3, 1");
   easesRegistered = true;
 }
+

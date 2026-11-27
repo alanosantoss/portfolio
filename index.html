@@ -4,17 +4,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alan Oliveira — Edição de Vídeo & Direção Criativa</title>
+  <title>Alan Oliveira — Creative Designer & Video Editor</title>
   <meta name="description"
-    content="Alan Oliveira — Edição de vídeo de alto impacto, Reels, vídeos verticais e produções comerciais." />
+    content="Alan Oliveira — Audiovisual, direção criativa e tecnologia aplicados à comunicação de marcas. Edição de vídeo de alto impacto, motion design, key visuals e IA." />
+  <link rel="canonical" href="https://alanosantoss.github.io/portfolio/" />
 
   <!-- Open Graph & Redes Sociais -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://alanosantoss.github.io/portfolio/" />
-  <meta property="og:title" content="Alan Oliveira — Portfólio" />
-  <meta property="og:description" content="Edição de vídeo dinâmica, Reels e produções audiovisuais." />
+  <meta property="og:title" content="Alan Oliveira — Creative Designer & Video Editor" />
+  <meta property="og:description" content="Audiovisual, direção criativa e tecnologia aplicados à comunicação de marcas." />
   <meta property="og:image" content="https://i.ytimg.com/vi/aNsA0iwBbqc/maxresdefault.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Alan Oliveira — Creative Designer & Video Editor" />
+  <meta name="twitter:description" content="Audiovisual, direção criativa e tecnologia aplicados à comunicação de marcas." />
+  <meta name="twitter:image" content="https://i.ytimg.com/vi/aNsA0iwBbqc/maxresdefault.jpg" />
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml"
@@ -26,10 +30,20 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Alan Oliveira",
-    "jobTitle": "Editor de Vídeo & Motion Designer",
+    "jobTitle": "Creative Designer & Video Editor",
     "url": "https://alanosantoss.github.io/portfolio/",
     "sameAs": [
       "https://www.linkedin.com/in/alan-oliveira-765286274/"
+    ],
+    "description": "Audiovisual, direção criativa e tecnologia aplicados à comunicação de marcas.",
+    "knowsAbout": [
+      "Video Editing",
+      "Motion Design",
+      "Color Grading",
+      "Creative Direction",
+      "Visual Identity",
+      "Generative AI",
+      "Creative Technology"
     ]
   }
   </script>
@@ -45,7 +59,7 @@
     (function () {
       try {
         var hash = (window.location.hash || "").replace("#", "").toLowerCase();
-        var directRoute = hash === "video" || hash === "design" || hash === "ia" || hash === "sobre";
+        var directRoute = hash === "video" || hash === "design" || hash === "ia" || hash === "sobre" || hash.indexOf("project/") === 0;
         var seen = false;
         try { seen = sessionStorage.getItem("portfolio_welcome_seen") === "1"; } catch (_) {}
         if (!directRoute && !seen) {
@@ -117,14 +131,19 @@
       </div>
     </div>
 
-    <!-- Linha Inferior: Subcategorias / Filtros dinâmicos que aparecem ao entrar na categoria -->
-    <nav class="sub-nav" id="sub-nav" aria-label="Filtros de subcategoria"></nav>
-  </header>
-
   <!-- =========================================================================
        CONTEÚDO PRINCIPAL (GRADE MASONRY FILTRÁVEL)
   ========================================================================== -->
   <main class="main-container">
+    <!-- Seção Compacta de Cabeçalho da Galeria & Filtros Contextuais -->
+    <section id="gallery-header" class="gallery-header" aria-label="Cabeçalho da Galeria">
+      <div class="gallery-title-group">
+        <span id="gallery-eyebrow" class="gallery-eyebrow">PORTFÓLIO AUDIOVISUAL</span>
+        <h1 id="gallery-heading" class="gallery-heading">Trabalhos em vídeo</h1>
+      </div>
+      <nav class="sub-nav" id="sub-nav" aria-label="Filtros de subcategoria"></nav>
+    </section>
+
     <section id="gallery-grid" class="masonry-grid" aria-label="Portfólio"></section>
 
     <!-- Seção Sobre -->
@@ -169,9 +188,7 @@
         <img src="assets/alan-oliveira.jpg" alt="Alan Oliveira" class="about-avatar" loading="lazy" />
         <div class="about-intro">
           <p>
-            <strong>Alan Oliveira</strong> — editor de vídeo, designer e criador de soluções digitais com mais de 5 anos
-            de experiência em projetos remotos e sob demanda. Ajudo criadores de conteúdo, marcas e empresas a
-            aumentarem retenção, cliques e produtividade com entregas rápidas e acabamento profissional.
+            <strong>Alan Oliveira</strong> — Creative Designer & Video Editor. Atuação integrada em audiovisual, direção criativa e tecnologia aplicados à comunicação de marcas, unindo ritmo narrativo, composição gráfica e inovação com inteligência artificial para elevar o impacto de cada entrega.
           </p>
         </div>
       </div>
@@ -181,29 +198,23 @@
       <!-- Grade dos Serviços (3 Colunas) -->
       <div class="about-grid">
         <div class="about-col">
-          <h2 class="about-col-title">Edição de Vídeo</h2>
+          <h2 class="about-col-title">Audiovisual</h2>
           <p class="about-col-text">
-            Reels, TikTok e Shorts com cortes dinâmicos, legendas modernas e ritmo focado em retenção. Vídeos para
-            YouTube com narrativa fluida, tratamento de áudio e cor, além de edição para eventos, institucionais e
-            anúncios.
+            Edição de vídeo, motion design, publicidade, color grading e narrativa visual. Cortes dinâmicos, ritmo preciso e acabamento cinematográfico para comerciais, reels, shorts e conteúdo de alto impacto.
           </p>
         </div>
 
         <div class="about-col">
-          <h2 class="about-col-title">Design & Imagens com IA</h2>
+          <h2 class="about-col-title">Design & Direção Criativa</h2>
           <p class="about-col-text">
-            Thumbnails de alto clique, criativos para tráfego pago e artes para redes sociais no Photoshop. Geração de
-            imagens e cenários com IA finalizados manualmente, upscale e restauração de fotos em baixa definição, e
-            vetorização/fechamento de arquivos em alta resolução para grandes formatos (acima de 3 metros).
+            Identidade visual, comunicação, campanhas e composição gráfica. Desenvolvimento de linguagem visual consistente, key visuals e direção de arte com estética contemporânea.
           </p>
         </div>
 
         <div class="about-col">
-          <h2 class="about-col-title">Landing Pages, Automações & IA</h2>
+          <h2 class="about-col-title">Creative Technology</h2>
           <p class="about-col-text">
-            Criação de landing pages rápidas com visual profissional, micro-sistemas e ferramentas sob medida para
-            resolver gargalos internos de empresas (como visualizadores de arquivos pesados), automações práticas com IA
-            e formatação/conversão de PDFs, catálogos e apresentações.
+            Inteligência artificial generativa, automações, desenvolvimento de ferramentas e soluções digitais sob medida. Workflows práticos para acelerar produção e viabilizar conceitos complexos.
           </p>
         </div>
       </div>

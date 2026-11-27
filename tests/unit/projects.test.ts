@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   filterProjects,
+  getCaseStudyProjects,
+  getFeaturedProjects,
   getIntroFrameUrls,
+  getProjectBySlug,
   getProjectsList,
   getQualifiedSubcategories,
-  isValidProjectItem
+  isValidProjectItem,
+  normalizeProjectItem
 } from "../../src/services/projects";
 import { STORAGE_KEYS } from "../../src/services/storage";
 import { SAMPLE_PROJECTS } from "../fixtures/projects";
@@ -55,5 +59,30 @@ describe("projects service", () => {
     const urls = getIntroFrameUrls(SAMPLE_PROJECTS, 4);
     expect(urls.length).toBe(4);
     expect(urls[0]).toContain("i.ytimg.com");
+  });
+
+  it("normalizes Portfolio 2.0 metadata, generates slugs and finds projects by slug", () => {
+    const normalized = normalizeProjectItem({
+      type: "video",
+      category: "video",
+      id: "abc12345678",
+      title: "Edição Dinâmica & Ritmo"
+    });
+    expect(normalized.slug).toBe("edicao-dinamica-ritmo");
+
+    const itemWithSlug = {
+      ...SAMPLE_PROJECTS[0]!,
+      slug: "social-media-edicao-dinamica",
+      featured: true,
+      caseStudy: true
+    };
+    window.DEFAULT_PROJECTS = [itemWithSlug, ...SAMPLE_PROJECTS.slice(1)];
+
+    const found = getProjectBySlug("social-media-edicao-dinamica");
+    expect(found).toBeDefined();
+    expect(found?.title).toBe(SAMPLE_PROJECTS[0]?.title);
+
+    expect(getFeaturedProjects().length).toBeGreaterThan(0);
+    expect(getCaseStudyProjects().length).toBeGreaterThan(0);
   });
 });

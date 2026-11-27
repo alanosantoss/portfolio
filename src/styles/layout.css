@@ -1,6 +1,6 @@
 .main-container {
   width: 100%;
-  max-width: var(--max-width);
+  max-width: var(--gallery-max-width, 1240px);
   margin: 0 auto;
   padding: 0 40px 96px;
 }

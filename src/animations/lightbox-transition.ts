@@ -1,6 +1,7 @@
+import { registerIntroEases } from "./easing";
+import { CustomEase, ensureGsapPlugins, gsap } from "./gsap";
 import { hasValidRect } from "../utils/dom";
 import { prefersReducedMotion } from "../utils/media";
-import { ensureGsapPlugins, gsap } from "./gsap";
 
 export interface LightboxAnimationTargets {
   lightbox: HTMLElement;
@@ -10,28 +11,22 @@ export interface LightboxAnimationTargets {
   caption: HTMLElement | null;
 }
 
-let lightboxMotionRaf: number | null = null;
-let activeFlipTween: gsap.core.Tween | null = null;
-let activeBackdropTween: gsap.core.Tween | null = null;
-let activeCaptionTween: gsap.core.Tween | null = null;
-
-export function cancelLightboxMotionRaf(): void {
-  if (lightboxMotionRaf !== null && typeof cancelAnimationFrame === "function") {
-    cancelAnimationFrame(lightboxMotionRaf);
-  }
-  lightboxMotionRaf = null;
-}
+let activeTransitionSurface: HTMLElement | null = null;
+let activeMasterTimeline: gsap.core.Timeline | null = null;
 
 export function killLightboxAnimations(
   targets: Partial<LightboxAnimationTargets>,
   originEl?: HTMLElement | null
 ): void {
-  [activeFlipTween, activeBackdropTween, activeCaptionTween].forEach((tw) => {
-    if (tw && typeof tw.kill === "function") tw.kill();
-  });
-  activeFlipTween = null;
-  activeBackdropTween = null;
-  activeCaptionTween = null;
+  if (activeMasterTimeline) {
+    activeMasterTimeline.kill();
+    activeMasterTimeline = null;
+  }
+
+  if (activeTransitionSurface) {
+    activeTransitionSurface.remove();
+    activeTransitionSurface = null;
+  }
 
   const elements = [
     targets.lightbox,
@@ -47,6 +42,10 @@ export function killLightboxAnimations(
   }
 }
 
+export function cancelLightboxMotionRaf(): void {
+  // Mantido para compatibilidade com a interface existente
+}
+
 export function clearLightboxStageMotion(stage: HTMLElement | null): void {
   if (!stage) return;
   stage.style.transition = "";
@@ -57,140 +56,277 @@ export function clearLightboxStageMotion(stage: HTMLElement | null): void {
 
 export function animateLightboxOpen(
   targets: LightboxAnimationTargets,
-  originEl: HTMLElement | null
+  originEl: HTMLElement | null,
+  options?: {
+    posterUrl?: string;
+    onReadyToCrossfade?: () => void;
+    onComplete?: () => void;
+  }
 ): void {
   ensureGsapPlugins();
-  if (prefersReducedMotion()) {
-    clearLightboxStageMotion(targets.stage);
-    return;
-  }
+  registerIntroEases();
+
+  const geomEase = CustomEase.get("lightboxGeometry") ? "lightboxGeometry" : "power3.inOut";
+  const opacEase = CustomEase.get("lightboxOpacity") ? "lightboxOpacity" : "power2.out";
 
   const backdropEl = targets.backdrop || targets.lightbox;
-  const originRect = hasValidRect(originEl) ? originEl.getBoundingClientRect() : null;
+  targets.lightbox.classList.remove("controls-visible");
 
-  if (originRect) {
-    activeBackdropTween = gsap.fromTo(
-      backdropEl,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.45, ease: "power2.out" }
-    );
-    if (targets.caption) {
-      activeCaptionTween = gsap.fromTo(
-        targets.caption,
-        { opacity: 0, y: 12 },
-        { opacity: 1, y: 0, duration: 0.42, delay: 0.22, ease: "power3.out" }
-      );
-    }
-
-    const targetRect = targets.content.getBoundingClientRect();
-    if (targetRect && targetRect.width > 0 && targetRect.height > 0) {
-      const dx = originRect.left + originRect.width / 2 - (targetRect.left + targetRect.width / 2);
-      const dy = originRect.top + originRect.height / 2 - (targetRect.top + targetRect.height / 2);
-      const sx = Math.max(0.25, Math.min(0.95, originRect.width / targetRect.width));
-      const sy = Math.max(0.25, Math.min(0.95, originRect.height / targetRect.height));
-
-      activeFlipTween = gsap.fromTo(
-        targets.content,
-        { x: dx, y: dy, scaleX: sx, scaleY: sy, opacity: 0.35 },
-        {
-          x: 0,
-          y: 0,
-          scaleX: 1,
-          scaleY: 1,
-          opacity: 1,
-          duration: 0.65,
-          ease: "power3.out",
-          clearProps: "transform,opacity",
-          onComplete: () => {
-            activeFlipTween = null;
-          }
-        }
-      );
-    }
+  // Se reduzido motion ou sem card de origem válido
+  if (prefersReducedMotion() || !hasValidRect(originEl) || !hasValidRect(targets.content)) {
+    if (originEl) originEl.style.opacity = "1";
+    targets.content.style.opacity = "1";
+    targets.lightbox.classList.add("controls-visible");
+    gsap.set(backdropEl, { opacity: 1 });
+    if (targets.caption) gsap.set(targets.caption, { opacity: 1, y: 0 });
+    options?.onReadyToCrossfade?.();
+    options?.onComplete?.();
     return;
   }
 
-  activeBackdropTween = gsap.fromTo(
+  const cardRect = originEl.getBoundingClientRect();
+  const destRect = targets.content.getBoundingClientRect();
+
+  // Captura propriedades do card de origem
+  const cardComputed = window.getComputedStyle(originEl);
+  const initialRadius = parseFloat(cardComputed.borderRadius) || 4;
+
+  const destComputed = window.getComputedStyle(targets.content);
+  const destRadius = parseFloat(destComputed.borderRadius) || 8;
+
+  // Cria a superfície visual temporária independente
+  const surface = document.createElement("div");
+  surface.id = "lightbox-shared-surface";
+  Object.assign(surface.style, {
+    position: "fixed",
+    left: `${cardRect.left}px`,
+    top: `${cardRect.top}px`,
+    width: `${cardRect.width}px`,
+    height: `${cardRect.height}px`,
+    borderRadius: `${initialRadius}px`,
+    overflow: "hidden",
+    zIndex: "9998",
+    pointerEvents: "none",
+    boxShadow: "0 12px 36px rgba(0, 0, 0, 0.6)",
+    backgroundColor: "#111111",
+    willChange: "left, top, width, height, border-radius, box-shadow"
+  });
+
+  const img = document.createElement("img");
+  img.src = options?.posterUrl || "";
+  img.alt = "";
+  img.setAttribute("aria-hidden", "true");
+  Object.assign(img.style, {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block"
+  });
+  surface.appendChild(img);
+
+  document.body.appendChild(surface);
+  activeTransitionSurface = surface;
+
+  // Preserva espaço do card original no masonry grid tornando-o invisível temporariamente
+  originEl.style.opacity = "0";
+
+  // O container do lightbox fica invisível enquanto a superfície viaja
+  targets.content.style.opacity = "0";
+
+  // Timeline com duração exata de ~450ms
+  const tl = gsap.timeline({
+    onComplete: () => {
+      activeMasterTimeline = null;
+      // Notifica para crossfade e remoção da superfície temporária
+      options?.onReadyToCrossfade?.();
+      options?.onComplete?.();
+    }
+  });
+  activeMasterTimeline = tl;
+
+  // 1. Escurecimento e desfoque progressivo do backdrop
+  tl.fromTo(
     backdropEl,
     { opacity: 0 },
-    { opacity: 1, duration: 0.4, ease: "power2.out" }
+    { opacity: 1, duration: 0.45, ease: opacEase },
+    0
   );
-  if (targets.stage) {
-    activeFlipTween = gsap.fromTo(
-      targets.stage,
-      { scale: 0.88, opacity: 0, y: 24 },
-      { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: "power3.out", clearProps: "transform" }
+
+  // 2. Interpolação geométrica da superfície visual
+  tl.to(
+    surface,
+    {
+      left: destRect.left,
+      top: destRect.top,
+      width: destRect.width,
+      height: destRect.height,
+      borderRadius: destRadius,
+      boxShadow: "0 28px 70px rgba(0, 0, 0, 0.75)",
+      duration: 0.45,
+      ease: geomEase
+    },
+    0
+  );
+
+  // 3. Revela legenda e controles ao final da transição (~0.32s)
+  if (targets.caption) {
+    tl.fromTo(
+      targets.caption,
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.28, ease: opacEase },
+      0.3
     );
+  }
+
+  tl.add(() => {
+    targets.lightbox.classList.add("controls-visible");
+  }, 0.35);
+}
+
+export function completeLightboxHandoff(
+  targets: LightboxAnimationTargets
+): void {
+  // Mostra o conteúdo real (iframe ou imagem)
+  targets.content.style.opacity = "1";
+
+  // Faz o crossfade suave e remove a superfície temporária se existir
+  if (activeTransitionSurface) {
+    const s = activeTransitionSurface;
+    activeTransitionSurface = null;
+    gsap.to(s, {
+      opacity: 0,
+      duration: 0.18,
+      ease: "power2.out",
+      onComplete: () => s.remove()
+    });
   }
 }
 
 export function animateLightboxClose(
   targets: LightboxAnimationTargets,
   originEl: HTMLElement | null,
-  onComplete: () => void
+  onComplete: () => void,
+  options?: {
+    posterUrl?: string;
+  }
 ): void {
   ensureGsapPlugins();
-  if (prefersReducedMotion()) {
-    onComplete();
-    return;
-  }
+  registerIntroEases();
+
+  const geomEase = CustomEase.get("lightboxGeometry") ? "lightboxGeometry" : "power3.inOut";
+  const opacEase = CustomEase.get("lightboxOpacity") ? "lightboxOpacity" : "power2.in";
 
   const backdropEl = targets.backdrop || targets.lightbox;
-  const canUseFlipClose = hasValidRect(originEl) && hasValidRect(targets.content);
+  targets.lightbox.classList.remove("controls-visible");
 
-  if (canUseFlipClose && originEl) {
-    const originRect = originEl.getBoundingClientRect();
-    const targetRect = targets.content.getBoundingClientRect();
-    const dx = originRect.left + originRect.width / 2 - (targetRect.left + targetRect.width / 2);
-    const dy = originRect.top + originRect.height / 2 - (targetRect.top + targetRect.height / 2);
-    const sx = Math.max(0.25, Math.min(0.95, originRect.width / Math.max(1, targetRect.width)));
-    const sy = Math.max(0.25, Math.min(0.95, originRect.height / Math.max(1, targetRect.height)));
+  // Limpa qualquer superfície anterior
+  if (activeTransitionSurface) {
+    activeTransitionSurface.remove();
+    activeTransitionSurface = null;
+  }
 
-    if (targets.caption) {
-      activeCaptionTween = gsap.to(targets.caption, {
-        opacity: 0,
-        y: 8,
-        duration: 0.2,
-        ease: "power2.in"
-      });
-    }
-    activeBackdropTween = gsap.to(backdropEl, {
+  // Se o card de origem não for mais visível ou não tiver geometria válida
+  const isOriginVisible = hasValidRect(originEl) && (originEl?.getBoundingClientRect().bottom ?? 0) > 0 &&
+    (originEl?.getBoundingClientRect().top ?? 0) < window.innerHeight;
+
+  if (prefersReducedMotion() || !isOriginVisible || !originEl || !hasValidRect(targets.content)) {
+    if (originEl) originEl.style.opacity = "1";
+    gsap.to(backdropEl, {
       opacity: 0,
-      duration: 0.42,
-      ease: "power2.inOut"
-    });
-    activeFlipTween = gsap.to(targets.content, {
-      x: dx,
-      y: dy,
-      scaleX: sx,
-      scaleY: sy,
-      opacity: 0,
-      duration: 0.45,
-      ease: "power3.inOut",
+      duration: 0.25,
+      ease: opacEase,
       onComplete
     });
     return;
   }
 
-  activeBackdropTween = gsap.to(backdropEl, {
-    opacity: 0,
-    duration: 0.32,
-    ease: "power2.in"
+  const originRect = originEl.getBoundingClientRect();
+  const currentMediaRect = targets.content.getBoundingClientRect();
+
+  const originComputed = window.getComputedStyle(originEl);
+  const targetRadius = parseFloat(originComputed.borderRadius) || 4;
+
+  const currentComputed = window.getComputedStyle(targets.content);
+  const initialRadius = parseFloat(currentComputed.borderRadius) || 8;
+
+  // Cria a superfície de retorno sobre a posição do player
+  const surface = document.createElement("div");
+  surface.id = "lightbox-shared-surface-close";
+  Object.assign(surface.style, {
+    position: "fixed",
+    left: `${currentMediaRect.left}px`,
+    top: `${currentMediaRect.top}px`,
+    width: `${currentMediaRect.width}px`,
+    height: `${currentMediaRect.height}px`,
+    borderRadius: `${initialRadius}px`,
+    overflow: "hidden",
+    zIndex: "9998",
+    pointerEvents: "none",
+    boxShadow: "0 28px 70px rgba(0, 0, 0, 0.75)",
+    backgroundColor: "#111111",
+    willChange: "left, top, width, height, border-radius, box-shadow"
   });
 
-  if (targets.stage) {
-    activeFlipTween = gsap.to(targets.stage, {
-      scale: 0.9,
-      opacity: 0,
-      y: 16,
-      duration: 0.3,
-      ease: "power2.in",
-      onComplete
-    });
-    return;
+  const img = document.createElement("img");
+  img.src = options?.posterUrl || "";
+  img.alt = "";
+  img.setAttribute("aria-hidden", "true");
+  Object.assign(img.style, {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    display: "block"
+  });
+  surface.appendChild(img);
+
+  document.body.appendChild(surface);
+  activeTransitionSurface = surface;
+
+  // Oculta o conteúdo interno do lightbox (player/iframe)
+  targets.content.style.opacity = "0";
+
+  // Timeline de fechamento com duração de ~350ms
+  const tl = gsap.timeline({
+    onComplete: () => {
+      activeMasterTimeline = null;
+      if (activeTransitionSurface) {
+        activeTransitionSurface.remove();
+        activeTransitionSurface = null;
+      }
+      // Restaura visibilidade do card original
+      originEl.style.opacity = "1";
+      onComplete();
+    }
+  });
+  activeMasterTimeline = tl;
+
+  // Fade out do caption e controles imediatamente
+  if (targets.caption) {
+    tl.to(targets.caption, { opacity: 0, y: 8, duration: 0.16, ease: opacEase }, 0);
   }
 
-  setTimeout(onComplete, 320);
+  // Interpolação geométrica de volta ao card
+  tl.to(
+    surface,
+    {
+      left: originRect.left,
+      top: originRect.top,
+      width: originRect.width,
+      height: originRect.height,
+      borderRadius: targetRadius,
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+      duration: 0.35,
+      ease: geomEase
+    },
+    0
+  );
+
+  // Fade out progressivo do backdrop
+  tl.to(
+    backdropEl,
+    { opacity: 0, duration: 0.35, ease: opacEase },
+    0
+  );
 }
 
 export function animateLightboxStep(stage: HTMLElement | null, delta: number): void {
@@ -199,6 +335,6 @@ export function animateLightboxStep(stage: HTMLElement | null, delta: number): v
   gsap.fromTo(
     stage,
     { x: delta >= 0 ? 28 : -28, opacity: 0.25 },
-    { x: 0, opacity: 1, duration: 0.38, ease: "power3.out", clearProps: "transform" }
+    { x: 0, opacity: 1, duration: 0.32, ease: "power3.out", clearProps: "transform" }
   );
 }

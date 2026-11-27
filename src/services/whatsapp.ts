@@ -22,6 +22,10 @@ export function buildWhatsAppUrl(message: string = CONFIG.WHATSAPP_MESSAGE): str
 export function buildQuoteMessage(answers: QuoteState): string {
   const lines: string[] = [];
 
+  if (answers.projectTitle) {
+    lines.push(`• Projeto de referência: ${answers.projectTitle}`);
+  }
+
   if (answers.service) {
     lines.push(`• Área: ${QUOTE_SERVICE_LABELS[answers.service] || answers.service}`);
   }
@@ -48,5 +52,10 @@ export function buildQuoteMessage(answers: QuoteState): string {
   }
 
   if (lines.length === 0) return CONFIG.WHATSAPP_MESSAGE;
-  return `Olá Alan! Vi seu portfólio e gostaria de um orçamento:\n${lines.join("\n")}`;
+
+  const header = answers.projectTitle
+    ? `Olá Alan! Vi o projeto "${answers.projectTitle}" no seu portfólio e gostaria de um orçamento para um trabalho semelhante:`
+    : `Olá Alan! Vi seu portfólio e gostaria de um orçamento:`;
+
+  return `${header}\n${lines.join("\n")}`;
 }

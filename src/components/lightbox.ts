@@ -4,6 +4,7 @@ import {
   animateLightboxStep,
   cancelLightboxMotionRaf,
   clearLightboxStageMotion,
+  completeLightboxHandoff,
   killLightboxAnimations,
   type LightboxAnimationTargets
 } from "../animations/lightbox-transition";
@@ -26,9 +27,13 @@ export function createLightboxController(
 ): LightboxController {
   let currentIndex = -1;
   let isClosing = false;
+  let isOpening = false;
   let lastFocusedElement: HTMLElement | null = null;
   let lastOriginEl: HTMLElement | null = null;
   let bound = false;
+  let playerReady = false;
+  let motionFinished = false;
+  let ytMessageListener: ((e: MessageEvent) => void) | null = null;
 
   const getTargets = (): LightboxAnimationTargets | null => {
     const lightbox = document.getElementById("lightbox");
@@ -43,37 +48,54 @@ export function createLightboxController(
     };
   };
 
+  const getPosterUrl = (item: ProjectItem, originEl: HTMLElement | null): string => {
+    const originImg = typeof originEl?.querySelector === "function" ? originEl.querySelector("img") : null;
+    const originThumb = originImg?.currentSrc || originImg?.src || "";
+    if (isSafeImageUrl(originThumb)) return originThumb;
+    if (item.type === "video") {
+      return `https://i.ytimg.com/vi/${encodeURIComponent(item.id || "")}/hqdefault.jpg`;
+    }
+    return item.image || "";
+  };
+
   const clearFlipOrigin = (card: HTMLElement | null) => {
     if (!card) return;
+    card.style.opacity = "1";
     if (card.dataset) delete card.dataset.flipId;
     card.style.zIndex = "";
   };
 
-  const renderContent = (originEl: HTMLElement | null) => {
+  const checkAndExecuteHandoff = (targets: LightboxAnimationTargets) => {
+    if (motionFinished && playerReady) {
+      completeLightboxHandoff(targets);
+    }
+  };
+
+  const renderContent = (_originEl: HTMLElement | null, posterUrl: string) => {
     const items = getItems();
     if (currentIndex < 0 || currentIndex >= items.length) return;
     const item = items[currentIndex];
     const targets = getTargets();
     if (!item || !targets) return;
 
+    // Remove qualquer listener anterior do YouTube
+    if (ytMessageListener) {
+      window.removeEventListener("message", ytMessageListener);
+      ytMessageListener = null;
+    }
+
     const isVideo = item.type === "video";
     const isVertical = item.aspect === "9:16" || item.ratio === "ratio-9-16";
     const safeTitleAttr = escapeHtml(item.title || "");
+    playerReady = false;
 
     if (isVideo) {
       targets.stage?.classList.toggle("is-vertical", isVertical);
       targets.content.className = `lightbox-video-wrap ${isVertical ? "is-vertical" : ""}`;
-      const encodedId = encodeURIComponent(item.id || "");
-      const originImg =
-        typeof originEl?.querySelector === "function" ? originEl.querySelector("img") : null;
-      const originThumb = originImg?.currentSrc || originImg?.src || "";
-      const posterUrl = isSafeImageUrl(originThumb)
-        ? escapeHtml(originThumb)
-        : `https://i.ytimg.com/vi/${encodedId}/hqdefault.jpg`;
       const embedUrl = getYouTubeEmbedUrl(item.id || "");
 
       targets.content.innerHTML = `
-        <img class="lightbox-poster" src="${posterUrl}" alt="" aria-hidden="true" />
+        <img class="lightbox-poster" src="${escapeHtml(posterUrl)}" alt="" aria-hidden="true" />
         <iframe
           src="${embedUrl}"
           title="${safeTitleAttr}"
@@ -84,23 +106,40 @@ export function createLightboxController(
       `;
 
       const ytIframe = targets.content.querySelector("iframe");
-      const markReady = () => ytIframe?.classList.add("is-ready");
-      const readyFallbackTimer = setTimeout(markReady, 900);
+
+      const markPlayerReady = () => {
+        if (playerReady) return;
+        playerReady = true;
+        ytIframe?.classList.add("is-ready");
+        checkAndExecuteHandoff(targets);
+      };
+
+      // 1. YouTube postMessage API listener para onReady ou stateChange
+      ytMessageListener = (event: MessageEvent) => {
+        if (!event.origin.includes("youtube") && !event.origin.includes("youtube-nocookie")) return;
+        try {
+          const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+          if (data?.event === "onReady" || data?.event === "initialDelivery" || data?.info?.playerState !== undefined) {
+            markPlayerReady();
+          }
+        } catch {}
+      };
+      window.addEventListener("message", ytMessageListener);
+
+      // 2. Iframe load event como fallback secundário
       ytIframe?.addEventListener("load", () => {
-        clearTimeout(readyFallbackTimer);
-        markReady();
-        // shortcut: YouTube ignora vq/setPlaybackQuality em alguns embeds (ABR proprio)
         try {
           ytIframe.contentWindow?.postMessage(
-            JSON.stringify({ event: "command", func: "setPlaybackQuality", args: ["highres"] }),
-            "https://www.youtube-nocookie.com"
-          );
-          ytIframe.contentWindow?.postMessage(
-            JSON.stringify({ event: "command", func: "setPlaybackQuality", args: ["hd1080"] }),
-            "https://www.youtube-nocookie.com"
+            JSON.stringify({ event: "listening" }),
+            "*"
           );
         } catch {}
+        // Fallback imediato se o player load completar
+        setTimeout(markPlayerReady, 120);
       });
+
+      // 3. Bounded safety timeout (nunca deixar retângulo preto indefinido)
+      setTimeout(markPlayerReady, 1200);
     } else {
       targets.stage?.classList.remove("is-vertical");
       targets.content.className = "lightbox-image-wrap";
@@ -108,8 +147,22 @@ export function createLightboxController(
         targets.content.innerHTML = `
           <img class="lightbox-image" src="${escapeHtml(item.image)}" alt="${safeTitleAttr}" />
         `;
+        const imgEl = targets.content.querySelector("img");
+        if (imgEl?.complete) {
+          playerReady = true;
+        } else {
+          imgEl?.addEventListener("load", () => {
+            playerReady = true;
+            checkAndExecuteHandoff(targets);
+          });
+          setTimeout(() => {
+            playerReady = true;
+            checkAndExecuteHandoff(targets);
+          }, 300);
+        }
       } else {
         targets.content.innerHTML = "";
+        playerReady = true;
       }
     }
 
@@ -121,8 +174,9 @@ export function createLightboxController(
 
   const open = (index: number, originEl?: HTMLElement | null) => {
     const targets = getTargets();
-    if (!targets || isClosing) return;
+    if (!targets || isClosing || isOpening) return;
 
+    isOpening = true;
     killLightboxAnimations(targets, lastOriginEl);
     cancelLightboxMotionRaf();
     clearFlipOrigin(lastOriginEl);
@@ -132,13 +186,27 @@ export function createLightboxController(
     currentIndex = index;
     onIndexChange(index);
 
-    renderContent(lastOriginEl);
+    const items = getItems();
+    const item = items[index];
+    const posterUrl = item ? getPosterUrl(item, lastOriginEl) : "";
+
+    renderContent(lastOriginEl, posterUrl);
     targets.content.style.visibility = "";
     targets.lightbox.classList.remove("is-closing");
     targets.lightbox.classList.add("is-open");
     document.body.style.overflow = "hidden";
 
-    animateLightboxOpen(targets, lastOriginEl);
+    motionFinished = false;
+    animateLightboxOpen(targets, lastOriginEl, {
+      posterUrl,
+      onReadyToCrossfade: () => {
+        motionFinished = true;
+        checkAndExecuteHandoff(targets);
+      },
+      onComplete: () => {
+        isOpening = false;
+      }
+    });
 
     const closeBtn = document.getElementById("lightbox-close");
     if (closeBtn && typeof closeBtn.focus === "function") {
@@ -151,17 +219,45 @@ export function createLightboxController(
     if (!targets || isClosing || !targets.lightbox.classList.contains("is-open")) return;
 
     isClosing = true;
+    isOpening = false;
+
+    // 1. Para imediatamente o vídeo e o áudio enviando pause/stop e limpando o iframe
+    const ytIframe = targets.content.querySelector("iframe");
+    if (ytIframe) {
+      try {
+        ytIframe.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "pauseVideo", args: [] }),
+          "*"
+        );
+        ytIframe.contentWindow?.postMessage(
+          JSON.stringify({ event: "command", func: "stopVideo", args: [] }),
+          "*"
+        );
+      } catch {}
+      // Remove src do iframe para corte estrito e garantido de conexões de áudio
+      ytIframe.src = "about:blank";
+    }
+
+    if (ytMessageListener) {
+      window.removeEventListener("message", ytMessageListener);
+      ytMessageListener = null;
+    }
+
     killLightboxAnimations(targets, lastOriginEl);
     cancelLightboxMotionRaf();
 
+    const items = getItems();
+    const item = items[currentIndex];
+    const posterUrl = item ? getPosterUrl(item, lastOriginEl) : "";
+
     const finishClose = () => {
       cancelLightboxMotionRaf();
-      targets.lightbox.classList.remove("is-open", "is-closing");
+      targets.lightbox.classList.remove("is-open", "is-closing", "controls-visible");
       targets.lightbox.style.opacity = "";
       if (targets.backdrop) targets.backdrop.style.opacity = "";
       targets.content.style.visibility = "";
+      targets.content.style.opacity = "";
       targets.content.style.transform = "";
-      if (targets.content.dataset) delete targets.content.dataset.flipId;
       targets.content.innerHTML = "";
       if (targets.caption) {
         targets.caption.textContent = "";
@@ -185,10 +281,11 @@ export function createLightboxController(
     };
 
     targets.lightbox.classList.add("is-closing");
-    animateLightboxClose(targets, lastOriginEl, finishClose);
+    animateLightboxClose(targets, lastOriginEl, finishClose, { posterUrl });
   };
 
   const step = (delta: number) => {
+    if (isClosing) return;
     const items = getItems();
     const total = items.length;
     if (!total) return;
@@ -205,8 +302,15 @@ export function createLightboxController(
       lastOriginEl = nextCard;
     }
 
-    renderContent(lastOriginEl);
+    const item = items[currentIndex];
+    const posterUrl = item ? getPosterUrl(item, lastOriginEl) : "";
+    renderContent(lastOriginEl, posterUrl);
     const targets = getTargets();
+    if (targets) {
+      motionFinished = true;
+      playerReady = true;
+      targets.content.style.opacity = "1";
+    }
     animateLightboxStep(targets?.stage ?? null, delta);
   };
 

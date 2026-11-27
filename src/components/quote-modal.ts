@@ -8,7 +8,10 @@ import type { MainCategory } from "../types/project";
 
 export interface QuoteModalController {
   init: () => void;
-  open: (triggerEl?: HTMLElement | null) => void;
+  open: (
+    triggerEl?: HTMLElement | null,
+    options?: { service?: string; projectTitle?: string; projectUrl?: string }
+  ) => void;
   close: () => void;
   isOpen: () => boolean;
 }
@@ -21,7 +24,9 @@ export function createQuoteModalController(
     format: [],
     volume: "",
     deadline: "",
-    notes: ""
+    notes: "",
+    projectTitle: "",
+    projectUrl: ""
   };
 
   let lastTrigger: HTMLElement | null = null;
@@ -84,16 +89,33 @@ export function createQuoteModalController(
     syncUi();
   };
 
-  const open = (triggerEl?: HTMLElement | null) => {
+  const open = (
+    triggerEl?: HTMLElement | null,
+    options?: { service?: string; projectTitle?: string; projectUrl?: string }
+  ) => {
     const modal = document.getElementById("quote-modal");
     if (!modal) return;
 
     lastTrigger = triggerEl || (document.activeElement as HTMLElement | null);
-    const activeCat = getActiveCategory();
-    const presetService = ["video", "design", "ia"].includes(activeCat) ? activeCat : "";
-    if (presetService && quoteState.service !== presetService) {
-      quoteState.service = presetService;
+
+    if (options?.projectTitle) {
+      quoteState.projectTitle = options.projectTitle;
+      quoteState.projectUrl = options.projectUrl || "";
+    } else {
+      quoteState.projectTitle = "";
+      quoteState.projectUrl = "";
+    }
+
+    if (options?.service) {
+      quoteState.service = options.service;
       quoteState.format = [];
+    } else {
+      const activeCat = getActiveCategory();
+      const presetService = ["video", "design", "ia"].includes(activeCat) ? activeCat : "";
+      if (presetService && quoteState.service !== presetService) {
+        quoteState.service = presetService;
+        quoteState.format = [];
+      }
     }
 
     renderFormats();

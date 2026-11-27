@@ -6,6 +6,7 @@ export interface RenderGalleryOptions {
   category: MainCategory;
   items: ProjectItem[];
   onOpenProject: (index: number, card: HTMLElement) => void;
+  onPlayShowreel?: () => void;
 }
 
 export function renderGallery(options: RenderGalleryOptions): number {
@@ -13,15 +14,51 @@ export function renderGallery(options: RenderGalleryOptions): number {
   const aboutSection = document.getElementById("about-section");
   if (!galleryGrid || !aboutSection) return getColumnCount();
 
+  // Remove contêiner editorial anterior se existir
+  const existingHero = document.getElementById("editorial-hero-container");
+  if (existingHero) {
+    existingHero.remove();
+  }
+
+  // Remove contêineres legados de Home se existirem
+  const legacyHome = document.getElementById("home-curated-sections");
+  if (legacyHome) {
+    legacyHome.remove();
+  }
+
+  const galleryHeader = document.getElementById("gallery-header");
+  const galleryEyebrow = document.getElementById("gallery-eyebrow");
+  const galleryHeading = document.getElementById("gallery-heading");
+
   if (options.category === "sobre") {
+    if (galleryHeader) galleryHeader.style.display = "none";
     galleryGrid.style.display = "none";
     aboutSection.classList.add("is-visible");
     return getColumnCount();
   }
 
   aboutSection.classList.remove("is-visible");
+  if (galleryHeader) galleryHeader.style.display = "";
   galleryGrid.style.display = "";
   galleryGrid.innerHTML = "";
+
+  // Atualiza títulos contextuais da galeria conforme a categoria
+  if (galleryEyebrow && galleryHeading) {
+    if (options.category === "design") {
+      galleryEyebrow.textContent = "PORTFÓLIO CRIATIVO";
+      galleryHeading.textContent = "Projetos de design";
+    } else if (options.category === "ia") {
+      galleryEyebrow.textContent = "TECNOLOGIA CRIATIVA";
+      galleryHeading.textContent = "Projetos com IA";
+    } else if (options.category === "home") {
+      galleryEyebrow.textContent = "PORTFÓLIO EDITORIAL";
+      galleryHeading.textContent = "Trabalhos selecionados";
+    } else {
+      // Padrão: Audiovisual / Video
+      galleryEyebrow.textContent = "PORTFÓLIO AUDIOVISUAL";
+      galleryHeading.textContent = "Trabalhos em vídeo";
+    }
+  }
 
   if (options.items.length === 0) {
     const empty = document.createElement("p");

@@ -1,5 +1,6 @@
 import { killCinematicIntro, runCinematicIntro } from "../animations/cinematic-intro";
 import { ensureGsapPlugins } from "../animations/gsap";
+import { createCaseStudyView } from "../components/case-study";
 import { renderFilters, updateActiveSubFilter } from "../components/filters";
 import { renderGallery } from "../components/gallery";
 import {
@@ -11,19 +12,108 @@ import {
 import { createLightboxController } from "../components/lightbox";
 import { createQuoteModalController } from "../components/quote-modal";
 import { createWelcomeGateController } from "../components/welcome-gate";
-import { filterProjects, getProjectsList } from "../services/projects";
+import { trackEvent } from "../services/analytics";
+import { filterProjects, getProjectBySlug, getProjectsList } from "../services/projects";
 import { STORAGE_KEYS } from "../services/storage";
 import { INTRO_STATES, type IntroState } from "../types/app";
-import type { MainCategory, ProjectCategory } from "../types/project";
+import type { MainCategory, ProjectCategory, ProjectItem } from "../types/project";
 import { getRequiredElement } from "../utils/dom";
 import { getColumnCount } from "../utils/media";
 import { VALID_CATEGORIES } from "./config";
-import { bindLocationSync, normalizeHashCategory, pushCategoryHash } from "./router";
+import { bindLocationSync, parseHashRoute, pushCategoryHash, pushProjectHash } from "./router";
 import { getState, setState } from "./state";
 
 let initialized = false;
 let cleanupListeners: Array<() => void> = [];
 let lastColumnCount = 4;
+let activeCaseStudyEl: HTMLElement | null = null;
+
+export function applyCategoryLock(category: ProjectCategory | null): void {
+  setState({ lockedCategory: category });
+  applyHeaderCategoryLock(category);
+}
+
+const lightboxController = createLightboxController(
+  () => getState().currentItems,
+  (index) => setState({ lightboxIndex: index })
+);
+
+const quoteModalController = createQuoteModalController(() => getState().activeCategory);
+
+const welcomeGateController = createWelcomeGateController({
+  onCategoryLock: applyCategoryLock,
+  onSelectCategory: (cat, updateHash = true) => setCategory(cat, updateHash),
+  onStateChange: (introState: IntroState) => setState({ introState }),
+  getIntroState: () => getState().introState
+});
+
+function closeActiveCaseStudy(): void {
+  if (activeCaseStudyEl) {
+    const cleanup = (activeCaseStudyEl as unknown as { _cleanup?: () => void })._cleanup;
+    if (typeof cleanup === "function") cleanup();
+    activeCaseStudyEl.remove();
+    activeCaseStudyEl = null;
+    document.body.style.overflow = "";
+    pushCategoryHash(getState().activeCategory);
+  }
+}
+
+function openProjectCaseStudy(project: ProjectItem): void {
+  closeActiveCaseStudy();
+  trackEvent("case_study_viewed", {
+    projectSlug: project.slug,
+    projectTitle: project.title,
+    category: project.category
+  });
+
+  const slug = project.slug || project.id || "project";
+  pushProjectHash(slug);
+
+  activeCaseStudyEl = createCaseStudyView({
+    project,
+    onClose: () => {
+      closeActiveCaseStudy();
+    },
+    onRequestQuote: (p) => {
+      closeActiveCaseStudy();
+      quoteModalController.open(null, {
+        service: p.category,
+        projectTitle: p.title,
+        projectUrl: window.location.href
+      });
+      trackEvent("quote_modal_opened", {
+        context: "case_study",
+        projectTitle: p.title
+      });
+    },
+    onShare: (p) => {
+      const url = `${window.location.origin}${window.location.pathname}#project/${p.slug || p.id}`;
+      navigator.clipboard?.writeText(url).then(() => {
+        alert("Link direto do projeto copiado para a área de transferência!");
+        trackEvent("project_link_copied", { projectSlug: p.slug, projectTitle: p.title });
+      });
+    }
+  });
+
+  document.body.appendChild(activeCaseStudyEl);
+  document.body.style.overflow = "hidden";
+}
+
+function handleOpenProject(index: number, card: HTMLElement): void {
+  const items = getState().currentItems;
+  const project = items[index];
+  if (!project) return;
+
+  trackEvent("project_opened", {
+    projectSlug: project.slug,
+    projectTitle: project.title,
+    category: project.category
+  });
+
+  // Em cards comuns da galeria, abre o Lightbox rápido e cinematográfico
+  // Se estiver em rota direta de case study ou se o card tiver botão específico, abre o case study
+  lightboxController.open(index, card);
+}
 
 function updateGalleryView(): void {
   const { activeCategory, activeSubFilter } = getState();
@@ -34,8 +124,14 @@ function updateGalleryView(): void {
   lastColumnCount = renderGallery({
     category: activeCategory,
     items: filtered,
-    onOpenProject: (index, card) => {
-      lightboxController?.open(index, card);
+    onOpenProject: handleOpenProject,
+    onPlayShowreel: () => {
+      trackEvent("showreel_played");
+      // Abre o primeiro vídeo da galeria ou vídeo modelo no lightbox
+      const firstVideoIndex = filtered.findIndex((item) => item.type === "video");
+      if (firstVideoIndex >= 0) {
+        lightboxController.open(firstVideoIndex);
+      }
     }
   });
 }
@@ -75,29 +171,20 @@ export function setSubFilter(subfilter: string): void {
   updateGalleryView();
 }
 
-export function applyCategoryLock(category: ProjectCategory | null): void {
-  setState({ lockedCategory: category });
-  applyHeaderCategoryLock(category);
-}
-
-const lightboxController = createLightboxController(
-  () => getState().currentItems,
-  (index) => setState({ lightboxIndex: index })
-);
-
-const quoteModalController = createQuoteModalController(() => getState().activeCategory);
-
-const welcomeGateController = createWelcomeGateController({
-  onCategoryLock: applyCategoryLock,
-  onSelectCategory: (cat, updateHash = true) => setCategory(cat, updateHash),
-  onStateChange: (introState: IntroState) => setState({ introState }),
-  getIntroState: () => getState().introState
-});
-
 function registerGlobalEvents(): void {
-  const unbindLocation = bindLocationSync((nextCategory) => {
-    if (nextCategory !== getState().activeCategory) {
-      setCategory(nextCategory, false);
+  const unbindLocation = bindLocationSync((route) => {
+    if (route.projectSlug) {
+      const proj = getProjectBySlug(route.projectSlug);
+      if (proj) {
+        openProjectCaseStudy(proj);
+        return;
+      }
+    } else if (activeCaseStudyEl) {
+      closeActiveCaseStudy();
+    }
+
+    if (route.category !== getState().activeCategory) {
+      setCategory(route.category, false);
     }
   });
 
@@ -128,6 +215,10 @@ function registerGlobalEvents(): void {
     }
 
     if (e.key === "Escape") {
+      if (activeCaseStudyEl) {
+        closeActiveCaseStudy();
+        return;
+      }
       const skipBtn = document.getElementById("intro-skip-btn");
       if (document.documentElement.classList.contains("intro-running") && skipBtn) {
         skipBtn.click();
@@ -194,7 +285,8 @@ export function initApp(): void {
 
     lastColumnCount = getColumnCount();
     const projects = getProjectsList();
-    const initialCategory = normalizeHashCategory(window.location.hash);
+    const initialRoute = parseHashRoute(window.location.hash);
+    const initialCategory = initialRoute.category;
 
     initHeaderContacts((trigger) => quoteModalController.open(trigger));
     quoteModalController.init();
@@ -206,6 +298,16 @@ export function initApp(): void {
     registerGlobalEvents();
 
     setCategory(initialCategory, false);
+
+    // Se houver link direto para projeto (#project/slug), pula intro/gate e abre direto
+    if (initialRoute.projectSlug) {
+      document.documentElement.classList.remove("intro-pending");
+      const proj = getProjectBySlug(initialRoute.projectSlug);
+      if (proj) {
+        openProjectCaseStudy(proj);
+      }
+      return;
+    }
 
     runCinematicIntro({
       projects,

@@ -28,4 +28,17 @@ describe("whatsapp & quote service", () => {
     expect(msg).toContain("• Prazo: Esta semana");
     expect(msg).toContain("• Detalhes: clínica médica");
   });
+
+  it("includes contextual project reference when requested from project details", () => {
+    const msg = buildQuoteMessage({
+      service: "video",
+      format: ["Reels / Shorts"],
+      volume: "1 vídeo",
+      deadline: "Urgente",
+      notes: "",
+      projectTitle: "Social Media — Edição Dinâmica"
+    });
+    expect(msg).toContain('Olá Alan! Vi o projeto "Social Media — Edição Dinâmica" no seu portfólio');
+    expect(msg).toContain("• Projeto de referência: Social Media — Edição Dinâmica");
+  });
 });

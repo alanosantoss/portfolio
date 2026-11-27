@@ -9,14 +9,14 @@ Portfólio editorial minimalista de Alan Oliveira (edição de vídeo, design e 
 - **Servidor local admin:** `scripts/server.js` (CommonJS, `127.0.0.1:8089`).
 
 ## Mapa da Arquitetura
-- `public/projects.js`: **Fonte canônica única** de `window.DEFAULT_PROJECTS`. Nunca crie cópias duplicadas.
+- `public/projects.js`: **Fonte canônica única** de `window.DEFAULT_PROJECTS`. Suporta metadados estendidos do Portfolio 2.0 (`slug`, `client`, `summary`, `description`, `services`, `tools`, `deliverables`, `outcomes`, `beforeImage`, `afterImage`, `featured`, `caseStudy`).
 - `src/main.ts`: Ponto de entrada único do site público; delega para `src/core/app.ts`.
-- `src/core/`: `app.ts` (orquestração e inicialização idempotente), `state.ts` (estado centralizado), `router.ts` (roteamento por `#hash` com fallback de `SecurityError`), `config.ts` (contatos, subcategorias, tokens de intro).
-- `src/components/`: `header.ts`, `filters.ts`, `gallery.ts`, `project-card.ts`, `lightbox.ts`, `welcome-gate.ts`, `quote-modal.ts`.
+- `src/core/`: `app.ts` (orquestração e inicialização idempotente), `state.ts` (estado centralizado), `router.ts` (roteamento por `#hash`, suporte a `#project/:slug` com fallback de `SecurityError`), `config.ts` (contatos, subcategorias, tokens de intro).
+- `src/components/`: `header.ts`, `filters.ts`, `gallery.ts`, `project-card.ts`, `lightbox.ts`, `welcome-gate.ts`, `quote-modal.ts`, `showreel.ts`, `before-after.ts`, `case-study.ts`, `home-intro.ts`, `social-proof.ts`.
 - `src/animations/`: `gsap.ts` (registro único), `easing.ts`, `cinematic-intro.ts`, `gate-transition.ts`, `lightbox-transition.ts`.
-- `src/services/`: `projects.ts` (validação, normalização, filtros), `thumbnails.ts` (fallback YouTube), `storage.ts` (wrapper seguro), `whatsapp.ts`.
+- `src/services/`: `projects.ts` (validação, normalização, filtros, slugs), `thumbnails.ts` (fallback YouTube), `storage.ts` (wrapper seguro), `whatsapp.ts` (orçamentos contextuais), `analytics.ts` (eventos de conversão), `video-preview.ts` (previews leves em hover), `i18n.ts` (dicionário de internacionalização).
 - `src/utils/`: `security.ts` (`escapeHtml`, `isSafeImageUrl`, `extractYouTubeId`), `media.ts`, `dom.ts`, `preload.ts`.
-- `src/styles/`: CSS modularizado em `tokens.css`, `reset.css`, `global.css`, `header.css`, `filters.css`, `layout.css`, `gallery.css`, `lightbox.css`, `welcome-gate.css`, `quote-modal.css`, `animations.css`, `responsive.css`, agregados por `index.css`.
+- `src/styles/`: CSS modularizado em `tokens.css`, `reset.css`, `global.css`, `header.css`, `filters.css`, `layout.css`, `gallery.css`, `lightbox.css`, `welcome-gate.css`, `quote-modal.css`, `portfolio-evolution.css`, `animations.css`, `responsive.css`, agregados por `index.css`.
 - `src/admin/`: `main.ts`, `editor.ts`, `project-manager.ts`, `github.ts`, `storage.ts`, `admin.css`.
 
 ## Fluxo de Inicialização (`src/core/app.ts`)

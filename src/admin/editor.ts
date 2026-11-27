@@ -31,6 +31,21 @@ export function createAdminEditor(callbacks: EditorCallbacks): EditorController 
   const inputVisible = document.getElementById("input-visible") as HTMLInputElement | null;
   const thumbPreviewBox = document.getElementById("thumb-preview-box");
 
+  // Portfolio 2.0 fields
+  const inputClient = document.getElementById("input-client") as HTMLInputElement | null;
+  const inputDuration = document.getElementById("input-duration") as HTMLInputElement | null;
+  const inputSlug = document.getElementById("input-slug") as HTMLInputElement | null;
+  const inputSummary = document.getElementById("input-summary") as HTMLInputElement | null;
+  const inputDescription = document.getElementById("input-description") as HTMLTextAreaElement | null;
+  const inputServices = document.getElementById("input-services") as HTMLInputElement | null;
+  const inputTools = document.getElementById("input-tools") as HTMLInputElement | null;
+  const inputPreviewUrl = document.getElementById("input-preview-url") as HTMLInputElement | null;
+  const inputBeforeImg = document.getElementById("input-before-img") as HTMLInputElement | null;
+  const inputAfterImg = document.getElementById("input-after-img") as HTMLInputElement | null;
+  const inputDemoUrl = document.getElementById("input-demo-url") as HTMLInputElement | null;
+  const inputFeatured = document.getElementById("input-featured") as HTMLInputElement | null;
+  const inputCaseStudy = document.getElementById("input-case-study") as HTMLInputElement | null;
+
   const updateMediaInputUI = () => {
     const isDesign = inputType?.value === "design";
     if (labelMediaSource) {
@@ -127,6 +142,22 @@ export function createAdminEditor(callbacks: EditorCallbacks): EditorController 
     inputCategory.value = item.category || "video";
     inputTags.value = (item.tags || []).join(", ");
     inputVisible.checked = item.visible !== false;
+
+    // Set Portfolio 2.0 fields
+    if (inputClient) inputClient.value = item.client || "";
+    if (inputDuration) inputDuration.value = item.duration || (item.year ? String(item.year) : "");
+    if (inputSlug) inputSlug.value = item.slug || "";
+    if (inputSummary) inputSummary.value = item.summary || "";
+    if (inputDescription) inputDescription.value = item.description || "";
+    if (inputServices) inputServices.value = (item.services || []).join(", ");
+    if (inputTools) inputTools.value = (item.tools || []).join(", ");
+    if (inputPreviewUrl) inputPreviewUrl.value = item.previewUrl || "";
+    if (inputBeforeImg) inputBeforeImg.value = item.beforeImage || "";
+    if (inputAfterImg) inputAfterImg.value = item.afterImage || "";
+    if (inputDemoUrl) inputDemoUrl.value = item.demoUrl || "";
+    if (inputFeatured) inputFeatured.checked = Boolean(item.featured);
+    if (inputCaseStudy) inputCaseStudy.checked = Boolean(item.caseStudy);
+
     updateMediaInputUI();
     updateThumbPreview();
     itemModal.classList.add("is-open");
@@ -170,6 +201,24 @@ export function createAdminEditor(callbacks: EditorCallbacks): EditorController 
         .map((t) => t.trim().toLowerCase().replace(/^#/, ""))
         .filter(Boolean);
 
+      const client = inputClient?.value.trim() || undefined;
+      const duration = inputDuration?.value.trim() || undefined;
+      const slug = inputSlug?.value.trim() || undefined;
+      const summary = inputSummary?.value.trim() || undefined;
+      const description = inputDescription?.value.trim() || undefined;
+      const services = inputServices?.value
+        ? inputServices.value.split(",").map((s) => s.trim()).filter(Boolean)
+        : undefined;
+      const tools = inputTools?.value
+        ? inputTools.value.split(",").map((t) => t.trim()).filter(Boolean)
+        : undefined;
+      const previewUrl = inputPreviewUrl?.value.trim() || undefined;
+      const beforeImage = inputBeforeImg?.value.trim() || undefined;
+      const afterImage = inputAfterImg?.value.trim() || undefined;
+      const demoUrl = inputDemoUrl?.value.trim() || undefined;
+      const featured = Boolean(inputFeatured?.checked);
+      const caseStudy = Boolean(inputCaseStudy?.checked);
+
       if (type === "design" && !isSafeImageUrl(rawSource)) {
         alert("Informe uma URL de imagem válida (https://..., http://... ou assets/...).");
         return;
@@ -178,7 +227,28 @@ export function createAdminEditor(callbacks: EditorCallbacks): EditorController 
       const index = parseInt(editIndexInput.value, 10);
       const previousItem = index >= 0 ? callbacks.getProjectAt(index) : null;
       const itemData = buildProjectPayload(
-        { type, category, rawSource, title, aspect, tags, visible },
+        {
+          type,
+          category,
+          rawSource,
+          title,
+          aspect,
+          tags,
+          visible,
+          client,
+          duration,
+          slug,
+          summary,
+          description,
+          services,
+          tools,
+          previewUrl,
+          beforeImage,
+          afterImage,
+          demoUrl,
+          featured,
+          caseStudy
+        },
         previousItem
       );
 

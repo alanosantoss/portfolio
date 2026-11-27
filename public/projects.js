@@ -6,7 +6,22 @@ window.DEFAULT_PROJECTS = [
     title: "Social Media — Edição Dinâmica",
     aspect: "9:16",
     ratio: "ratio-9-16",
-    tags: ["saude", "institucional"]
+    tags: ["saude", "institucional"],
+    slug: "social-media-edicao-dinamica",
+    client: "Área de Saúde & Bem-Estar",
+    duration: "0:45",
+    year: 2026,
+    featured: true,
+    caseStudy: true,
+    summary: "Edição de alto impacto rítmico, sound design imersivo e transições desenhadas para máxima retenção.",
+    description: "Produção e pós-produção focada em capturar a atenção nos primeiros 3 segundos, estruturando uma narrativa dinâmica com legendagem personalizada, sonorização precisa e color grading editorial.",
+    services: ["Edição de Vídeo", "Sound Design", "Motion Design", "Color Grading"],
+    tools: ["Premiere Pro", "After Effects"],
+    deliverables: ["Vídeo Vertical 9:16", "Cortes para Stories/Reels"],
+    outcomes: [
+      { label: "Retenção Médio", value: "85%", context: "Aumento de tempo de tela no feed" },
+      { label: "Entrega", value: "48h", context: "Fluxo ágil de pós-produção" }
+    ]
   },
   {
     type: "design",
@@ -14,7 +29,20 @@ window.DEFAULT_PROJECTS = [
     title: "Cenário Editorial — IA Generativa",
     image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
     ratio: "ratio-16-9",
-    tags: ["ia", "renders"]
+    tags: ["ia", "renders"],
+    slug: "cenario-editorial-ia-generativa",
+    client: "Conceito & Exploração Criativa",
+    duration: "2026",
+    year: 2026,
+    featured: true,
+    caseStudy: true,
+    beforeImage: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1400&q=85",
+    afterImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=85",
+    summary: "Composição visual conceitual gerada com inteligência artificial e finalizada com retoque artístico.",
+    description: "Pesquisa estética, engenharia de prompts avançada, composição de iluminação volumétrica e gradação de cores no Photoshop para alcançar um acabamento cinematográfico realista.",
+    services: ["Síntese Visual com IA", "Direção de Arte", "Retoque Digital"],
+    tools: ["Midjourney", "ComfyUI", "Photoshop"],
+    deliverables: ["Master 4K", "Versões para Mídia Impressa e Digital"]
   },
   {
     type: "design",
@@ -22,7 +50,18 @@ window.DEFAULT_PROJECTS = [
     title: "Direção de Arte & Composição — Cinema",
     image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1400&q=85",
     ratio: "ratio-16-9",
-    tags: ["design", "editorial"]
+    tags: ["design", "editorial"],
+    slug: "direcao-de-arte-composicao-cinema",
+    client: "Produção Independente",
+    duration: "2026",
+    year: 2026,
+    featured: true,
+    caseStudy: true,
+    summary: "Key visual e peças editoriais com enquadramento fotográfico e atmosfera cinematográfica.",
+    description: "Desenvolvimento de conceito de arte, tipografia sob medida e tratamento tonal refinado para pôsteres promocionais e capas de conteúdo audiovisual.",
+    services: ["Direção Criativa", "Key Visual", "Design Gráfico"],
+    tools: ["Photoshop", "Illustrator"],
+    deliverables: ["Pôster Digital", "Thumbnails Widescreen"]
   },
   {
     type: "video",

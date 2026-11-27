@@ -10,6 +10,24 @@ export interface ProjectPayloadFields {
   aspect: string;
   tags: string[];
   visible: boolean;
+
+  // Extended fields
+  slug?: string;
+  client?: string;
+  summary?: string;
+  description?: string;
+  role?: string[];
+  services?: string[];
+  tools?: string[];
+  deliverables?: string[];
+  duration?: string;
+  year?: number;
+  featured?: boolean;
+  caseStudy?: boolean;
+  previewUrl?: string;
+  beforeImage?: string;
+  afterImage?: string;
+  demoUrl?: string;
 }
 
 export function buildProjectPayload(
@@ -32,7 +50,23 @@ export function buildProjectPayload(
     aspect,
     ratio,
     tags: Array.isArray(fields.tags) ? fields.tags : [],
-    visible: fields.visible !== false
+    visible: fields.visible !== false,
+    slug: fields.slug ? String(fields.slug).trim() : undefined,
+    client: fields.client ? String(fields.client).trim() : undefined,
+    summary: fields.summary ? String(fields.summary).trim() : undefined,
+    description: fields.description ? String(fields.description).trim() : undefined,
+    role: fields.role,
+    services: fields.services,
+    tools: fields.tools,
+    deliverables: fields.deliverables,
+    duration: fields.duration ? String(fields.duration).trim() : undefined,
+    year: fields.year,
+    featured: Boolean(fields.featured),
+    caseStudy: Boolean(fields.caseStudy),
+    previewUrl: fields.previewUrl ? String(fields.previewUrl).trim() : undefined,
+    beforeImage: fields.beforeImage ? String(fields.beforeImage).trim() : undefined,
+    afterImage: fields.afterImage ? String(fields.afterImage).trim() : undefined,
+    demoUrl: fields.demoUrl ? String(fields.demoUrl).trim() : undefined
   };
 
   if (type === "video") {

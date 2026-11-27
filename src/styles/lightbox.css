@@ -150,6 +150,17 @@ html.has-gsap-flip .lightbox-stage {
   padding: 0 8px;
 }
 
+.lightbox-close,
+.lightbox-nav {
+  opacity: 0;
+  transition: opacity 240ms var(--ease-smooth-out), color var(--transition);
+}
+
+.lightbox.controls-visible .lightbox-close,
+.lightbox.controls-visible .lightbox-nav {
+  opacity: 1;
+}
+
 .lightbox-close {
   position: fixed;
   top: 24px;

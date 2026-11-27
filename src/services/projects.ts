@@ -29,12 +29,52 @@ export function isValidProjectItem(item: unknown): item is ProjectItem {
   return true;
 }
 
+export function slugifyTitle(title: string): string {
+  return (title || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export function normalizeProjectItem(item: ProjectItem): ProjectItem {
+  const title = (item.title || "").trim();
+  const slug = item.slug && typeof item.slug === "string" && item.slug.trim()
+    ? item.slug.trim()
+    : (title ? slugifyTitle(title) : (item.id || "project"));
+
   return {
     ...item,
-    title: item.title.trim(),
+    title,
+    slug,
     tags: Array.isArray(item.tags) ? item.tags.filter(Boolean) : [],
-    visible: item.visible !== false
+    visible: item.visible !== false,
+    client: item.client ? String(item.client).trim() : undefined,
+    summary: item.summary ? String(item.summary).trim() : undefined,
+    description: item.description ? String(item.description).trim() : undefined,
+    role: Array.isArray(item.role) ? item.role.map((r) => String(r).trim()).filter(Boolean) : undefined,
+    services: Array.isArray(item.services) ? item.services.map((s) => String(s).trim()).filter(Boolean) : undefined,
+    tools: Array.isArray(item.tools) ? item.tools.map((t) => String(t).trim()).filter(Boolean) : undefined,
+    deliverables: Array.isArray(item.deliverables) ? item.deliverables.map((d) => String(d).trim()).filter(Boolean) : undefined,
+    duration: item.duration ? String(item.duration).trim() : undefined,
+    year: typeof item.year === "number" && !isNaN(item.year) ? item.year : undefined,
+    featured: Boolean(item.featured),
+    caseStudy: Boolean(item.caseStudy),
+    previewUrl: item.previewUrl && isSafeImageUrl(item.previewUrl) ? item.previewUrl.trim() : undefined,
+    posterUrl: item.posterUrl && isSafeImageUrl(item.posterUrl) ? item.posterUrl.trim() : undefined,
+    beforeImage: item.beforeImage && isSafeImageUrl(item.beforeImage) ? item.beforeImage.trim() : undefined,
+    afterImage: item.afterImage && isSafeImageUrl(item.afterImage) ? item.afterImage.trim() : undefined,
+    demoUrl: item.demoUrl && isSafeImageUrl(item.demoUrl) ? item.demoUrl.trim() : undefined,
+    outcomes: Array.isArray(item.outcomes)
+      ? item.outcomes
+          .filter((o) => o && typeof o.label === "string" && typeof o.value === "string")
+          .map((o) => ({
+            label: String(o.label).trim(),
+            value: String(o.value).trim(),
+            context: o.context ? String(o.context).trim() : undefined
+          }))
+      : undefined
   };
 }
 
@@ -61,6 +101,28 @@ export function getAllProjects(): ProjectItem[] {
 
 export function getProjectsList(): ProjectItem[] {
   return getAllProjects().filter((item) => item.visible !== false);
+}
+
+export function getProjectBySlug(slugOrId: string): ProjectItem | undefined {
+  const clean = (slugOrId || "").toLowerCase().trim();
+  if (!clean) return undefined;
+  const list = getAllProjects();
+  return list.find(
+    (item) =>
+      (item.slug && item.slug.toLowerCase() === clean) ||
+      (item.id && item.id.toLowerCase() === clean) ||
+      slugifyTitle(item.title) === clean
+  );
+}
+
+export function getFeaturedProjects(): ProjectItem[] {
+  const list = getProjectsList();
+  const featured = list.filter((p) => p.featured);
+  return featured.length > 0 ? featured : list.slice(0, 6);
+}
+
+export function getCaseStudyProjects(): ProjectItem[] {
+  return getProjectsList().filter((p) => p.caseStudy);
 }
 
 export function filterProjects(

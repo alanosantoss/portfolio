@@ -219,4 +219,24 @@ test.describe("Portfolio E2E", () => {
 
     expect(errors).toEqual([]);
   });
+
+  test("Portfolio 2.0: direct project link opens case study and contextual quote preselects project", async ({
+    page
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/index.html#project/social-media-edicao-dinamica");
+    await expect(page.locator(".case-study-overlay")).toBeVisible();
+    await expect(page.locator(".case-study-title")).toContainText("Social Media — Edição Dinâmica");
+
+    // Contextual quote click preselects project and service
+    await page.click(".btn-quote-action");
+    await expect(page.locator("#quote-modal")).toHaveClass(/is-open/);
+    await expect(page.locator("#quote-submit-btn")).toHaveAttribute("href", /Social%20Media/);
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#quote-modal")).not.toHaveClass(/is-open/);
+    expect(errors).toEqual([]);
+  });
 });

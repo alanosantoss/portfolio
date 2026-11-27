@@ -156,6 +156,84 @@
           <span class="form-hint">Opções comuns: comercial, fitness, saude, institucional, imobiliario, ugc, viral, 16:9</span>
         </div>
 
+        <!-- Portfolio 2.0: Metadados Estruturados e Case Study -->
+        <details class="admin-details-section" style="margin-bottom: 16px; border: 1px solid var(--surface-border); border-radius: 8px; padding: 12px; background: rgba(255,255,255,0.02);">
+          <summary style="cursor: pointer; font-weight: 600; color: #fff; font-size: 0.85rem; user-select: none;">
+            ✦ Metadados Avançados & Case Study (Portfolio 2.0)
+          </summary>
+          <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="input-client">Cliente / Marca</label>
+                <input id="input-client" class="form-input" type="text" placeholder="Ex: Nike, Dr. Fulano" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-duration">Duração / Ano</label>
+                <input id="input-duration" class="form-input" type="text" placeholder="Ex: 0:45 ou 2026" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-slug">Slug Personalizado (URL)</label>
+              <input id="input-slug" class="form-input" type="text" placeholder="Ex: social-media-edicao-dinamica" />
+              <span class="form-hint">Se vazio, gerado automaticamente a partir do título.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-summary">Resumo Curto (Hover do Card / Metatags)</label>
+              <input id="input-summary" class="form-input" type="text" placeholder="Ex: Edição dinâmica com transições rítmicas e sound design imersivo." />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-description">Descrição / Contexto do Projeto</label>
+              <textarea id="input-description" class="form-input" rows="3" placeholder="Contexto, objetivo criativo e desafio do projeto..."></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="input-services">Serviços (separados por vírgula)</label>
+                <input id="input-services" class="form-input" type="text" placeholder="Ex: Edição de Vídeo, Color Grading, Sound Design" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-tools">Ferramentas (separadas por vírgula)</label>
+                <input id="input-tools" class="form-input" type="text" placeholder="Ex: Premiere Pro, After Effects, DaVinci Resolve" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-preview-url">URL de Vídeo Preview (MP4/WebM leve ao passar o mouse)</label>
+              <input id="input-preview-url" class="form-input" type="text" placeholder="Ex: https://.../preview.mp4 ou assets/preview.mp4" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="input-before-img">Imagem Antes (Color / IA / Retoque)</label>
+                <input id="input-before-img" class="form-input" type="text" placeholder="URL da imagem antes" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="input-after-img">Imagem Depois</label>
+                <input id="input-after-img" class="form-input" type="text" placeholder="URL da imagem depois" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-demo-url">Link de Demonstração / Interativo (Creative Technology)</label>
+              <input id="input-demo-url" class="form-input" type="text" placeholder="Ex: https://demo-ia.com" />
+            </div>
+
+            <div style="display: flex; gap: 18px; align-items: center; padding-top: 6px;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #fff;">
+                <input id="input-featured" type="checkbox" style="accent-color: var(--accent); width: 16px; height: 16px;" />
+                Destacar na Home (Selected Work)
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #fff;">
+                <input id="input-case-study" type="checkbox" style="accent-color: var(--accent); width: 16px; height: 16px;" />
+                Ativar Estudo de Caso Completo
+              </label>
+            </div>
+          </div>
+        </details>
+
         <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px;">
           <input id="input-visible" type="checkbox" checked style="accent-color: var(--accent); width: 16px; height: 16px;" />
           <label class="form-label" for="input-visible" style="cursor: pointer; margin-bottom: 0;">Visível no portfólio</label>
